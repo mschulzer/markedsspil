@@ -1,0 +1,16 @@
+<h1>{{ market.market_id }}</h1>
+
+<form action="{% url 'market:sell' market.id %}" method="post">
+  {% csrf_token %}
+  <label>Name: {{ market.</label>
+  <label>Price</label>
+  <input type="number" name="price" id="price" value="0">
+  <br>
+  <label>Amount</label>
+  <input type="number" name="price" id="price" value="0">
+  <br>
+  <input type="submit" value="Ready">
+</form>
+<p>Production cost: {{ market.cost }}</p>
+<p>Total:</p>
+<p>Money:</p>
