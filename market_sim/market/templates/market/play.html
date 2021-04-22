@@ -1,16 +1,46 @@
-<h1>{{ market.market_id }}</h1>
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Trading</title>
+  </head>
+  <body>
+	<h1>{{ market.market_id }}</h1>
+	<h2>{{ trader.name }}</h2><br>
 
-<form action="{% url 'market:sell' market.id %}" method="post">
-  {% csrf_token %}
-  <label>Name: {{ market.</label>
-  <label>Price</label>
-  <input type="number" name="price" id="price" value="0">
-  <br>
-  <label>Amount</label>
-  <input type="number" name="price" id="price" value="0">
-  <br>
-  <input type="submit" value="Ready">
-</form>
-<p>Production cost: {{ market.cost }}</p>
-<p>Total:</p>
-<p>Money:</p>
+	<form action="{% url 'market:sell' market.market_id %}" method="post">
+	  {% csrf_token %}
+	  <label id="show_price">Price: -</label>
+	  <br>
+	  <input name="price" type="range" min="0" max="30" value="10" class="slider" step="0.1" id="price">
+	  <br><br>
+	  <label id="show_amount">Amount: -</label>
+	  <br>
+	  <input name="amount" type="range" min="0" max="400" value="20" class="slider" id="amount">
+	  <br>
+	  <input type="submit" value="Ready">
+	</form>
+	<p>Cost per unit: {{ unit_cost }}</p>
+	<p>Bank: {{ trader.money }}</p>
+	<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+	{% block javascript %}
+	<script>
+	  var price_slider = document.getElementById("price");
+	  var price_label = document.getElementById("show_price");
+	  price_label.innerHTML = "Price: " + price_slider.value;
+
+	  var amount_slider = document.getElementById("amount");
+	  var amount_label = document.getElementById("show_amount");
+	  amount_label.innerHTML = "Amount: " + amount_slider.value;
+
+	  price_slider.oninput = function() {
+		  price_label.innerHTML = "Price: " + price_slider.value;
+	  }
+	  amount_slider.oninput = function() {
+		  amount_label.innerHTML = "Amount: " + amount_slider.value;
+	  }
+	</script>
+	{% endblock %}
+  </body>
+</html>
