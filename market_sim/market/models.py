@@ -1,7 +1,7 @@
 from django.db import models
 
 class Market(models.Model):
-    market_id = models.CharField(max_length=16)
+    market_id = models.CharField(max_length=16, primary_key=True)
     alpha = models.DecimalField(max_digits=10, decimal_places=4)
     theta = models.DecimalField(max_digits=10, decimal_places=4)
     beta  = models.DecimalField(max_digits=10, decimal_places=4)
@@ -13,6 +13,7 @@ class Market(models.Model):
         return str(self.market_id) + " ["+str(self.round)+"]: " + str(self.alpha) + ", " + str(self.beta) + ", " + str(self.theta)
 
 class Trader(models.Model):
+    id = models.AutoField(primary_key=True)
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16)
     money = models.IntegerField(default=0)
@@ -22,6 +23,7 @@ class Trader(models.Model):
         return str(self.name) + " [" + str(self.market.market_id) + "] - " + "$" + str(self.money)
 
 class Trade(models.Model):
+    id = models.AutoField(primary_key=True)
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -32,6 +34,7 @@ class Trade(models.Model):
         return str(self.trader.name) + " $" + str(self.unit_price) + " x " + str(self.unit_amount) + " [" + str(self.market.market_id) + "]"
 
 class Stats(models.Model):
+    id = models.AutoField(primary_key=True)
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
     round = models.IntegerField()
