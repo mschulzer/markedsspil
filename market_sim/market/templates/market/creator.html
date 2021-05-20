@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Market creator</title>
-  </head>
-  <body>
+{% extends "market/base.html" %}
+
+{% block title %}Market creator{% endblock %}
+
+{% block content %}
     <h1>Create a market:</h1>
 	<form action="{% url 'market:create' %}" method="post">
 	  {% csrf_token %}
@@ -25,5 +23,4 @@
 	  <br>
 	  <input type="submit" value="Create">
 	</form>
-  </body>
-</html>
+{% endblock %}

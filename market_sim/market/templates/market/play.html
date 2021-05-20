@@ -1,11 +1,8 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Trading</title>
-  </head>
-  <body>
+{% extends "market/base.html" %}
+
+{% block title %}Trading{% endblock %}
+
+{% block content %}
 	<h1>{{ market.market_id }}</h1>
 	<h2>{{ trader.name }}</h2><br>
 
@@ -42,5 +39,4 @@
 	  }
 	</script>
 	{% endblock %}
-  </body>
-</html>
+{% endblock %}
