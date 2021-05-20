@@ -2,3 +2,7 @@ db.sqlite3
 *.csv
 __pycache__/
 .vscode
+geckodriver.log
+geckodriver
+.DS_Store
+
