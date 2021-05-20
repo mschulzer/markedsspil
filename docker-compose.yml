@@ -5,6 +5,9 @@ services:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/market_sim
+      - market_db:/market_sim/market_sim/db.sqlite3
     ports:
       - "8000:8000"
+
+volumes:
+  market_db:
