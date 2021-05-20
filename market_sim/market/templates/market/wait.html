@@ -1,40 +1,35 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Market monitor</title>
-  </head>
-  <body>
+{% extends "market/base.html" %}
+
+{% block title %}Market monitor{% endblock %}
+
+{% block content %}
     <h1>Waiting for {{ market.market_id}}</h1>
 	<div id="market_id" style="display:none;">{{ market.market_id }}</div>
 	<div id="round_number" style="display:none;">{{ market.round }}</div>
-	<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
-    {% block javascript %}
-	<script>
-	  function check_for_next_round() {
-		  market_id = document.getElementById("market_id").innerHTML;
-		  round_num = parseInt(document.getElementById("round_number").innerHTML);
-		  $.ajax({
-			  type: 'GET',
-			  url: 'current_round',
-			  data: {
-				  'market_id': market_id
-			  },
-			  dataType: 'json',
-			  success: function (data) {
-				  console.log(data, data.round, round_num);
-				  if (data.round > round_num) {
-					  // This should probably not be hard-coded
-					  console.log("/market/"+market_id+"/play")
-					  window.location.href = "/market/"+market_id+"/play";
-				  }
-			  }
-		  });
-	  }
-	  window.setInterval(check_for_next_round, 1000);
-	</script>
-	{% endblock %}
-  </body>
-</html>
+{% endblock %}
+        
+{% block javascript %}
+    <script>
+      function check_for_next_round() {
+              market_id = document.getElementById("market_id").innerHTML;
+              round_num = parseInt(document.getElementById("round_number").innerHTML);
+              $.ajax({
+                      type: 'GET',
+                      url: 'current_round',
+                      data: {
+                              'market_id': market_id
+                      },
+                      dataType: 'json',
+                      success: function (data) {
+                              console.log(data, data.round, round_num);
+                              if (data.round > round_num) {
+                                      // This should probably not be hard-coded
+                                      console.log("/market/"+market_id+"/play")
+                                      window.location.href = "/market/"+market_id+"/play";
+                              }
+                      }
+              });
+      }
+      window.setInterval(check_for_next_round, 1000);
+    </script>
+{% endblock %}
