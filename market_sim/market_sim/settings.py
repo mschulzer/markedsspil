@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    # Built-in
+    # Built-in 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,12 +43,15 @@ INSTALLED_APPS = [
     'debug_toolbar',
 
     # Local
+    'crispy_forms',
     'market.apps.MarketConfig',
-
 ]
 
+# django-crispy-forms
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
 MIDDLEWARE = [
-    # Third-party
+    # Debug toolbar (Third-party)
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     
     # Built-in
