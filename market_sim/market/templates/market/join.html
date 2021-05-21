@@ -1,0 +1,11 @@
+{% extends "market/base.html" %}
+
+{% block title %}Market simulation{% endblock %}
+
+{% block content %}
+    <h1>Choose a name and join a market</h1>
+	<form action="" method="post">{% csrf_token %}
+		{{ form.as_p }}
+	  	<input type="submit" value="Join">
+	</form>
+{% endblock %}

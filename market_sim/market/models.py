@@ -1,16 +1,32 @@
 from django.db import models
+from random import randint
 
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
-    alpha = models.DecimalField(max_digits=10, decimal_places=4)
-    theta = models.DecimalField(max_digits=10, decimal_places=4)
-    beta  = models.DecimalField(max_digits=10, decimal_places=4)
-    min_cost = models.IntegerField()
-    max_cost = models.IntegerField()
+    alpha = models.DecimalField(max_digits=10, decimal_places=4, default=105)
+    beta = models.DecimalField(max_digits=10, decimal_places=4, default=17.5)
+    theta = models.DecimalField(max_digits=10, decimal_places=4, default=14.58)
+    min_cost = models.IntegerField(default=5)
+    max_cost = models.IntegerField(default=15)
     round = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    def save(self, *args, **kwargs):
+        """ create unique 8 character market_id before saving instance """
+        good_id = False
+        market_id = ""
+        while not good_id:
+            for i in range(8):
+                market_id += chr(randint(65, 90))
+            if len(Market.objects.filter(market_id=market_id)) == 0:
+                good_id = True
+            else:
+                market_id = ""
+        self.market_id = market_id
+        super(Market, self).save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.market_id) + " ["+str(self.round)+"]: " + str(self.alpha) + ", " + str(self.beta) + ", " + str(self.theta)
+        return f"{self.market_id}[{self.round}]:{self.alpha},{self.beta},{self.theta}"
 
 class Trader(models.Model):
     id = models.AutoField(primary_key=True)

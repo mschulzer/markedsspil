@@ -2,43 +2,40 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.urls import reverse
+from random import randint
 
 from .models import Market, Trader, Trade, Stats
 from decimal import Decimal
-from random import randint
+from .forms import MarketForm, TraderForm
 
-def index(request):
-    if 'market_id' in request.session:
-        return render(request, 'market/index.html', {'market':request.session['market_id']})
+def join(request):
+    if request.method == 'POST':
+        form = TraderForm(request.POST)
+        if form.is_valid():
+            market = Market.objects.get(market_id=form.cleaned_data['market_id'])
+            new_trader = market.trader_set.create(name=form.cleaned_data['username'])
+            new_trader.money = 5000
+            new_trader.prod_cost = randint(market.min_cost, market.max_cost)
+            new_trader.save()
+            request.session['trader_id'] = new_trader.pk
+            return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
     else:
-        return render(request, 'market/index.html', {'market':""})
-
-def creator(request):
-    return render(request,'market/creator.html', {})
+        if 'market_id' in request.session:
+            form = TraderForm(initial={'market_id': request.session['market_id']})
+        else:
+            form = TraderForm()
+    return render(request, 'market/join.html', {'form':form})
 
 def create(request):
-    good_id = False
-    market_id = ""
-    while not good_id:
-        for i in range(8):
-            market_id += chr(randint(65,90))
-        if len(Market.objects.filter(market_id=market_id)) == 0:
-            good_id = True
-        else:
-            market_id = ""
-    try:
-        new_market = Market(market_id=market_id,
-                            alpha=request.POST['alpha'],
-                            beta=request.POST['beta'],
-                            theta=request.POST['theta'],
-                            min_cost=request.POST['min_cost'],
-                            max_cost=request.POST['max_cost'])
-    except:
-        print("Failed creating market")
-        return render(request, 'market/creator.html', {})
+    if request.method == 'POST':
+        form = MarketForm(request.POST)
+        if form.is_valid():
+            new_market = form.save()
+            return HttpResponseRedirect(reverse('market:monitor', args=(new_market.market_id,)))
     else:
-        new_market.save()
-        return HttpResponseRedirect(reverse('market:monitor', args=(new_market.market_id,)))
+        form = MarketForm()
+
+    return render(request, 'market/create.html', {'form': form})
 
 def monitor(request, market_id):
     try:
@@ -49,22 +46,6 @@ def monitor(request, market_id):
         return HttpResponseRedirect('/market/creator.html')
     else:
         return render(request, 'market/monitor.html', {'market':market,'traders':traders})
-
-def join(request):
-    try:
-        market = get_object_or_404(Market, market_id=request.POST['market_id'])
-        new_trader = market.trader_set.create(name=request.POST['username'])
-        new_trader.money = 5000
-        new_trader.prod_cost = randint(market.min_cost, market.max_cost)
-    except (KeyError, Market.DoesNotExist):
-        if 'market_id' in request.POST:
-            request.session['market_id'] = request.POST['market_id']
-        return HttpResponseRedirect('/market')
-    else:
-        new_trader.save()
-        request.session['trader_id'] = new_trader.pk
-        print(request.session['trader_id'])
-        return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
 
 def play(request, market_id):
     try:
