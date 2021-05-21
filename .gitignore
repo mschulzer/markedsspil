@@ -1,3 +1,4 @@
 db.sqlite3
 *.csv
 market_sim/market/__pycache__/
+.vscode
