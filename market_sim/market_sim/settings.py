@@ -31,16 +31,27 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'market.apps.MarketConfig',
+    # Built-in
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third-party
+    'debug_toolbar',
+
+    # Local
+    'market.apps.MarketConfig',
+
 ]
 
 MIDDLEWARE = [
+    # Third-party
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    
+    # Built-in
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -119,3 +130,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# django-debug-toolbar
+INTERNAL_IPS = ['127.0.0.1']
+# When running inside Docker, add the following to get debug-toolbar working
+# import socket
+# hostname, _, ips = socket.gethostbyname_ex(socket.gethostbyname())
+# INTERNAL_IPS = [ip[:-1] + "1" for ip in ips]
