@@ -5,9 +5,9 @@
 {% block title %}Market creator{% endblock %}
 
 {% block content %}
-    <h1>Create a market:</h1>
+    <h3>Create a market:</h3>
 	<form action="" method="post">{% csrf_token %}
       {{ form|crispy }}
-	  <input type="submit" value="Create">
+	  <input type="submit" value="Create" class="btn btn-primary">
 	</form>
 {% endblock %}
