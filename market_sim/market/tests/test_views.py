@@ -1,7 +1,7 @@
 # Create your tests here.
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
-from .models import Market
+from ..models import Market
 from django.core.exceptions import ValidationError
 
 class JoinViewTest(SimpleTestCase):
@@ -16,29 +16,9 @@ class JoinViewTest(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/join.html'),
 
-    ## Test join med og uden Market id i session. 
-    
+    ## Test join med og uden Market id i session.
+
     ## Test join POST - med valid og invalid market_id
-
-class MarketModelTests(TestCase):
-
-    def setUp(self):
-        """ create market with default values """
-        self.market = Market.objects.create() 
-
-    def test_market_fields(self):
-        self.assertEqual(self.market.alpha, 105)
-        self.assertEqual(self.market.beta, 17.5)
-        self.assertEqual(self.market.theta, 14.58)
-        self.assertEqual(self.market.min_cost, 5)
-        self.assertEqual(self.market.max_cost, 15)
-        self.assertEqual(self.market.round, 0)
-        self.assertEqual(len(self.market.market_id), 8)
-        self.assertTrue(type(self.market.market_id) is str)
-
-    def test_string_representation(self):
-        self.assertEqual(str(self.market), f"{self.market.market_id}[0]:105,17.5,14.58")
-                        
 
 class CreateMarketViewTests(TestCase):
 
@@ -56,9 +36,9 @@ class CreateMarketViewTests(TestCase):
     # Test post requests
     def test_market_creation(self):
         # There should be 0 markets in db at this point
-        self.assertEqual(Market.objects.all().count(), 0) 
+        self.assertEqual(Market.objects.all().count(), 0)
         response = self.client.post(
-            reverse('market:create'), {'alpha':21.402, 'beta':44.2, 'theta':2.0105,'min_cost':11, 'max_cost':144})
+            reverse('market:create'), {'alpha': 21.402, 'beta': 44.2, 'theta': 2.0105, 'min_cost': 11, 'max_cost': 144})
         self.assertEqual(response.status_code, 302)
 
         # There should be 1 market in db at this point
@@ -74,4 +54,3 @@ class CreateMarketViewTests(TestCase):
         self.assertEqual(new_market.round, 0)
         self.assertEqual(len(new_market.market_id), 8)
         self.assertTrue(type(new_market.market_id) is str)
-

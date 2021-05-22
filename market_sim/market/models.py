@@ -36,7 +36,7 @@ class Trader(models.Model):
     prod_cost = models.IntegerField(default=0)
 
     def __str__(self):
-        return str(self.name) + " [" + str(self.market.market_id) + "] - " + "$" + str(self.money)
+        return f"{self.name} [{self.market.market_id}] - ${self.money}"
 
 class Trade(models.Model):
     id = models.AutoField(primary_key=True)
@@ -47,7 +47,7 @@ class Trade(models.Model):
     round = models.IntegerField(default=0)
 
     def __str__(self):
-        return str(self.trader.name) + " $" + str(self.unit_price) + " x " + str(self.unit_amount) + " [" + str(self.market.market_id) + "]"
+        return f"{self.trader.name} ${self.unit_price} x {self.unit_amount} [{self.market.market_id}]"
 
 class Stats(models.Model):
     id = models.AutoField(primary_key=True)
