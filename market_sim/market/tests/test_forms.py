@@ -63,9 +63,9 @@ class TestTraderForm(TestCase):
         form = TraderForm(data=data)
         self.assertFalse(form.is_valid())
 
-
-
-
+# to do
+class SellFormTest(TestCase):
+    pass
 
 
 

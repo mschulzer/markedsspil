@@ -15,7 +15,8 @@
               round_num = parseInt(document.getElementById("round_number").innerHTML);
               $.ajax({
                       type: 'GET',
-                      url: 'current_round',
+                      //url: 'current_round',
+                      url: "{% url 'market:current_round' market.market_id %}",
                       data: {
                               'market_id': market_id
                       },
@@ -23,9 +24,7 @@
                       success: function (data) {
                               console.log(data, data.round, round_num);
                               if (data.round > round_num) {
-                                      // This should probably not be hard-coded
-                                      console.log("/market/"+market_id+"/play")
-                                      window.location.href = "/market/"+market_id+"/play";
+                                      window.location.href = "{% url 'market:play' market.market_id %}"
                               }
                       }
               });

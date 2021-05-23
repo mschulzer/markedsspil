@@ -12,17 +12,17 @@ class Market(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def save(self, *args, **kwargs):
-        """ create unique 8 character market_id before saving instance """
-        good_id = False
-        market_id = ""
-        while not good_id:
-            for i in range(8):
-                market_id += chr(randint(65, 90))
-            if len(Market.objects.filter(market_id=market_id)) == 0:
-                good_id = True
-            else:
-                market_id = ""
-        self.market_id = market_id
+        if not self.market_id:
+            good_id = False
+            market_id = ""
+            while not good_id:
+                for i in range(8):
+                    market_id += chr(randint(65, 90))
+                if len(Market.objects.filter(market_id=market_id)) == 0:
+                    good_id = True
+                else:
+                    market_id = ""
+            self.market_id = market_id
         super(Market, self).save(*args, **kwargs)
 
     def __str__(self):

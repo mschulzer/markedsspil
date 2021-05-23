@@ -4,7 +4,8 @@ from . import views
 
 app_name = 'market'
 urlpatterns = [
-    path('', views.join, name='join'),
+    path('', views.home, name='home'),
+    path('join/', views.join, name='join'),
     path('create/', views.create, name='create'),
     path('<market_id>/play/', views.play, name='play'),
     path('<market_id>/sell/', views.sell, name='sell'),

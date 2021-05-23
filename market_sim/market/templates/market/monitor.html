@@ -4,8 +4,11 @@
 
 {% block content %}
     <h1>Monitoring market</h1>
-	<p>Link: {% url 'market:play' market.market_id %}</p>
-	<p>Round {{ market.round }}</p>
+        <p>Market:{{market}}</p>
+        <p>Link to join market: {% url 'market:join' %}?market_id={{market.market_id}}</p>
+        <p>Active link:<a href="{% url 'market:join' %}?market_id={{market.market_id}}">Link</a></p>
+        <br><br>
+        <p>Round {{ market.round }}</p>
 	<div id="round_number" style="display:none;">{{ market.round }}</div>
 	<table id="ready">
       <thead>
@@ -28,7 +31,8 @@
               traders = []
               $.ajax({
                       type: 'GET',
-                      url: 'traders_in_market',
+                      //url: 'traders_in_market',
+                      url:"{% url 'market:traders_in_market' market.market_id %}",
                       //headers: {'X-CSRFToken': csrftoken},
                       data: {},
                       dataType: 'json',
@@ -47,7 +51,9 @@
               });
               $.ajax({
                       type: 'GET',
-                      url: 'traders_this_round',
+                      //url: 'traders_this_round',
+                      url:"{% url 'market:traders_this_round' market.market_id %}",
+
                       //headers: {'X-CSRFToken': csrftoken},
                       data: {
                               'round_num': parseInt(document.getElementById("round_number").innerHTML)
@@ -68,7 +74,8 @@
               round_num = parseInt(document.getElementById("round_number").innerHTML);
               $.ajax({
                       type: 'GET',
-                      url: 'all_trades',
+                      //url: 'all_trades',
+                      url:"{% url 'market:all_trades' market.market_id %}",
                       data: {
                               'round_num': round_num
                       },

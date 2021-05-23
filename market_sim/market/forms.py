@@ -28,3 +28,6 @@ class TraderForm(forms.Form):
             raise forms.ValidationError('There is no market with this ID')
         return market_id
 
+# todo
+class SellForm(forms.Form):
+    pass

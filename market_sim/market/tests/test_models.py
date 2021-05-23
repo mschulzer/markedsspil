@@ -25,6 +25,13 @@ class MarketModelTest(TestCase):
         self.assertEqual(len(self.market.market_id), 8)
         self.assertTrue(type(self.market.market_id) is str)
 
+    def test_saving_existing_market_does_not_create_new_market_id(self):
+        market_id = self.market.market_id
+        self.assertEqual(Market.objects.all().count(), 1)
+        self.market.save()
+        self.assertEqual(market_id, self.market.market_id)
+        self.assertEqual(Market.objects.all().count(), 1)
+
     def test_object_name(self):
         expected_object_name = f"{self.market.market_id}[2]:102.2034,304.5003,14.1234"
         self.assertEqual(str(self.market), expected_object_name)
@@ -98,4 +105,5 @@ class StatsModelTest(TestCase):
         self.assertIsInstance(self.stats, Stats)
         self.assertEqual(self.stats.amount, 55)
         self.assertEqual(self.stats.trader.name, 'Joe Salesman')
+
 

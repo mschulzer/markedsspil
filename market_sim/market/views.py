@@ -2,29 +2,17 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.urls import reverse
+from django.views.decorators.http import require_GET
+
 from random import randint
 
 from .models import Market, Trader, Trade, Stats
 from decimal import Decimal
 from .forms import MarketForm, TraderForm
 
-def join(request):
-    if request.method == 'POST':
-        form = TraderForm(request.POST)
-        if form.is_valid():
-            market = Market.objects.get(market_id=form.cleaned_data['market_id'])
-            new_trader = market.trader_set.create(name=form.cleaned_data['username'])
-            new_trader.money = 5000
-            new_trader.prod_cost = randint(market.min_cost, market.max_cost)
-            new_trader.save()
-            request.session['trader_id'] = new_trader.pk
-            return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
-    else:
-        if 'market_id' in request.session:
-            form = TraderForm(initial={'market_id': request.session['market_id']})
-        else:
-            form = TraderForm()
-    return render(request, 'market/join.html', {'form':form})
+@require_GET
+def home(request):
+    return render(request, 'market/home.html')
 
 def create(request):
     if request.method == 'POST':
@@ -32,39 +20,65 @@ def create(request):
         if form.is_valid():
             new_market = form.save()
             return HttpResponseRedirect(reverse('market:monitor', args=(new_market.market_id,)))
-    else:
+    elif request.method == 'GET':
         form = MarketForm()
-
     return render(request, 'market/create.html', {'form': form})
 
-def monitor(request, market_id):
-    try:
-        market = get_object_or_404(Market, market_id=market_id)
-        traders = Market.objects.filter(market_id=market_id)
-    except:
-        print("Failed retrieving market")
-        return HttpResponseRedirect('/market/creator.html')
-    else:
-        return render(request, 'market/monitor.html', {'market':market,'traders':traders})
+def join(request):
+    if request.method == 'POST':
+        form = TraderForm(request.POST)
+        if form.is_valid():
+            market = Market.objects.get(market_id=form.cleaned_data['market_id'])
+            new_trader = Trader.objects.create(
+                market = market,
+                name = form.cleaned_data['username'],
+                money = 5000,
+                prod_cost = randint(market.min_cost, market.max_cost)
+            )
+            request.session['trader_id'] = new_trader.pk
+            return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
+    elif request.method == 'GET':
+        if 'market_id' in request.GET:
+            form = TraderForm(
+                initial={'market_id': request.GET['market_id']})
+        else:
+            form = TraderForm()
+    return render(request, 'market/join.html', {'form':form})
 
+@require_GET
+def monitor(request, market_id):
+    market = get_object_or_404(Market, market_id = market_id) 
+    # Consider other options instead of 404: 
+    # 1) Redirect to create market page
+    # 2) Redirect to error page with 'try again'-option and links to join/create market (one error page for all cases like this one)
+    return render(request, 'market/monitor.html', {'market':market})
+
+
+@require_GET
 def play(request, market_id):
-    try:
-        market = Market.objects.get(market_id=market_id)
-    except DoesNotExist:
-        return HttpResponseRedirect('market')
+    market = get_object_or_404(Market, market_id=market_id)
+    # Consider other options instead of 404:
+    # 1) Redirect to some page (join)
+    # 2) Redirect to error page with 'try again'-option and links to join/create market (one error page for all cases like this one)
+    if 'trader_id' not in request.session:
+        return HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')
     else:
+        pk = request.session['trader_id']
         try:
             trader = Trader.objects.get(pk=request.session['trader_id'])
         except:
-            request.session['market_id'] = market.market_id
-            return HttpResponseRedirect('/market')
+            return HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')
         else:
-            unit_cost = trader.prod_cost
-            print(request.session['trader_id'])
-            print(trader)
-            return render(request, 'market/play.html', {'market':market,
-                                                        'trader':trader,
-                                                        'unit_cost':unit_cost})
+            if trader.market.market_id != market_id:
+                return HttpResponseRedirect(reverse('market:join'))
+            else:
+                context = {
+                 'market': market,
+                 'trader': trader,
+                 'unit_cost': trader.prod_cost
+             }
+            return render(request, 'market/play.html', context)
+       
 
 def sell(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
@@ -76,7 +90,6 @@ def sell(request, market_id):
                       unit_price=price,
                       unit_amount=amount,
                       round=market.round)
-    print(new_trade)
     new_trade.save()
     return HttpResponseRedirect(reverse('market:wait', args=(market_id,)))
 
@@ -85,7 +98,6 @@ def wait(request, market_id):
     return render(request, 'market/wait.html', {'market':market})
 
 def traders_in_market(request, market_id):
-    print(market_id)
     market = Market.objects.get(market_id=market_id)
     traders = [x.name for x in Trader.objects.filter(market=market)]
     data = {
