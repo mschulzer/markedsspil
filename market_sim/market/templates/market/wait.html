@@ -3,6 +3,7 @@
 {% block title %}Market monitor{% endblock %}
 
 {% block content %}
+    {{ trader }}
     <h1>Waiting for {{ market.market_id}}</h1>
 	<div id="market_id" style="display:none;">{{ market.market_id }}</div>
 	<div id="round_number" style="display:none;">{{ market.round }}</div>

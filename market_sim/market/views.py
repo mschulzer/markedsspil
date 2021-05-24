@@ -1,8 +1,11 @@
+from optparse import Values
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.urls import reverse
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
+from django.contrib.auth.decorators import user_passes_test
+from django.http import HttpResponse
 
 from random import randint
 
@@ -53,70 +56,89 @@ def monitor(request, market_id):
     # 2) Redirect to error page with 'try again'-option and links to join/create market (one error page for all cases like this one)
     return render(request, 'market/monitor.html', {'market':market})
 
+def error_tracker(session, market_id):
+    """ convinience function used by play, wait and sell views """
+    try:
+        market = Market.objects.get(pk=market_id)
+    except:
+        return {'redirect':HttpResponseRedirect(reverse('market:join'))}
+
+    if 'trader_id' not in session:
+        return {'redirect': HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')}
+    else:
+        pk = session['trader_id']
+        try:
+            trader = Trader.objects.get(pk=session['trader_id'])
+        except:
+            return {'redirect': HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')}
+        else:
+            if trader.market.market_id != market_id:
+                return {'redirect': HttpResponseRedirect(reverse('market:join'))}
+            else: 
+                return {'market': market, 'trader': trader}
+
+def play_wait_helper(request, market_id, template_path):
+    """ convinience function used by play and wait views """
+    
+    redirect_or_context = error_tracker(request.session, market_id)
+    if 'redirect' in redirect_or_context:
+        return redirect_or_context['redirect']
+    else:
+        return render(request, template_path, redirect_or_context)
 
 @require_GET
 def play(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    # Consider other options instead of 404:
-    # 1) Redirect to some page (join)
-    # 2) Redirect to error page with 'try again'-option and links to join/create market (one error page for all cases like this one)
-    if 'trader_id' not in request.session:
-        return HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')
-    else:
-        pk = request.session['trader_id']
-        try:
-            trader = Trader.objects.get(pk=request.session['trader_id'])
-        except:
-            return HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')
-        else:
-            if trader.market.market_id != market_id:
-                return HttpResponseRedirect(reverse('market:join'))
-            else:
-                context = {
-                 'market': market,
-                 'trader': trader,
-                 'unit_cost': trader.prod_cost
-             }
-            return render(request, 'market/play.html', context)
-       
+    return play_wait_helper(request, market_id, 'market/play.html')
 
-def sell(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    trader = get_object_or_404(Trader, pk=request.session['trader_id'])
-    price = request.POST['price']
-    amount = request.POST['amount']
-    new_trade = Trade(market=market,
-                      trader=trader,
-                      unit_price=price,
-                      unit_amount=amount,
-                      round=market.round)
-    new_trade.save()
-    return HttpResponseRedirect(reverse('market:wait', args=(market_id,)))
-
+@require_GET
 def wait(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    return render(request, 'market/wait.html', {'market':market})
+    return play_wait_helper(request, market_id, 'market/wait.html')
 
+@require_POST
+def sell(request, market_id):
+    redirect_or_context = error_tracker(request.session, market_id)
+    if 'redirect' in redirect_or_context:
+        return redirect_or_context['redirect']
+    else:
+        market = redirect_or_context['market']
+        trader = redirect_or_context['trader']
+        price = request.POST['price']
+        amount = request.POST['amount']
+        new_trade = Trade(market=market,
+                        trader=trader,
+                        unit_price=price,
+                        unit_amount=amount,
+                        round=market.round)
+        new_trade.save()
+        return HttpResponseRedirect(reverse('market:wait', args=(market_id,)))
+
+@require_GET
 def traders_in_market(request, market_id):
-    market = Market.objects.get(market_id=market_id)
-    traders = [x.name for x in Trader.objects.filter(market=market)]
+    market = get_object_or_404(Market, market_id=market_id)
+    traders = [trader.name for trader in Trader.objects.filter(market=market)]
     data = {
         'traders':traders
     }
     return JsonResponse(data)
 
+
+
+@require_GET
 def traders_this_round(request, market_id):
-    round = request.GET['round_num']
-    traders = [x.trader.name for x in Trade.objects.filter(round=round)]
+    market = get_object_or_404(Market, market_id=market_id)
+    round = market.round
+    traders = [trade.trader.name for trade in Trade.objects.filter(market=market).filter(round=round)]
     data = {
         'traders':traders
     }
     return JsonResponse(data)
 
 def all_trades(request, market_id):
-    round = request.GET['round_num']
-    trades = Trade.objects.filter(round=round)
-    market = Market.objects.get(market_id=market_id)
+    
+    market = get_object_or_404(Market, market_id=market_id)
+    round = market.round 
+    trades = Trade.objects.filter(round=round).filter(market=market)  #fixes bug
+    assert(len(trades)>0), "No trades in market this round"
     alpha, beta, theta = market.alpha, market.beta, market.theta
     avg_price = sum([trade.unit_price for trade in trades]) / len(trades)
 
@@ -127,7 +149,6 @@ def all_trades(request, market_id):
         expenses = trade.trader.prod_cost * trade.unit_amount
         income = trade.unit_price * min(demand,trade.unit_amount)
         trade_profit = income - expenses
-        print(demand, expenses, income, trade_profit)
         profit.append(trade_profit)
         trade.trader.money += trade_profit
         trade.trader.save()
