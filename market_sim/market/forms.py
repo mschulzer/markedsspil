@@ -39,7 +39,7 @@ class TradeForm(forms.ModelForm):
             'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'max': 400, 'value': 20, 'class': 'slider'}),
         }
         labels = {
-            'unit_price': ('Price: 30'),
+            'unit_price': ('Price: 10'),
             'unit_amount': ('Amount: 0')
         }
         help_texts = {
