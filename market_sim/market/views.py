@@ -56,65 +56,69 @@ def monitor(request, market_id):
     # 2) Redirect to error page with 'try again'-option and links to join/create market (one error page for all cases like this one)
     return render(request, 'market/monitor.html', {'market':market})
 
-def error_tracker(session, market_id):
-    """ convenience function used by play, wait and sell views """
+def validate_market_and_trader(session, market_id):
+    """ 
+    helper function that checks the following:
+    1) There is a market with the given id
+    2) There is a trader_id in the current session
+    3) This trader exists in database
+    3) The trader is on the market given by the market_id, and not some other market
+    """
     try:
         market = Market.objects.get(pk=market_id)
     except:
-        return {'redirect':HttpResponseRedirect(reverse('market:join'))}
+        return {'error_redirect':HttpResponseRedirect(reverse('market:join'))}
 
     if 'trader_id' not in session:
-        return {'redirect': HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')}
+        return {'error_redirect': HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')}
     else:
         pk = session['trader_id']
         try:
             trader = Trader.objects.get(pk=session['trader_id'])
         except:
-            return {'redirect': HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')}
+            return {'error_redirect': HttpResponseRedirect(reverse('market:join') + f'?market_id={market_id}')}
         else:
             if trader.market.market_id != market_id:
-                return {'redirect': HttpResponseRedirect(reverse('market:join'))}
+                return {'error_redirect': HttpResponseRedirect(reverse('market:join'))}
             else: 
                 return {'market': market, 'trader': trader}
 
-def play_wait_helper(request, market_id, template_path, context):
-    """ convenience function used by play and wait views """
-    
-    redirect_or_context = error_tracker(request.session, market_id)
-    if 'redirect' in redirect_or_context:
-        response = redirect_or_context['redirect']
-        return response
-    else:
-        context['market'] = redirect_or_context['market']
-        context['trader'] = redirect_or_context['trader']
-        return render(request, template_path, context)
-
-@require_GET
+        
 def play(request, market_id):
-    return play_wait_helper(request, market_id, 'market/play.html', {'form': TradeForm})
+
+    validation = validate_market_and_trader(request.session, market_id)
+    
+    if 'error_redirect' in validation:
+        return validation['error_redirect']
+ 
+    market = validation['market']
+    trader = validation['trader']
+
+    if request.method == 'POST':
+        form = TradeForm(request.POST)
+        if form.is_valid():
+            new_trade = form.save(commit=False)
+            new_trade.market = market
+            new_trade.trader = trader
+            new_trade.round = market.round
+            new_trade.save()
+            return HttpResponseRedirect(reverse('market:wait', args=(market.market_id,)))
+
+        return render(request, 'market/play.html', {'form': form})
+
+    elif request.method == 'GET':
+        form = TradeForm()
+    
+    return render(request, 'market/play.html', {'market':market, 'trader':trader, 'form':form})
 
 @require_GET
 def wait(request, market_id):
-    return play_wait_helper(request, market_id, 'market/wait.html', dict())
+    validation = validate_market_and_trader(request.session, market_id)
+    if 'error_redirect' in validation:
+        return validation['error_redirect']   
+    context = validation 
+    return render(request, 'market/wait.html', context)
 
-@require_POST
-def sell(request, market_id):
-    redirect_or_context = error_tracker(request.session, market_id)
-    if 'redirect' in redirect_or_context:
-        return redirect_or_context['redirect']
-
-    market = redirect_or_context['market']
-    trader = redirect_or_context['trader']
-    form = TradeForm(request.POST)
-    if form.is_valid():
-        new_trade = form.save(commit=False)
-        new_trade.market = market
-        new_trade.trader = trader
-        new_trade.round = market.round
-        new_trade.save()
-        return HttpResponseRedirect(reverse('market:wait', args=(market.market_id,)))
-
-    return render(request, 'market/play.html', {'form': form})
 
 @require_GET
 def traders_in_market(request, market_id):

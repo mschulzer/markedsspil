@@ -10,7 +10,7 @@
     <p><b>Market:</b> {{ market.market_id }}</p>
 <br><br>
 
-<form action="{% url 'market:sell' market.market_id %}" method="post">{% csrf_token %}
+<form action="" method="post">{% csrf_token %}
     {{ form|crispy 	}}
     <input type="submit" value="Ready" class="btn btn-outline-primary">
 </form>
