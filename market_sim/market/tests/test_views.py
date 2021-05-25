@@ -508,23 +508,13 @@ class SellViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
 
-
-    def test_if_no_errors_redirect_to_wait(self):
-        session = self.client.session
-        session['trader_id'] = self.trader_on_market.pk
-        session.save()
-        response = self.client.post(
-            reverse('market:sell', args=(self.market.market_id,)), {'price': '10.9', 'amount': '45'})        
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:wait', args=(self.market.market_id,)))
-
     def test_if_no_errors_redirect_to_wait(self):
         session = self.client.session
         session['trader_id'] = self.trader_on_market.pk
         session.save()
         self.assertEqual(Trade.objects.all().count(), 0)
         response = self.client.post(
-            reverse('market:sell', args=(self.market.market_id,)), {'price': '10.9', 'amount': '45'})
+            reverse('market:sell', args=(self.market.market_id,)), {'unit_price': '10.9', 'unit_amount': '45'})
         self.assertEqual(Trade.objects.all().count(), 1)
         trade = Trade.objects.first()
         self.assertEqual(float(trade.unit_price), 10.9)

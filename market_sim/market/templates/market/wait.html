@@ -3,33 +3,40 @@
 {% block title %}Market monitor{% endblock %}
 
 {% block content %}
-    {{ trader }}
-    <h1>Waiting for {{ market.market_id}}</h1>
-	<div id="market_id" style="display:none;">{{ market.market_id }}</div>
-	<div id="round_number" style="display:none;">{{ market.round }}</div>
+
+<br>
+    <h3>Waiting for {{ market.market_id}} ...</h3>
+    <p>Trader name: {{ trader.name }} </p>
+    <p>Round: {{ market.round }} </p>
+
+    <!-- data storage-->
+    <div id="round_number" style="display:none;">{{ market.round }}</div>
+    <div id="market_id" style="display:none;">{{ market.market_id }}</div>
+
 {% endblock %}
-        
-{% block javascript %}
-    <script>
-      function check_for_next_round() {
-              market_id = document.getElementById("market_id").innerHTML;
-              round_num = parseInt(document.getElementById("round_number").innerHTML);
-              $.ajax({
-                      type: 'GET',
-                      //url: 'current_round',
-                      url: "{% url 'market:current_round' market.market_id %}",
-                      data: {
-                              'market_id': market_id
-                      },
-                      dataType: 'json',
-                      success: function (data) {
-                              console.log(data, data.round, round_num);
-                              if (data.round > round_num) {
-                                      window.location.href = "{% url 'market:play' market.market_id %}"
-                              }
-                      }
-              });
-      }
-      window.setInterval(check_for_next_round, 1000);
-    </script>
+
+{% block javascript %}    
+
+<script>
+    round_num = parseInt(document.getElementById("round_number").innerHTML);
+    market_id = document.getElementById("market_id").innerHTML;
+    function check_for_next_round() {
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'market:current_round' market.market_id %}",
+            data: {
+                    'market_id': market_id
+            },
+            dataType: 'json',
+            success: function (data) {
+                console.log(data, data.round, round_num);
+                if (data.round > round_num) {
+                        window.location.href = "{% url 'market:play' market.market_id %}"
+                }
+                }
+        });
+    }
+    window.setInterval(check_for_next_round, 1000);
+</script>
+
 {% endblock %}

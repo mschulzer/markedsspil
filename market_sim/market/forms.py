@@ -1,12 +1,13 @@
 from django import forms
-from .models import Market, Trader
+from .models import Market, Trade
 from django.core.exceptions import ValidationError
 
 class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
         fields = ['alpha', 'beta', 'theta', 'min_cost', 'max_cost']
-    
+
+ 
     def clean(self):
         """ Additional validation of form data """
         cleaned_data = super().clean()
@@ -28,6 +29,24 @@ class TraderForm(forms.Form):
             raise forms.ValidationError('There is no market with this ID')
         return market_id
 
-# todo
-class SellForm(forms.Form):
-    pass
+
+class TradeForm(forms.ModelForm):
+    class Meta:
+        model = Trade
+        fields = ['unit_price', 'unit_amount']
+        widgets = {
+            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'value':10, 'class':'slider', 'step':0.1}),
+            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'max': 400, 'value': 20, 'class': 'slider'}),
+        }
+        labels = {
+            'unit_price': ('Price: 30'),
+            'unit_amount': ('Amount: 0')
+        }
+        help_texts = {
+            'unit_price': ('Select a price for one unit of your product'),
+            'unit_amount': ('How many unit do you want to produce?'),
+
+        }
+        error_messages = {
+        }
+

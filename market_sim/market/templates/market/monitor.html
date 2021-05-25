@@ -1,113 +1,114 @@
 {% extends "market/base.html" %}
 {% block title %}Market monitor{% endblock %}
 {% block content %}
-    <h1>Monitoring market</h1>
-    <p>Market:{{ market }}</p>
-    <p>Link to join market: {% url 'market:join' %}?market_id={{market.market_id}}</p>
-    <p>Active link:<a href="{% url 'market:join' %}?market_id={{market.market_id}}" target="_blank">Link</a></p>
-    <br><br>
-    <p id="round_num_shown">Current Round: 0</p>
-    <table id="ready">
-        <thead>
-            <tr>
-                <th colspan="2">Players</th>
-            </tr>
-        </thead>
-        <tbody id="ready_table_body">
-        </tbody>
-    </table>
-    <br>
-    <p id="num_players_in_market">Total number of players in market: 0</p>
-    <p id="num_ready_players_this_round">Number of ready players this round: 0</p>
 
-    <button id="refresh">Refresher</button>
-    <button id="confirm" disabled>Confirm trades</button>
-    <p id="round_data"></p>
+<h1>Monitoring market</h1>
+<p>Market:{{ market }}</p>
+<p>Link to join market: {% url 'market:join' %}?market_id={{market.market_id}}</p>
+<p>Active link:<a href="{% url 'market:join' %}?market_id={{market.market_id}}" target="_blank">Link</a></p>
+<br><br>
+<p id="round_num_shown">Current Round: 0</p>
+<table id="ready">
+    <thead>
+        <tr>
+            <th colspan="2">Players</th>
+        </tr>
+    </thead>
+    <tbody id="ready_table_body">
+    </tbody>
+</table>
+<br>
+<p id="num_players_in_market">Total number of players in market: 0</p>
+<p id="num_ready_players_this_round">Number of ready players this round: 0</p>
 
-    <!-- data storage-->
-    <div id="round_num_hidden" style="visibility:hidden">{{ market.round }}</div>
+<button id="refresh" class="btn btn-primary">Refresher</button>
+<button id="confirm" class="btn btn-warning" disabled>Confirm trades</button>
+<p id="round_data"></p>
+
+<!-- data storage-->
+<div id="round_num_hidden" style="display:none">{{ market.round }}</div>
+
 {% endblock %}
-        
+         
 {% block javascript %}
-    <script>
-      //const csrftoken = Cookies.get('csrftoken');  In case we want to use POST instead of GET
-      $("#refresh").click(function(){              
-              traders = []
-              $.ajax({
-                      type: 'GET',
-                      url:"{% url 'market:traders_in_market' market.market_id %}",
-                      //headers: {'X-CSRFToken': csrftoken},
-                      data: {},
-                      dataType: 'json',
-                      success: function (data) {
-                              traders = data.traders;
-                              trader_table = document.getElementById("ready_table_body");
-                              trader_table.innerHTML = ""
-                              for (var i = 0; i < traders.length; i++) {
-                                      var row = trader_table.insertRow(-1);
-                                      var cell = row.insertCell(0);
-                                      cell.innerHTML = traders[i];
-                                      cell = row.insertCell(1);
-                                      cell.innerHTML = "";
-                              }
-                              document.getElementById("num_players_in_market").innerHTML = 
-                                "Total number of players in market: " + traders.length;
-                      }
-                
-              });
-              $.ajax({
-                      type: 'GET',
-                      url:"{% url 'market:traders_this_round' market.market_id %}",
-                      //headers: {'X-CSRFToken': csrftoken},
-                      data: {},
-                      dataType: 'json',
-                      success: function (data) {
-                              ready_traders = data.traders;
-                              trader_table = document.getElementById("ready_table_body");
-                              for (var i = 0; i < trader_table.rows.length; i++) {
-                                      if (ready_traders.includes(trader_table.rows[i].cells[0].innerHTML)) {
-                                              trader_table.rows[i].cells[1].innerHTML = "✓";
-                                      }
-                              }
-                              if(ready_traders.length > 0){
-                                      document.getElementById("confirm").disabled = false;
-                              }
-                              document.getElementById("num_ready_players_this_round").innerHTML = 
-                              "Number of ready players this round: " + ready_traders.length;
-
-                      }
-              });
-      });
-      $("#confirm").click(function(){
-              round_num = parseInt(document.getElementById("round_num_hidden").innerHTML);        
-              $.ajax({
-                      type: 'GET',
-                      url:"{% url 'market:all_trades' market.market_id %}",
-                      data: {},
-                      dataType: 'json',
-                      success: function (data) {
-                              console.log("succes!")
-                              document.getElementById("round_data").innerHTML += round_num+" data:<br>";
-                              for (var i = 0; i < data.traders.length; i++) {
-                                      if (data.profit[i] > 0) {
-                                              document.getElementById("round_data").innerHTML += data.traders[i] + " gained " + data.profit[i];
-                                      } else {
-                                              document.getElementById("round_data").innerHTML += data.traders[i] + " lost " + (-1*data.profit[i]);
-                                      }
-                                      document.getElementById("round_data").innerHTML += "<br>"
-                              }
-                              document.getElementById("round_data").innerHTML += "<br><br>"
-                              trader_table = document.getElementById("ready_table_body");
-                              for (var i = 0; i < trader_table.rows.length; i++) {
-                                      trader_table.rows[i].cells[1].innerHTML = "";
-                              }
-                              document.getElementById("confirm").disabled = true;
-                              round_num += 1;
-                              document.getElementById("round_num_hidden").innerHTML = round_num;
-                              document.getElementById("round_num_shown").innerHTML = "Current Round: " + round_num;
-                      }
-              });
-              
-      });
-    </script>
+<script>
+//const csrftoken = Cookies.get('csrftoken');  In case we want to use POST instead of GET
+$("#refresh").click(function(){              
+    traders = []
+    $.ajax({
+        type: 'GET',
+        url:"{% url 'market:traders_in_market' market.market_id %}",
+        //headers: {'X-CSRFToken': csrftoken},
+        data: {},
+        dataType: 'json',
+        success: function (data) {
+            traders = data.traders;
+            trader_table = document.getElementById("ready_table_body");
+            trader_table.innerHTML = ""
+            for (var i = 0; i < traders.length; i++) {
+                    var row = trader_table.insertRow(-1);
+                    var cell = row.insertCell(0);
+                    cell.innerHTML = traders[i];
+                    cell = row.insertCell(1);
+                    cell.innerHTML = "";
+            }
+            document.getElementById("num_players_in_market").innerHTML = 
+            "Total number of players in market: " + traders.length;
+        }
+    
+    });
+    $.ajax({
+        type: 'GET',
+        url:"{% url 'market:traders_this_round' market.market_id %}",
+        //headers: {'X-CSRFToken': csrftoken},
+        data: {},
+        dataType: 'json',
+        success: function (data) {
+            ready_traders = data.traders;
+            trader_table = document.getElementById("ready_table_body");
+            for (var i = 0; i < trader_table.rows.length; i++) {
+                if (ready_traders.includes(trader_table.rows[i].cells[0].innerHTML)) {
+                        trader_table.rows[i].cells[1].innerHTML = "✓";
+                }
+            }
+            if(ready_traders.length > 0){
+                document.getElementById("confirm").disabled = false;
+            }
+            document.getElementById("num_ready_players_this_round").innerHTML = 
+                "Number of ready players this round: " + ready_traders.length;
+        }
+    });
+});
+$("#confirm").click(function(){
+    round_num = parseInt(document.getElementById("round_num_hidden").innerHTML);        
+    $.ajax({
+        type: 'GET',
+        url:"{% url 'market:all_trades' market.market_id %}",
+        data: {},
+        dataType: 'json',
+        success: function (data) {
+            console.log("succes!")
+            document.getElementById("round_data").innerHTML += round_num+" data:<br>";
+            for (var i = 0; i < data.traders.length; i++) {
+                if (data.profit[i] > 0) {
+                        document.getElementById("round_data").innerHTML += data.traders[i] + " gained " + data.profit[i];
+                } else {
+                        document.getElementById("round_data").innerHTML += data.traders[i] + " lost " + (-1*data.profit[i]);
+                }
+                document.getElementById("round_data").innerHTML += "<br>"
+            }
+            document.getElementById("round_data").innerHTML += "<br><br>"
+            trader_table = document.getElementById("ready_table_body");
+            for (var i = 0; i < trader_table.rows.length; i++) {
+                    trader_table.rows[i].cells[1].innerHTML = "";
+            }
+            document.getElementById("confirm").disabled = true;
+            round_num += 1;
+            document.getElementById("round_num_hidden").innerHTML = round_num;
+            document.getElementById("round_num_shown").innerHTML = "Current Round: " + round_num;
+        }
+    });
+    
+});
+</script>
 {% endblock %}

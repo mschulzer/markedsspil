@@ -1,7 +1,7 @@
 # Create your tests here.
 from django.test import SimpleTestCase, TestCase
-from ..models import Market,Trader
-from ..forms import MarketForm, TraderForm
+from ..models import Market, Trader, Trade
+from ..forms import MarketForm, TraderForm, TradeForm
 from django.core.exceptions import ValidationError
 
 
@@ -63,9 +63,44 @@ class TestTraderForm(TestCase):
         form = TraderForm(data=data)
         self.assertFalse(form.is_valid())
 
-# to do
-class SellFormTest(TestCase):
-    pass
+class TradeFormTest(TestCase):
+
+    def test_valid_post_data_gives_valid_form(self):
+        data = {'unit_price': 7.3, 'unit_amount': 140}
+        form = TradeForm(data=data)
+        self.assertTrue(form.is_valid())
+
+    def test_amount_not_integer_gives_invalid_form(self):
+        data = {'unit_price': 7.3, 'unit_amount': 140.3}
+        form = TradeForm(data=data)
+        self.assertFalse(form.is_valid())
+
+    def test_valid_form_with_post_data_can_be_saved_to_new_market(self):
+        data = {'unit_price': 7.3, 'unit_amount': 140}
+        form = TradeForm(data=data)
+        new_trade = form.save(commit=False)
+        self.assertIsInstance(new_trade, Trade)
+
+    def test_valid_form_with_all_data_can_be_saved_to_new_market(self):
+        data = {'unit_price': 7.3, 'unit_amount': 140}
+        form = TradeForm(data=data)
+        new_trade = form.save(commit=False)
+        self.assertIsInstance(new_trade, Trade)
+        self.assertEqual(Trade.objects.all().count(), 0)
+
+    def test_valid_form_with_all_data_can_be_saved_to_db(self):
+        data = {'unit_price': 7.3, 'unit_amount': 140}
+        form = TradeForm(data=data)
+        market = Market.objects.create()
+        trader = Trader.objects.create(market=market, name="joe")
+        new_trade = form.save(commit=False)
+        new_trade.market = market
+        new_trade.trader = trader
+        new_trade.round = market.round
+        new_trade.save()
+        new_trade.save()
+        self.assertIsInstance(new_trade, Trade)
+        self.assertEqual(Trade.objects.all().count(), 1)
 
 
 

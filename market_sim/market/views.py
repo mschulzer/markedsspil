@@ -11,7 +11,7 @@ from random import randint
 
 from .models import Market, Trader, Trade, Stats
 from decimal import Decimal
-from .forms import MarketForm, TraderForm
+from .forms import MarketForm, TraderForm, TradeForm
 
 @require_GET
 def home(request):
@@ -57,7 +57,7 @@ def monitor(request, market_id):
     return render(request, 'market/monitor.html', {'market':market})
 
 def error_tracker(session, market_id):
-    """ convinience function used by play, wait and sell views """
+    """ convenience function used by play, wait and sell views """
     try:
         market = Market.objects.get(pk=market_id)
     except:
@@ -77,40 +77,44 @@ def error_tracker(session, market_id):
             else: 
                 return {'market': market, 'trader': trader}
 
-def play_wait_helper(request, market_id, template_path):
-    """ convinience function used by play and wait views """
+def play_wait_helper(request, market_id, template_path, context):
+    """ convenience function used by play and wait views """
     
     redirect_or_context = error_tracker(request.session, market_id)
     if 'redirect' in redirect_or_context:
-        return redirect_or_context['redirect']
+        response = redirect_or_context['redirect']
+        return response
     else:
-        return render(request, template_path, redirect_or_context)
+        context['market'] = redirect_or_context['market']
+        context['trader'] = redirect_or_context['trader']
+        return render(request, template_path, context)
 
 @require_GET
 def play(request, market_id):
-    return play_wait_helper(request, market_id, 'market/play.html')
+    return play_wait_helper(request, market_id, 'market/play.html', {'form': TradeForm})
 
 @require_GET
 def wait(request, market_id):
-    return play_wait_helper(request, market_id, 'market/wait.html')
+    return play_wait_helper(request, market_id, 'market/wait.html', dict())
 
 @require_POST
 def sell(request, market_id):
     redirect_or_context = error_tracker(request.session, market_id)
     if 'redirect' in redirect_or_context:
         return redirect_or_context['redirect']
-    else:
-        market = redirect_or_context['market']
-        trader = redirect_or_context['trader']
-        price = request.POST['price']
-        amount = request.POST['amount']
-        new_trade = Trade(market=market,
-                        trader=trader,
-                        unit_price=price,
-                        unit_amount=amount,
-                        round=market.round)
+
+    market = redirect_or_context['market']
+    trader = redirect_or_context['trader']
+    form = TradeForm(request.POST)
+    if form.is_valid():
+        new_trade = form.save(commit=False)
+        new_trade.market = market
+        new_trade.trader = trader
+        new_trade.round = market.round
         new_trade.save()
-        return HttpResponseRedirect(reverse('market:wait', args=(market_id,)))
+        return HttpResponseRedirect(reverse('market:wait', args=(market.market_id,)))
+
+    return render(request, 'market/play.html', {'form': form})
 
 @require_GET
 def traders_in_market(request, market_id):
@@ -120,8 +124,6 @@ def traders_in_market(request, market_id):
         'traders':traders
     }
     return JsonResponse(data)
-
-
 
 @require_GET
 def traders_this_round(request, market_id):

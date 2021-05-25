@@ -4,9 +4,11 @@
 {% block title %}Market simulation{% endblock %}
 
 {% block content %}
-    <h3>Choose a name and join a market:</h3>
-	<form action="" method="post">{% csrf_token %}
-		{{ form|crispy }}
-	  	<input type="submit" value="Join" class="btn btn-primary">
-	</form>
+
+<h3>Choose a name and join a market:</h3>
+<form action="" method="post">{% csrf_token %}
+	{{ form|crispy }}
+	<input type="submit" value="Join" class="btn btn-primary">
+</form>
+
 {% endblock %}
