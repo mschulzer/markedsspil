@@ -33,7 +33,7 @@
                 if (data.round > round_num) {
                         window.location.href = "{% url 'market:play' market.market_id %}"
                 }
-                }
+            }
         });
     }
     window.setInterval(check_for_next_round, 1000);
