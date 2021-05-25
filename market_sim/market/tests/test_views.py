@@ -304,7 +304,7 @@ class PlayViewTest(TestCase):
     
     ######## test get requests ##########
 
-    def test_market_id_not_found_redirects_to_join(self):
+    def test_get_market_id_not_found_redirects_to_join(self):
         response = self.client.get(
             reverse('market:play', args=('BADMARKETID',))
         )
@@ -331,7 +331,7 @@ class PlayViewTest(TestCase):
         
     ######## test post requests ##########
 
-    def test_market_id_not_found_redirects_to_join(self):
+    def test_post_market_id_not_found_redirects_to_join(self):
 
         response = self.client.post(
             reverse('market:play', args=('BADMARKETID',))
