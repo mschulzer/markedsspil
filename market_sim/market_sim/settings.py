@@ -40,21 +40,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Third-party
-    'debug_toolbar',
+    'crispy_forms',
 
     # Local
-    'crispy_forms',
     'market.apps.MarketConfig',
 ]
 
 # django-crispy-forms
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-MIDDLEWARE = [
-    # Debug toolbar (Third-party)
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-    
-    # Built-in
+MIDDLEWARE = [    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -133,10 +128,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
-# django-debug-toolbar
-INTERNAL_IPS = ['127.0.0.1']
-# When running inside Docker, add the following to get debug-toolbar working
-# import socket
-# hostname, _, ips = socket.gethostbyname_ex(socket.gethostbyname())
-# INTERNAL_IPS = [ip[:-1] + "1" for ip in ips]
