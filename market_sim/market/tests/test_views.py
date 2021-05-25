@@ -378,51 +378,6 @@ class WaitViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
 
-    def test_good_market_id_but_trader_id_not_in_session_redirects_to_join_with_market_id_as_get_param(self):
-        # Market exists in database
-        # Problem: No 'trader_id' in session
-        # Expected behavior: Redirect to 'join'-page with market-id filled out
-        response = self.client.get(
-            reverse('market:wait', args=(self.market.market_id,)))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse(
-            'market:join') + f'?market_id={self.market.market_id}')
-
-    def test_good_market_id_and_trader_id_in_session_but_user_not_in_db_redirects_to_join_with_market_id_as_get_param(self):
-        # Market exists in Market database
-        # 'trader_id' is in session
-        # Problem: 'trader_id' not found in Trader database
-        # Expected behavior: Redirect to 'join'-page with market-id filled out
-        session = self.client.session
-        session['trader_id'] = 17
-        session.save()
-        self.assertTrue('trader_id' in self.client.session)
-        self.assertEqual(self.client.session['trader_id'], 17)
-        response = self.client.get(
-            reverse('market:wait', args=(self.market.market_id,)))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse(
-            'market:join') + f'?market_id={self.market.market_id}')
-
-    def test_good_market_id_and_trader_id_in_session__but_trader_in_wrong_market_returns_redirect_to_join(self):
-
-        # Market exists in Market databate
-        # trader_id is in session
-        # trader_id has matching entry in Trader database
-        # Problem: trader is associated to the wrong market
-        # expected behavior: redirect to join with no filled-out values
-        other_market = Market.objects.create()
-        trader = Trader.objects.create(name='otto', market=other_market)
-
-        session = self.client.session
-        session['trader_id'] = trader.pk
-        session.save()
-
-        response = self.client.get(
-            reverse('market:wait', args=(self.market.market_id,)))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:join'))
-
     def test_if_no_errors_views_returns_play_template_and_code_200(self):
 
         # Market exists in Market databate
