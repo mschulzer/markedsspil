@@ -573,6 +573,8 @@ class AllTradesViewTest(TestCase):
         self.assertEqual(response.json()['traders'], ['Joe'])
         self.assertEqual(float(response.json()['profit'][0]), stat.profit)
 
+        
+
 class CurrentRoundViewTest(TestCase):
 
     def test_response_status_code_404_when_market_does_not_exists(self):

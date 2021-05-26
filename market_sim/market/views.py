@@ -142,7 +142,7 @@ def traders_this_round(request, market_id):
 
 @require_POST
 def all_trades(request, market_id):   
-          
+    # demand-profit algorithm & saving to stats not properly tested yet
     market = get_object_or_404(Market, market_id=market_id)
     round = market.round 
     trades = Trade.objects.filter(round=round).filter(market=market)  
@@ -166,7 +166,7 @@ def all_trades(request, market_id):
                          price=trade.unit_price,
                          amount=trade.unit_amount,
                          profit=trade_profit,
-                         bank=trade.trader.money+trade_profit)
+                         bank=trade.trader.money)
         new_stat.save()
     market.round += 1
     market.save()
@@ -185,7 +185,10 @@ def current_round(request, market_id):
     return JsonResponse(data)
 
 def download(request, market_id):
-    market = Market.objects.get(market_id=market_id)  # or 404
+    # not properly tested yet
+    # known issues: 
+    # if trader_stats does not exist for all traders in all rounds script will crash. 
+    market = get_object_or_404(Market, market_id=market_id)
     market_traders = Trader.objects.filter(market=market)
     total_rounds = market.round
     data = "Round,Average price,Average amount,Average profit,"
@@ -202,7 +205,6 @@ def download(request, market_id):
         avg_profit = sum([trader.profit for trader in round_stats]) / len(round_stats)
         data += str(avg_profit) + ","
         for trader in market_traders:
-            # try except: none
             trader_stats = Stats.objects.get(round=r, market=market, trader=trader)
             data += str(trader_stats.bank) + ","
         data += "<br>"
