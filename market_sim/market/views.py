@@ -1,10 +1,7 @@
-from optparse import Values
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonResponse
-from django.template import loader
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
-from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponse
 
 from random import randint
@@ -51,9 +48,6 @@ def join(request):
 @require_GET
 def monitor(request, market_id):
     market = get_object_or_404(Market, market_id = market_id) 
-    # Consider other options instead of 404: 
-    # 1) Redirect to create market page
-    # 2) Redirect to error page with 'try again'-option and links to join/create market (one error page for all cases like this one)
     return render(request, 'market/monitor.html', {'market':market})
 
 def validate_market_and_trader(session, market_id):
@@ -177,6 +171,7 @@ def all_trades(request, market_id):
     }
     return JsonResponse(data)
 
+@require_GET
 def current_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     data = {

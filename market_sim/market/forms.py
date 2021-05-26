@@ -7,7 +7,6 @@ class MarketForm(forms.ModelForm):
         model = Market
         fields = ['alpha', 'beta', 'theta', 'min_cost', 'max_cost']
 
- 
     def clean(self):
         """ Additional validation of form data """
         cleaned_data = super().clean()
@@ -46,7 +45,5 @@ class TradeForm(forms.ModelForm):
             'unit_price': ('Select a price for one unit of your product'),
             'unit_amount': ('How many unit do you want to produce?'),
 
-        }
-        error_messages = {
         }
 
