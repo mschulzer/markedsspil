@@ -4,8 +4,7 @@
 
 <h1>Monitoring market</h1>
 <p>Market:{{ market }}</p>
-<p>Link to join market: "{% url 'market:join' %}?market_id={{market.market_id}}</p>
-<p>Active link:<a href="{% url 'market:join' %}?market_id={{market.market_id}}" target="_blank">Link</a></p>
+<p>Link to join market:<a href="{% url 'market:join' %}?market_id={{market.market_id}}" target="_blank">Link</a></p>
 <br><br>
 <p id="round_num_shown">Current Round: 0</p>
 <table id="ready">
@@ -32,7 +31,6 @@
          
 {% block javascript %}
 <script>
-//const csrftoken = Cookies.get('csrftoken');  In case we want to use POST instead of GET
 $("#refresh").click(function(){              
     traders = []
     $.ajax({
@@ -79,15 +77,16 @@ $("#refresh").click(function(){
         }
     });
 });
+const csrftoken = Cookies.get('csrftoken'); //In case we want to use POST instead of GET
 $("#confirm").click(function(){
     round_num = parseInt(document.getElementById("round_num_hidden").innerHTML);        
     $.ajax({
-        type: 'GET',
+        type: 'POST',
         url:"{% url 'market:all_trades' market.market_id %}",
+        headers: {'X-CSRFToken': csrftoken},
         data: {},
         dataType: 'json',
         success: function (data) {
-            console.log("succes!")
             document.getElementById("round_data").innerHTML += round_num+" data:<br>";
             for (var i = 0; i < data.traders.length; i++) {
                 if (data.profit[i] > 0) {

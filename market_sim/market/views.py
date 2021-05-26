@@ -139,26 +139,27 @@ def traders_this_round(request, market_id):
     }
     return JsonResponse(data)
 
-def all_trades(request, market_id):
-    
+
+@require_POST
+def all_trades(request, market_id):   
+          
     market = get_object_or_404(Market, market_id=market_id)
     round = market.round 
-    trades = Trade.objects.filter(round=round).filter(market=market)  #fixes bug
+    trades = Trade.objects.filter(round=round).filter(market=market)  
     assert(len(trades)>0), "No trades in market this round"
     alpha, beta, theta = market.alpha, market.beta, market.theta
     avg_price = sum([trade.unit_price for trade in trades]) / len(trades)
 
-    traders = [x.trader.name for x in trades]
+    traders = [trade.trader.name for trade in trades]
     profit = []
     for trade in trades:
-        demand = alpha - beta*Decimal(trade.unit_price) + theta*Decimal(avg_price)
+        demand = alpha - beta*Decimal(trade.unit_price) + theta*Decimal(avg_price)    
         expenses = trade.trader.prod_cost * trade.unit_amount
         income = trade.unit_price * min(demand,trade.unit_amount)
         trade_profit = income - expenses
         profit.append(trade_profit)
         trade.trader.money += trade_profit
-        trade.trader.save()
-
+        trade.trader.save()  
         new_stat = Stats(market=market,
                          trader=trade.trader,
                          round=round,
@@ -177,14 +178,14 @@ def all_trades(request, market_id):
     return JsonResponse(data)
 
 def current_round(request, market_id):
-    market = Market.objects.get(market_id=market_id)
+    market = get_object_or_404(Market, market_id=market_id)
     data = {
         'round':market.round
     }
     return JsonResponse(data)
 
 def download(request, market_id):
-    market = Market.objects.get(market_id=market_id)
+    market = Market.objects.get(market_id=market_id)  # or 404
     market_traders = Trader.objects.filter(market=market)
     total_rounds = market.round
     data = "Round,Average price,Average amount,Average profit,"
@@ -201,6 +202,7 @@ def download(request, market_id):
         avg_profit = sum([trader.profit for trader in round_stats]) / len(round_stats)
         data += str(avg_profit) + ","
         for trader in market_traders:
+            # try except: none
             trader_stats = Stats.objects.get(round=r, market=market, trader=trader)
             data += str(trader_stats.bank) + ","
         data += "<br>"

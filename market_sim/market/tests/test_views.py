@@ -2,7 +2,7 @@
 from django.http import JsonResponse
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
-from ..models import Market, Trader, Trade
+from ..models import Market, Trader, Trade, Stats
 from ..forms import TraderForm
 from ..views import validate_market_and_trader
 
@@ -530,10 +530,69 @@ class TradersThisRoundViewTest(TestCase):
 
 
 class AllTradesViewTest(TestCase):
-    pass
+    def test_response_status_code_404_when_market_does_not_exists(self):
+        url = reverse('market:all_trades', args=('BARMARKETID',))
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_response_status_code_200_when_market_exists_and_there_is_atleast_one_trade_in_db(self):
+        market = Market.objects.create()
+        trader = Trader.objects.create(
+            name='Joe', market=market, prod_cost=100, money=5000)
+        Trade.objects.create(market=market, trader=trader, unit_price=3, unit_amount=10)
+        url = reverse('market:all_trades', args=(market.market_id,))
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_one_trader_has_made_one_trade_this_round(self):
+        market = Market.objects.create(alpha=10, beta=10, theta=10, min_cost=50, max_cost=200, round=0)
+        trader = Trader.objects.create(name='Joe', market=market, prod_cost=100, money=5000)
+        Trade.objects.create(market=market, trader=trader, unit_price=3, unit_amount=10)
+        url = reverse('market:all_trades', args=(market.market_id,))
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+
+        # round goes up by one
+        self.assertEqual(Market.objects.all().count(), 1)
+        market_now = Market.objects.first()
+        self.assertEqual(market_now.round, 1)
+
+        # a stats object has been saved to db
+        self.assertEqual(Stats.objects.all().count(),1)
+        stat = Stats.objects.first()
+        self.assertEqual(stat.market, market)
+        self.assertEqual(stat.trader, trader)
+        self.assertEqual(stat.round, 0)
+
+        # traders saldo changes by the calculated profit
+        self.assertEqual(Trader.objects.all().count(),1)
+        trader_now = Trader.objects.first()
+        self.assertEqual(trader_now.money, 5000 + stat.profit)       
+
+        # json-response looks good
+        self.assertEqual(response.json()['traders'], ['Joe'])
+        self.assertEqual(float(response.json()['profit'][0]), stat.profit)
 
 class CurrentRoundViewTest(TestCase):
-    pass
+
+    def test_response_status_code_404_when_market_does_not_exists(self):
+        url = reverse('market:current_round', args=('BARMARKETID',))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_response_status_code_200_when_market_exists(self):
+        market = Market.objects.create()
+        url = reverse('market:current_round', args=(market.market_id,))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_returns_correct_non_zero_round(self):
+        market = Market.objects.create(round=11)
+        url = reverse('market:current_round', args=(market.market_id,))
+        response = self.client.get(url)
+        self.assertEqual(response.json(), {"round": 11})
 
 class DownloadViewTest(TestCase):
+    # heck for cases, where not all traders have made trades in all rounds
+    # check for case where no trades
     pass
