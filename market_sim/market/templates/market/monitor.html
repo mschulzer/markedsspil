@@ -6,7 +6,7 @@
 <p>Market:{{ market }}</p>
 <p>Link to join market:<a href="{% url 'market:join' %}?market_id={{market.market_id}}" target="_blank">Link</a></p>
 <br><br>
-<p id="round_num_shown">Current Round: 0</p>
+<p id="round_num_shown">Current Round: {{ market.round }}</p>
 <table id="ready">
     <thead>
         <tr>
