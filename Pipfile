@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django-debug-toolbar = "==2.2"
 django-crispy-forms = "==1.9.2"
 
 [dev-packages]
