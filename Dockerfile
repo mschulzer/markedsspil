@@ -1,5 +1,8 @@
 FROM python:3
 ENV PYTHONUNBUFFERED=1
-WORKDIR /market_sim
-COPY ./market_sim /market_sim
-RUN pip install -r requirements.txt
+WORKDIR /code
+COPY . /code
+COPY Pipfile Pipfile.lock /code
+RUN pip install pipenv && pipenv install --system
+
+
