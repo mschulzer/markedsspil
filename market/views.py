@@ -32,7 +32,7 @@ def join(request):
             new_trader = Trader.objects.create(
                 market = market,
                 name = form.cleaned_data['username'],
-                money = 5000,
+                balance = 5000,
                 prod_cost = randint(market.min_cost, market.max_cost)
             )
             request.session['trader_id'] = new_trader.pk
@@ -152,7 +152,7 @@ def all_trades(request, market_id):
         income = trade.unit_price * min(demand,trade.unit_amount)
         trade_profit = income - expenses
         profit.append(trade_profit)
-        trade.trader.money += trade_profit
+        trade.trader.balance += trade_profit
         trade.trader.save()  
         new_stat = Stats(market=market,
                          trader=trade.trader,
@@ -160,7 +160,7 @@ def all_trades(request, market_id):
                          price=trade.unit_price,
                          amount=trade.unit_amount,
                          profit=trade_profit,
-                         bank=trade.trader.money)
+                         balance=trade.trader.balance)
         new_stat.save()
     market.round += 1
     market.save()
@@ -188,7 +188,7 @@ def download(request, market_id):
     total_rounds = market.round
     data = "Round,Average price,Average amount,Average profit,"
     for trader in market_traders:
-        data += trader.name + " bank,"
+        data += trader.name + " balance,"
     data += "<br>"
     for r in range(total_rounds):
         data += str(r) + ","
@@ -201,7 +201,7 @@ def download(request, market_id):
         data += str(avg_profit) + ","
         for trader in market_traders:
             trader_stats = Stats.objects.get(round=r, market=market, trader=trader)
-            data += str(trader_stats.bank) + ","
+            data += str(trader_stats.balance) + ","
         data += "<br>"
     output = open(market.market_id + "_stats.csv", "w")
     output.write(data)

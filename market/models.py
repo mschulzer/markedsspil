@@ -32,11 +32,11 @@ class Trader(models.Model):
     id = models.AutoField(primary_key=True)
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16)
-    money = models.IntegerField(default=0)
+    balance = models.IntegerField(default=0)
     prod_cost = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.name} [{self.market.market_id}] - ${self.money}"
+        return f"{self.name} [{self.market.market_id}] - ${self.balance}"
 
 class Trade(models.Model):
     id = models.AutoField(primary_key=True)
@@ -57,5 +57,5 @@ class Stats(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=4)
     amount = models.DecimalField(max_digits=10, decimal_places=4)
     profit = models.DecimalField(max_digits=10, decimal_places=4)
-    bank = models.IntegerField()
+    balance = models.IntegerField()
 

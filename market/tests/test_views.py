@@ -538,7 +538,7 @@ class AllTradesViewTest(TestCase):
     def test_response_status_code_200_when_market_exists_and_there_is_atleast_one_trade_in_db(self):
         market = Market.objects.create()
         trader = Trader.objects.create(
-            name='Joe', market=market, prod_cost=100, money=5000)
+            name='Joe', market=market, prod_cost=100, balance=5000)
         Trade.objects.create(market=market, trader=trader, unit_price=3, unit_amount=10)
         url = reverse('market:all_trades', args=(market.market_id,))
         response = self.client.post(url)
@@ -546,7 +546,7 @@ class AllTradesViewTest(TestCase):
 
     def test_one_trader_has_made_one_trade_this_round(self):
         market = Market.objects.create(alpha=10, beta=10, theta=10, min_cost=50, max_cost=200, round=0)
-        trader = Trader.objects.create(name='Joe', market=market, prod_cost=100, money=5000)
+        trader = Trader.objects.create(name='Joe', market=market, prod_cost=100, balance=5000)
         Trade.objects.create(market=market, trader=trader, unit_price=3, unit_amount=10)
         url = reverse('market:all_trades', args=(market.market_id,))
         response = self.client.post(url)
@@ -564,10 +564,10 @@ class AllTradesViewTest(TestCase):
         self.assertEqual(stat.trader, trader)
         self.assertEqual(stat.round, 0)
 
-        # traders saldo changes by the calculated profit
+        # traders balance changes by the calculated profit
         self.assertEqual(Trader.objects.all().count(),1)
         trader_now = Trader.objects.first()
-        self.assertEqual(trader_now.money, 5000 + stat.profit)       
+        self.assertEqual(trader_now.balance, 5000 + stat.profit)       
 
         # json-response looks good
         self.assertEqual(response.json()['traders'], ['Joe'])

@@ -7,7 +7,7 @@ class MarketAdmin(admin.ModelAdmin):
 
 
 class TraderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'market', 'money', 'prod_cost')
+    list_display = ('id', 'name', 'market', 'balance', 'prod_cost')
 
 
 class TradeAdmin(admin.ModelAdmin):
@@ -16,7 +16,7 @@ class TradeAdmin(admin.ModelAdmin):
 
 class StatsAdmin(admin.ModelAdmin):
     list_display = ('id', 'market', 'trader',
-                    'round', 'price', 'amount', 'profit', 'bank')
+                    'round', 'price', 'amount', 'profit', 'balance')
 
 admin.site.register(Market, MarketAdmin)
 admin.site.register(Trader, TraderAdmin)

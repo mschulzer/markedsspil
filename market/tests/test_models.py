@@ -44,17 +44,17 @@ class TraderModelTest(TestCase):
         # Set up non-modified objects used by all test methods in class
         cls.market = Market.objects.create()
         cls.trader = Trader.objects.create(
-            market=cls.market, name='Stefan', money=15, prod_cost=2)
+            market=cls.market, name='Stefan', balance=15, prod_cost=2)
 
     def test_saving_traders(self):
         saved_traders = Trader.objects.all()
         self.assertEqual(saved_traders.count(), 1)
         self.assertIsInstance(self.trader, Trader)
-        self.assertEqual(self.trader.money,15)
+        self.assertEqual(self.trader.balance,15)
 
     def test_saving_trader_with_default_params(self):
         new_trader = Trader.objects.create(market=self.market, name='Otto Leisner')
-        self.assertEqual(new_trader.money, 0)
+        self.assertEqual(new_trader.balance, 0)
         saved_traders = Trader.objects.all()
         self.assertEqual(saved_traders.count(), 2)
         
@@ -69,7 +69,7 @@ class TradeModelTest(TestCase):
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods in class
         cls.market = Market.objects.create()
-        cls.trader = Trader.objects.create(market=cls.market, name='Joe Salesman', money=20, prod_cost=5)
+        cls.trader = Trader.objects.create(market=cls.market, name='Joe Salesman', balance=20, prod_cost=5)
         cls.trade = Trade.objects.create(market=cls.market, trader=cls.trader, unit_price=13.45, unit_amount=34, round=4)
 
     def test_saving_trades(self):
@@ -96,7 +96,7 @@ class StatsModelTest(TestCase):
         # Set up non-modified objects used by all test methods in class
         cls.market = Market.objects.create()
         cls.trader = Trader.objects.create(market=cls.market, name='Joe Salesman')
-        cls.stats = Stats(market=cls.market, trader=cls.trader, round=4, price=45.3431, amount=55, profit=1.2345, bank=5)
+        cls.stats = Stats(market=cls.market, trader=cls.trader, round=4, price=45.3431, amount=55, profit=1.2345, balance=5)
         cls.stats.save()
 
     def test_saving_stats(self):
