@@ -63,6 +63,7 @@ class TestTraderForm(TestCase):
         form = TraderForm(data=data)
         self.assertFalse(form.is_valid())
 
+
 class TradeFormTest(TestCase):
 
     def test_valid_post_data_gives_valid_form(self):
@@ -94,13 +95,8 @@ class TradeFormTest(TestCase):
         market = Market.objects.create()
         trader = Trader.objects.create(market=market, name="joe")
         new_trade = form.save(commit=False)
-        new_trade.market = market
         new_trade.trader = trader
-        new_trade.round = market.round
-        new_trade.save()
         new_trade.save()
         self.assertIsInstance(new_trade, Trade)
         self.assertEqual(Trade.objects.all().count(), 1)
-
-
 

@@ -2,112 +2,289 @@
 {% block title %}Market monitor{% endblock %}
 {% block content %}
 
-<h1>Monitoring market</h1>
-<p>Market:{{ market }}</p>
-<p>Link to join market:<a href="{% url 'market:join' %}?market_id={{market.market_id}}" target="_blank">Link</a></p>
-<br><br>
-<p id="round_num_shown">Current Round: {{ market.round }}</p>
-<table id="ready">
+<br>
+<h3>Monitoring Market: {{ market.market_id}}</h3>
+<p>Players can join market by following <a href="{% url 'market:join' %}?market_id={{market.market_id}}"
+        target="_blank">this</a> link<br>
+
+<table class="table table-striped">
     <thead>
         <tr>
-            <th colspan="2">Players</th>
+            <th>alpha</th>
+            <th>beta</th>
+            <th>theta</th>
+            <th>min prod.cost</th>
+            <th>max prod.cost</th>
         </tr>
     </thead>
-    <tbody id="ready_table_body">
+    <tbody>
+        <tr>
+            <td>{{ market.alpha}}</td>
+            <td>{{ market.beta}}</td>
+            <td>{{ market.theta}}</td>
+            <td>{{ market.min_cost}}</td>
+            <td>{{ market.max_cost}}</td>
+        </tr>
+    </tbody>
+
+</table>
+
+
+<br>
+<h3>Trader Status - round #{{ market.round }}</h1></h3>
+
+
+<table class="table table-sm table-striped">
+    <thead style="display:none" id="trader_status_thead">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Ready</th>
+            <th scope="col">Balance</th>
+            <th scope="col">ProdCost</th>
+            <th scope="col">Remove</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in max_num_players %}
+        <tr style="display:none"  id="table_row{{i}}">
+            <th scope="row">{{i|add:1}}</th>  
+            <td id="name{{i}}">name{{i}}</td>
+            <td id="ready{{i}}">ready{{i}}</td>
+            <td id="balance{{i}}">balance{{i}}</td>
+            <td id="prod_cost{{i}}">prod_cost{{i}}</td>
+            <td id="remove{{i}}"><button class="btn btn-secondary">remove</button></td>
+        </tr>
+    {% endfor %}
     </tbody>
 </table>
+<p>Traders in market: <span id="num_traders">0</span> (<span id="num_ready_traders">0</span> ready for next round)</p>
+
+
+<form action="" method="POST" id="finish_round_form">
+    {% csrf_token %}
+</form>
+
+<!-- Next round button - confirmation required-->
+<button type="button" class="btn btn-warning" data-toggle="modal" data-target="#confirmationPopUp"
+    id="next_round_btn_warning" disabled>
+    Next round
+</button>
+
+<!-- Next round button - no confirmation required-->
+<button type="button" class="btn btn-success" id="next_round_btn" style="display:none" onclick="next_round()">
+    Next round
+</button>
 <br>
-<p id="num_players_in_market">Total number of players in market: 0</p>
-<p id="num_ready_players_this_round">Number of ready players this round: 0</p>
+<br>
+<h3>Profit</h3>
+<table>
+    <tr>
+        <th></th>
+        {% for round in rounds %}
+        <th>Round{{ round }}</th>
+        {% endfor %}
+    </tr>
 
-<button id="refresh" class="btn btn-primary">Refresher</button>
-<button id="confirm" class="btn btn-warning" disabled>Confirm trades</button>
-<p id="round_data"></p>
+    {% for trader in traders %}
+        <tr>
+            <th> {{trader.name }}</th>
+            {% for trade in trader.trade_set.all %}
+            <td>{{ trade.profit }}</td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    <tr>
+        <th>Avg. profit</th>
+    </tr>
+</tr>
+</table>
+<br>
+<h3>Balance</h3>
+<table>
+    <tr>
+        <th></th>
+        <th>Start</th>
+        {% for round in rounds %}
+        <th>Round{{ round }}</th>
+        {% endfor %}
+    </tr>
 
-<!-- data storage-->
-<div id="round_num_hidden" style="display:none">{{ market.round }}</div>
+    {% for trader in traders %}
+    <tr>
+        <th> {{trader.name }}</th>
+        <td>5000</td>
+        {% for trade in trader.trade_set.all %}
+        <td>{{ trade.balance_after }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    <tr>
+        <th>Avg. balance</th>
+    </tr>
+</table>
+<br>
+<br>
+<h3>Unit Price</h3>
+<table>
+    <tr>
+        <th></th>
+        {% for round in rounds %}
+        <th>Round{{ round }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for trader in traders %}
+    <tr>
+        <th> {{trader.name }}</th>
+        {% for trade in trader.trade_set.all %}
+            <td>{{ trade.unit_price }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+     <tr>
+        <th>Avg. price</th>
+     </tr>
+</table>
+<br>
+<br>
+<h3>Unit amount</h3>
+<table>
+    <tr>
+        <th></th>
+        {% for round in rounds %}
+        <th>Round{{ round }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for trader in traders %}
+    <tr>
+        <th> {{trader.name }}</th>
+        {% for trade in trader.trade_set.all %}
+        <td>{{ trade.unit_amount }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    <tr>
+        <th>Avg. price</th>
+    </tr>
+</table>
+
+<br>
+<h3>Forced Trades</h3>
+<table>
+    <tr>
+        <th></th>
+        {% for round in rounds %}
+        <th>Round{{ round }}</th>
+        {% endfor %}
+    </tr>
+
+    {% for trader in traders %}
+    <tr>
+        <th> {{trader.name }}</th>
+        {% for trade in trader.trade_set.all %}
+        <td>{{ trade.was_forced }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    <tr>
+        <th>Avg. price</th>
+    </tr>
+</table>
+
+<br>
+<!-- Pop-up confirmation -->
+<div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Confirm Next Round</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Not all traders in the market are ready for next round. 
+                If you choose to proceed now, these players will enter next round with unchanged balance.
+                <br>
+                Proceed to next round? 
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="next_round()">Proceed</button>
+            </div>
+        </div>
+    </div>
+</div>  
+<br>
+<!-- Next round button - no confirmation required-->
+<button type="button" class="btn btn-primary" id="next_round_btn">
+    Download statistics
+</button>
+<br>
+
 
 {% endblock %}
          
 {% block javascript %}
 <script>
-$("#refresh").click(function(){              
-    traders = []
-    $.ajax({
-        type: 'GET',
-        url:"{% url 'market:traders_in_market' market.market_id %}",
-        //headers: {'X-CSRFToken': csrftoken},
-        data: {},
-        dataType: 'json',
-        success: function (data) {
-            traders = data.traders;
-            trader_table = document.getElementById("ready_table_body");
-            trader_table.innerHTML = ""
-            for (var i = 0; i < traders.length; i++) {
-                    var row = trader_table.insertRow(-1);
-                    var cell = row.insertCell(0);
-                    cell.innerHTML = traders[i];
-                    cell = row.insertCell(1);
-                    cell.innerHTML = "";
-            }
-            document.getElementById("num_players_in_market").innerHTML = 
-            "Total number of players in market: " + traders.length;
-        }
-    
-    });
-    $.ajax({
-        type: 'GET',
-        url:"{% url 'market:traders_this_round' market.market_id %}",
-        //headers: {'X-CSRFToken': csrftoken},
-        data: {},
-        dataType: 'json',
-        success: function (data) {
-            ready_traders = data.traders;
-            trader_table = document.getElementById("ready_table_body");
-            for (var i = 0; i < trader_table.rows.length; i++) {
-                if (ready_traders.includes(trader_table.rows[i].cells[0].innerHTML)) {
-                        trader_table.rows[i].cells[1].innerHTML = "✓";
+    function refresh_trader_status(){
+        console.log("refresh")
+        $.ajax({
+            type: 'GET',
+            url:"{% url 'market:trader_api' market.market_id %}",
+            data: {},
+            dataType: 'json',
+            success: function (data) {
+                document.getElementById("num_traders").innerHTML = data.num_traders;
+                document.getElementById("num_ready_traders").innerHTML = data.num_ready_traders;
+                
+                if (data.num_traders > 0){
+                    document.getElementById("trader_status_thead").style.display = "";
                 }
-            }
-            if(ready_traders.length > 0){
-                document.getElementById("confirm").disabled = false;
-            }
-            document.getElementById("num_ready_players_this_round").innerHTML = 
-                "Number of ready players this round: " + ready_traders.length;
-        }
-    });
-});
-const csrftoken = Cookies.get('csrftoken'); //In case we want to use POST instead of GET
-$("#confirm").click(function(){
-    round_num = parseInt(document.getElementById("round_num_hidden").innerHTML);        
-    $.ajax({
-        type: 'POST',
-        url:"{% url 'market:all_trades' market.market_id %}",
-        headers: {'X-CSRFToken': csrftoken},
-        data: {},
-        dataType: 'json',
-        success: function (data) {
-            document.getElementById("round_data").innerHTML += round_num+" data:<br>";
-            for (var i = 0; i < data.traders.length; i++) {
-                if (data.profit[i] > 0) {
-                        document.getElementById("round_data").innerHTML += data.traders[i] + " gained " + data.profit[i];
-                } else {
-                        document.getElementById("round_data").innerHTML += data.traders[i] + " lost " + (-1*data.profit[i]);
+
+                for (var i = 0; i < data.num_traders; i++){
+                    document.getElementById('table_row' + i).style.display = "";
+                    document.getElementById('name' + i).innerHTML = data.traders[i].name;
+                    if(data.traders[i].ready){
+                        document.getElementById('ready' + i).innerHTML = "✓";
+                        document.getElementById('ready' + i).style.color="green";
+
+                    }
+                    else{
+                       document.getElementById('ready' + i).innerHTML = "No";
+                       document.getElementById('ready' + i).style.color="red"; 
+                    }
+                    document.getElementById('balance' + i).innerHTML = data.traders[i].balance;
+                    document.getElementById('prod_cost' + i).innerHTML = data.traders[i].prod_cost;
                 }
-                document.getElementById("round_data").innerHTML += "<br>"
-            }
-            document.getElementById("round_data").innerHTML += "<br><br>"
-            trader_table = document.getElementById("ready_table_body");
-            for (var i = 0; i < trader_table.rows.length; i++) {
-                    trader_table.rows[i].cells[1].innerHTML = "";
-            }
-            document.getElementById("confirm").disabled = true;
-            round_num += 1;
-            document.getElementById("round_num_hidden").innerHTML = round_num;
-            document.getElementById("round_num_shown").innerHTML = "Current Round: " + round_num;
-        }
-    });
+                
+                if (data.num_ready_traders > 0){
+                    if (data.num_ready_traders < data.num_traders){ document.getElementById("next_round_btn_warning").disabled=false;
+                        document.getElementById("next_round_btn_warning").style.display="block" ;
+                        document.getElementById("next_round_btn").style.display="none" ; } 
+                    else{
+                        document.getElementById("next_round_btn_warning").style.display="none" ;
+                        document.getElementById("next_round_btn").style.display="block" ; 
+                    } 
+                } 
+                else {
+                    document.getElementById("next_round_btn_warning").style.display="block" ;
+                    document.getElementById("next_round_btn_warning").disabled=true;
+                    document.getElementById("next_round_btn").style.display="none";
+                }
+                trader_table=document.getElementById("ready_table_body"); 
+            }       
+        });
+    }; 
     
-});
+    window.setInterval(refresh_trader_status, 1000) 
+  
+    function next_round(){
+        document.getElementById("finish_round_form").submit()
+    }   
+
 </script>
 {% endblock %}

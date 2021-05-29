@@ -6,7 +6,7 @@ from django.http import HttpResponse
 
 from random import randint
 
-from .models import Market, Trader, Trade, Stats
+from .models import Market, Trader, Trade
 from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
 
@@ -32,8 +32,8 @@ def join(request):
             new_trader = Trader.objects.create(
                 market = market,
                 name = form.cleaned_data['username'],
-                balance = 5000,
-                prod_cost = randint(market.min_cost, market.max_cost)
+                prod_cost = randint(market.min_cost, market.max_cost),
+                balance = Trader.initial_balance
             )
             request.session['trader_id'] = new_trader.pk
             return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
@@ -45,10 +45,58 @@ def join(request):
             form = TraderForm()
     return render(request, 'market/join.html', {'form':form})
 
-@require_GET
+
+
 def monitor(request, market_id):
-    market = get_object_or_404(Market, market_id = market_id) 
-    return render(request, 'market/monitor.html', {'market':market})
+
+    market = get_object_or_404(Market, market_id=market_id)
+    traders = Trader.objects.filter(market=market)
+    context = {
+        'market': market,    
+        'traders': traders,
+        'rounds': range(market.round),
+        'max_num_players': range(30)
+
+    }
+    if request.method == "GET":
+        return render(request, 'market/monitor.html', context)
+
+    if request.method == "POST":
+        #ikke ordentligt testet
+        for trader in traders:
+            traders_num_trades = Trade.objects.filter(trader=trader, round=market.round).count()
+            assert(traders_num_trades == 0 or traders_num_trades ==1)
+            # if trader has not traded this round, make a forced trade: 
+            if traders_num_trades == 0:
+                Trade.objects.create(
+                    trader=trader, 
+                    unit_price=0,
+                    unit_amount=0,
+                    was_forced=True
+                )
+        trades = Trade.objects.filter(round=market.round).filter(market=market)
+        assert(len(trades) > 0), "No trades in market this round. Can't calculate avg. price."
+        assert(len(trades) == len(traders)), "Num trades does equal num traders."
+        alpha, beta, theta = market.alpha, market.beta, market.theta
+        avg_price = sum([trade.unit_price for trade in trades]) / len(trades)
+        profit = []
+        for trade in trades:
+            demand = alpha - beta * Decimal(trade.unit_price) + theta*Decimal(avg_price)
+            expenses = trade.trader.prod_cost * trade.unit_amount
+            income = trade.unit_price * min(demand, trade.unit_amount)
+            trade_profit = income - expenses
+            trade.profit = trade_profit
+            trader = trade.trader
+            balance_before_trade = trader.balance
+            trader.balance += trade_profit 
+            trade.balance_after = balance_before_trade + trade_profit
+            trader.save()
+            trade.save()
+        market.round += 1
+        market.save()
+
+        return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
+    
 
 def validate_market_and_trader(session, market_id):
     """ 
@@ -92,9 +140,7 @@ def play(request, market_id):
         form = TradeForm(request.POST)
         if form.is_valid():
             new_trade = form.save(commit=False)
-            new_trade.market = market
             new_trade.trader = trader
-            new_trade.round = market.round
             new_trade.save()
             return HttpResponseRedirect(reverse('market:wait', args=(market.market_id,)))
 
@@ -113,16 +159,6 @@ def wait(request, market_id):
     context = validation 
     return render(request, 'market/wait.html', context)
 
-
-@require_GET
-def traders_in_market(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    traders = [trader.name for trader in Trader.objects.filter(market=market)]
-    data = {
-        'traders':traders
-    }
-    return JsonResponse(data)
-
 @require_GET
 def traders_this_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
@@ -134,42 +170,28 @@ def traders_this_round(request, market_id):
     return JsonResponse(data)
 
 
-@require_POST
-def all_trades(request, market_id):   
-    # demand-profit algorithm & saving to stats not properly tested yet
+@require_GET
+def trader_api(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
-    round = market.round 
-    trades = Trade.objects.filter(round=round).filter(market=market)  
-    assert(len(trades)>0), "No trades in market this round"
-    alpha, beta, theta = market.alpha, market.beta, market.theta
-    avg_price = sum([trade.unit_price for trade in trades]) / len(trades)
-
-    traders = [trade.trader.name for trade in trades]
-    profit = []
-    for trade in trades:
-        demand = alpha - beta*Decimal(trade.unit_price) + theta*Decimal(avg_price)    
-        expenses = trade.trader.prod_cost * trade.unit_amount
-        income = trade.unit_price * min(demand,trade.unit_amount)
-        trade_profit = income - expenses
-        profit.append(trade_profit)
-        trade.trader.balance += trade_profit
-        trade.trader.save()  
-        new_stat = Stats(market=market,
-                         trader=trade.trader,
-                         round=round,
-                         price=trade.unit_price,
-                         amount=trade.unit_amount,
-                         profit=trade_profit,
-                         balance=trade.trader.balance)
-        new_stat.save()
-    market.round += 1
-    market.save()
+    traders = [
+        {
+            'name': trader.name,
+            'prod_cost': trader.prod_cost,
+            'balance': trader.balance,
+            'ready': trader.is_ready()
+        }
+        for trader in Trader.objects.filter(market=market)
+    ]
+    num_ready_traders = Trade.objects.filter(market=market).filter(round=market.round).count()
 
     data = {
-        'traders':traders,
-        'profit':profit
+        'traders': traders,
+        'num_traders':len(traders),
+        'num_ready_traders': num_ready_traders,
+
     }
     return JsonResponse(data)
+
 
 @require_GET
 def current_round(request, market_id):
@@ -179,6 +201,7 @@ def current_round(request, market_id):
     }
     return JsonResponse(data)
 
+"""
 def download(request, market_id):
     # not properly tested yet
     # known issues: 
@@ -207,3 +230,4 @@ def download(request, market_id):
     output.write(data)
     output.close()
     return HttpResponse(data)
+"""
