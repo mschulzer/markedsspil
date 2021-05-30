@@ -80,13 +80,6 @@
 
 <br><br><br>
 
-{% for trader in traders %}
-    {% for trade in trader.trade_set.all %}
-        {% for name, value in trade.get_fields %}
-                {{ name }} => {{ value }}
-        {% endfor %}
-    {% endfor %}
-{% endfor %}
 
 {% for field in fields %}
     <h3>{{ field|field_name_to_label }}</h3>
@@ -105,139 +98,14 @@
                     <tr>
                         <th scope="row"> {{trader.name }}</th>
                         {% for trade in trader.trade_set.all %}
-                        <td>{{ trade.profit}}</td>
+                            <td>{{ trade|get_attribute:field }}</td>
                         {% endfor %}
                     </tr>
                 {% endfor %}
-        </tbody>
         </table>
     </div>
+    <br><br>
 {% endfor %}
-
-
-<h3>Profit</h3>
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th></th>
-                {% for round in rounds %}
-                <th scope="col">Round {{ round }}</th>
-                {% endfor %}
-            </tr>
-        <thead>
-        <tbody>
-            {% for trader in traders %}
-                <tr>
-                    <th scope="row"> {{trader.name }}</th>
-                    {% for trade in trader.trade_set.all %}
-                        <td>{{ trade.profit }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<br><br>
-
-<h3>Balance</h3>
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th></th>
-                {% for round in rounds %}
-                <th scope="col">Round {{ round }}</th>
-                {% endfor %}
-            </tr>
-            <thead>
-            <tbody>
-                {% for trader in traders %}
-                <tr>
-                    <th scope="row"> {{trader.name }}</th>
-                    {% for trade in trader.trade_set.all %}
-                    <td>{{ trade.balance_after }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-    </table>
-</div>
-
-<br><br><br>
-
-<h3>Unit Price</h3>
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th></th>
-                {% for round in rounds %}
-                <th scope="col">Round {{ round }}</th>
-                {% endfor %}
-            </tr>
-            <thead>
-            <tbody>
-                {% for trader in traders %}
-                <tr>
-                    <th scope="row"> {{trader.name }}</th>
-                    {% for trade in trader.trade_set.all %}
-                    <td>{{ trade.unit_price }}</td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-                   <tr>
-                       <th>Average</th>
-                   </tr>
-            </tbody>
-    </table>
-</div>
-
-<br><br><br>
-
-<h3>Unit amount</h3>
-<table>
-    <tr>
-        <th></th>
-        {% for round in rounds %}
-        <th>Round{{ round }}</th>
-        {% endfor %}
-    </tr>
-
-    {% for trader in traders %}
-    <tr>
-        <th> {{trader.name }}</th>
-        {% for trade in trader.trade_set.all %}
-        <td>{{ trade.unit_amount }}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-    <tr>
-        <th>Avg. price</th>
-    </tr>
-</table><br><br>
-
-<h3>Forced Trades</h3>
-<table>
-    <tr>
-        <th></th>
-        {% for round in rounds %}
-        <th>Round{{ round }}</th>
-        {% endfor %}
-    </tr>
-    {% for trader in traders %}
-    <tr>
-        <th> {{trader.name }}</th>
-        {% for trade in trader.trade_set.all %}
-        <td>{{ trade.was_forced }}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-    <tr>
-        <th>Avg. price</th>
-    </tr>
-</table><br><br>
 
 
 <button type="button" class="btn btn-primary" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">

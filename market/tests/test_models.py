@@ -102,8 +102,3 @@ class TradeModelTest(TestCase):
             Trade.objects.create(
                 round=4, trader=trader)
     
-    def test_get_field(self):
-        return_value = self.trade.get_fields()
-        self.assertIsInstance(return_value, list)
-        self.assertEqual(return_value[0], ('id', '1'))
-

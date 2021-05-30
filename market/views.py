@@ -56,7 +56,7 @@ def monitor(request, market_id):
         'traders': traders,
         'rounds': range(market.round),
         'max_num_players': range(30),
-        'fields':['profit', 'balance', 'unit_price', 'unit_amount', 'was_forced']
+        'fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'was_forced']
     }
     if request.method == "GET":
         return render(request, 'market/monitor.html', context)

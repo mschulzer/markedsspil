@@ -76,4 +76,3 @@ class Trade(models.Model):
 
     def get_fields(self):
         return [(field.name, field.value_to_string(self)) for field in Trade._meta.fields]
-
