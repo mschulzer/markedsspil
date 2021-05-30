@@ -60,19 +60,17 @@ class Trade(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            if self.round:
+            if (type(self.round) == int) and not self.was_forced:
                 raise Exception("Don't specify a round when creating a trade (round is inferred from market)")         
             try:
                 self.market
             except:            
                 self.market = self.trader.market
-                self.round = self.market.round
+                if not self.was_forced:
+                    self.round = self.market.round
             else:  
                 raise Exception("Don't specify a market when creating a trade (market is inferred from trader")
         return super(Trade, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.trader.name} ${self.unit_price} x {self.unit_amount} [{self.market.market_id}]"
-
-    def get_fields(self):
-        return [(field.name, field.value_to_string(self)) for field in Trade._meta.fields]

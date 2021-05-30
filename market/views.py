@@ -3,12 +3,11 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect, JsonRespons
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
-
 from random import randint
-
 from .models import Market, Trader, Trade
 from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
+from .helpers import create_forced_trade
 
 @require_GET
 def home(request):
@@ -36,6 +35,11 @@ def join(request):
                 balance = Trader.initial_balance
             )
             request.session['trader_id'] = new_trader.pk
+            
+            # if player joins a game in round n>0, create trades for round 0,1,..,n-1 
+            if market.round > 0:
+                for round_num in range(market.round):
+                    create_forced_trade(new_trader, round_num, balance_after=Trader.initial_balance, profit=0)
             return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
     elif request.method == 'GET':
         if 'market_id' in request.GET:
@@ -44,8 +48,6 @@ def join(request):
         else:
             form = TraderForm()
     return render(request, 'market/join.html', {'form':form})
-
-
 
 def monitor(request, market_id):
 
@@ -56,8 +58,9 @@ def monitor(request, market_id):
         'traders': traders,
         'rounds': range(market.round),
         'max_num_players': range(30),
-        'fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'was_forced']
+        'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'was_forced']
     }
+
     if request.method == "GET":
         return render(request, 'market/monitor.html', context)
 
@@ -68,12 +71,7 @@ def monitor(request, market_id):
             assert(traders_num_trades == 0 or traders_num_trades ==1)
             # if trader has not traded this round, make a forced trade: 
             if traders_num_trades == 0:
-                Trade.objects.create(
-                    trader=trader, 
-                    unit_price=0,
-                    unit_amount=0,
-                    was_forced=True
-                )
+                create_forced_trade(trader=trader, round_num=market.round)
         trades = Trade.objects.filter(round=market.round).filter(market=market)
         assert(len(trades) > 0), "No trades in market this round. Can't calculate avg. price."
         assert(len(trades) == len(traders)), "Num trades does equal num traders."

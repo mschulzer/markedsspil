@@ -98,7 +98,37 @@ class TradeModelTest(TestCase):
         with self.assertRaises(Exception):
             Trade.objects.create(
                 market=market, trader=trader)
+
         with self.assertRaises(Exception):
             Trade.objects.create(
                 round=4, trader=trader)
     
+        with self.assertRaises(Exception):
+            Trade.objects.create(
+                round=0, trader=trader)
+
+        with self.assertRaises(Exception):
+            Trade.objects.create(
+                round=0, market=market, trader=trader)
+
+
+    def test_specifying_round_num_is_allowed_when_trade_is_forced(self):
+        market = Market.objects.create(round=1)
+        trader = Trader.objects.create(market=market, name='KomForSent')
+
+        Trade.objects.create(
+            trader=trader, round=0, was_forced=True)
+        
+        new_trade = Trade.objects.get(trader=trader)
+        self.assertEqual(new_trade.trader.name, 'KomForSent')
+        self.assertEqual(new_trade.round, 0)
+
+        market.round = 18 
+        market.save()
+
+        Trade.objects.create(
+            trader=trader, round=8, was_forced=True)
+
+        new_trade = Trade.objects.get(trader=trader, round=8)
+        self.assertEqual(new_trade.trader.name, 'KomForSent')
+        self.assertEqual(new_trade.round, 8)

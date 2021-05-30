@@ -1,10 +1,10 @@
 # Create your tests here.
-from django.http import JsonResponse
-from django.test import SimpleTestCase, TestCase
+from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade
 from ..forms import TraderForm
 from ..views import validate_market_and_trader
+
 
 class HomeViewTests(TestCase):
 
@@ -150,6 +150,30 @@ class JoinViewTest(TestCase):
         self.assertTrue('trader_id' in self.client.session)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:play', args=(market.market_id,)))
+        
+    def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(self):
+        market = Market.objects.create(round=3)
+        response = self.client.post(reverse('market:join'), {
+                                    'username': 'Hanne', 'market_id': market.market_id})
+
+        all_trades = Trade.objects.all()
+        self.assertEqual(all_trades.count(), 3)
+
+        self.assertEqual(all_trades[0].trader.name, 'Hanne')
+        self.assertEqual(all_trades[0].unit_price, 0)
+        self.assertEqual(all_trades[0].unit_amount, 0)
+
+        self.assertEqual(all_trades[0].was_forced, True)
+        self.assertEqual(all_trades[2].profit, 0)
+
+        self.assertEqual(all_trades[1].was_forced, True)
+        self.assertEqual(all_trades[2].was_forced, True)
+
+        self.assertEqual(all_trades[2].balance_after, 5000)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], reverse(
+            'market:play', args=(market.market_id,)))
 
 class MonitorViewGETRequestsTest(TestCase):
  
@@ -173,6 +197,15 @@ class MonitorViewGETRequestsTest(TestCase):
         response = self.client.get(reverse('market:monitor', args=('BAD_MARKET_ID',)))
         self.assertEqual(response.status_code, 404)
 
+    def test_custom_template_tags(self):
+        trader = Trader.objects.create(market=self.market)
+        trade = Trade.objects.create(trader=trader)
+        response = self.client.get(
+            reverse('market:monitor', args=(self.market.market_id,)))
+        html = response.content.decode('utf8')
+        self.assertIn("Unit Price", html)
+        self.assertNotIn("unit_price", html)
+
 
 class MonitorViewPOSTRequestsTest(TestCase):
 
@@ -180,40 +213,95 @@ class MonitorViewPOSTRequestsTest(TestCase):
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods in class
         cls.market = Market.objects.create()
+        cls.trader = Trader.objects.create(
+            name='Joe', market=cls.market)
+
+        Trade.objects.create(trader=cls.trader)
+        cls.url = reverse('market:monitor', args=(cls.market.market_id,))
 
     def test_response_status_code_404_when_market_does_not_exists(self):
-        url = reverse('market:monitor', args=('BARMARKETID',))
+        url = reverse('market:monitor', args=('ASDFGHJK',))
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
-    def test_redirect_to_correct_url_when_good_arguments(self):
-        market = Market.objects.create()
-        trader = Trader.objects.create(
-            name='Joe', market=market)
-        Trade.objects.create(trader=trader)
-        url = reverse('market:monitor', args=(market.market_id,))
-        response = self.client.post(url)
+    def test_redirect_to_same_url_when_good_arguments(self):
+        response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
-        url = reverse('market:monitor', args=(market.market_id,))
-        self.assertEqual(response['Location'], url) 
+        self.assertEqual(response['Location'], self.url) 
 
+
+class MonitorViewPOSTRequestsExtraTest(TestCase):
+    
+    
     def test_one_trader_has_made_one_trade_this_round(self):
+
+        # There is a market in round 7 & a trader in this market
         market = Market.objects.create(round=7)
         trader = Trader.objects.create(
-            name='Joe', market=market)
-        Trade.objects.create(trader=trader)
+            name='Joe2', market=market)
+
+        # The trader makes a trade
+        trade = Trade.objects.create(trader=trader)
+        trade.save()
+        
+        # At this point, the balance and the profit of the trade should be none
+        self.assertEqual(trade.round, 7)
+        self.assertEqual(trade.trader.name, 'Joe2')
+        self.assertEqual(trade.balance_after, None)
+        self.assertEqual(trade.profit, None)
+        
+        # The teacher finishes the round
+        trades = Trade.objects.filter(round=market.round).filter(market=market)
+        self.assertEqual(trades.count(), 1)
+        self.assertEqual(trades.first().market, market)
+        self.assertEqual(trades.first().round, 7)
+
+        self.assertEqual(market.round, 7)
+
         url = reverse('market:monitor', args=(market.market_id,))
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], url) 
 
-        # round has goes up by one (why is this test not working??)
-        # self.assertEqual(market.round, 8)
+        # the round number of the market should now be 8
+        # This assertion is only true when I query the market again... why?
+        market_now = Market.objects.first()  
+        self.assertEqual(market_now.round, 8) 
 
-        # saved balances changes by the calculated profit
-        self.assertEqual(Trader.objects.all().count(),1)
-        trader_now = Trader.objects.first()
-        trade = Trade.objects.get(trader=trader_now, round=7)
-        self.assertEqual(trader_now.balance, Trader.initial_balance + trade.profit)
+        # The profit and balance should now be on the trade object
+        # The following assertion only works if I query the market again... why?
+
+        trade_now = Trade.objects.filter(market=market).first()
+        self.assertEqual(trade_now.balance_after, 5000)
+        self.assertEqual(trade_now.profit, 0)
+
+    def test_monitor_view_created_forced_moves_for_inactive_player(self):
+        # There is a market in round 7 & a trader in this market
+        market = Market.objects.create(round=7)
+        trader = Trader.objects.create(
+            name='Hansi', market=market)
+
+        # the trader has not made any trades...
+        self.assertEqual(Trade.objects.filter(trader=trader).count(),0)
+        
+        # The teacher finishes the round...
+        url = reverse('market:monitor', args=(market.market_id,))
+        response = self.client.post(url)
+
+        # Reponse codes and redict location looks good
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], url) 
+
+        # A forced trade for round 7 has been created
+        trade = Trade.objects.get(trader=trader)
+        self.assertEqual(trade.was_forced, True)
+        self.assertEqual(trade.round, 7)
+        self.assertEqual(trade.profit, 0)
+
+
+
+
+
 
 class ValidateMarketAndTrader(TestCase):
     @classmethod
@@ -357,6 +445,10 @@ class PlayViewTest(TestCase):
         self.assertEqual(trade.market, self.market)
         self.assertEqual(trade.trader, self.trader_on_market)
         self.assertEqual(trade.round, 0)
+        self.assertFalse(trade.was_forced)
+        self.assertEqual(trade.profit, None)
+        self.assertFalse(trade.balance_after, None)
+
         self.assertEqual(response.status_code, 302)
         expected_redirect_url = reverse('market:wait', args=(self.market.market_id,))
         self.assertEqual(response['Location'], expected_redirect_url)
@@ -400,15 +492,8 @@ class WaitViewTest(TestCase):
             reverse('market:wait', args=(self.market.market_id,)))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/wait.html'),
-"""
-  data = {
-        'traders': traders,
-        'num_traders':len(traders),
-        'num_ready_traders': num_ready_traders,
 
-    }
-"""
-class TradersInfoTest(TestCase):
+class TraderAPITest(TestCase):
 
     def test_response_status_code_404_when_market_does_not_exists(self):
         url = reverse('market:trader_api', args=('BARMARKETID',))
@@ -507,6 +592,7 @@ class CurrentRoundViewTest(TestCase):
         url = reverse('market:current_round', args=(market.market_id,))
         response = self.client.get(url)
         self.assertEqual(response.json(), {"round": 11})
+
 
 class DownloadViewTest(TestCase):
     # check for cases, where not all traders have made trades in all rounds
