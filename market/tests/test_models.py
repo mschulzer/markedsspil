@@ -58,25 +58,36 @@ class TraderModelTest(TestCase):
     def test_object_name(self):  
         expected_object_name = f"Stefan [{self.market.market_id}] - $5000"
         self.assertEqual(str(self.trader), expected_object_name)
+    
+    def test_is_ready_is_false(self):
+        self.assertFalse(self.trader.is_ready()) 
+        
+    def test_is_ready_is_true(self):
+        Trade.objects.create(trader=self.trader)
+        self.assertTrue(self.trader.is_ready())
+
+    def test_is_ready_is_no_longer_true(self):
+        Trade.objects.create(trader=self.trader)
+        self.market.round += 1
+        self.assertFalse(self.trader.is_ready())      
 
 
 class TradeModelTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.market = Market.objects.create(round=5)
+        cls.trader = Trader.objects.create(market=cls.market, name='Joe Salesman')
+        cls.trade = Trade.objects.create(trader=cls.trader, unit_price=13.45, unit_amount=34)
    
     def test_trade_object_creation(self):
-        market = Market.objects.create(round=5)
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
-        trade = Trade.objects.create(trader=trader)
-        self.assertIsInstance(trade, Trade)
-        self.assertEqual(trade.market, market)
-        self.assertEqual(trade.round, market.round)
+        self.assertIsInstance(self.trade, Trade)
+        self.assertEqual(self.trade.market, self.market)
+        self.assertEqual(self.trade.round, self.market.round)
 
     def test_object_name(self):
-        market = Market.objects.create(round=5)
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
-        trade = Trade.objects.create(trader=trader, unit_price=13.45, unit_amount=34)
-
-        expected_object_name = f"Joe Salesman $13.45 x 34 [{market.market_id}]"
-        self.assertEqual(str(trade), expected_object_name)
+        expected_object_name = f"Joe Salesman $13.45 x 34 [{self.market.market_id}]"
+        self.assertEqual(str(self.trade), expected_object_name)
         
     def test_raises_error_when_creating_a_trade_with_forbidden_kwargs(self):
         market = Market.objects.create()
@@ -90,4 +101,9 @@ class TradeModelTest(TestCase):
         with self.assertRaises(Exception):
             Trade.objects.create(
                 round=4, trader=trader)
+    
+    def test_get_field(self):
+        return_value = self.trade.get_fields()
+        self.assertIsInstance(return_value, list)
+        self.assertEqual(return_value[0], ('id', '1'))
 

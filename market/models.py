@@ -43,11 +43,9 @@ class Trader(models.Model):
         return f"{self.name} [{self.market.market_id}] - ${self.balance}"
 
     def is_ready(self):
-        #ikke testet
-        if(Trade.objects.filter(trader=self,market=self.market, round=self.market.round).count() == 1):
+        has_traded_this_round = Trade.objects.filter(trader=self, market=self.market, round=self.market.round).count() == 1
+        if has_traded_this_round:
             return True
-        else:
-            return False
 
 class Trade(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE, blank=True)
@@ -76,4 +74,6 @@ class Trade(models.Model):
     def __str__(self):
         return f"{self.trader.name} ${self.unit_price} x {self.unit_amount} [{self.market.market_id}]"
 
+    def get_fields(self):
+        return [(field.name, field.value_to_string(self)) for field in Trade._meta.fields]
 

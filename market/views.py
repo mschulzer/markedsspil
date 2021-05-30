@@ -55,8 +55,8 @@ def monitor(request, market_id):
         'market': market,    
         'traders': traders,
         'rounds': range(market.round),
-        'max_num_players': range(30)
-
+        'max_num_players': range(30),
+        'fields':['profit', 'balance', 'unit_price', 'unit_amount', 'was_forced']
     }
     if request.method == "GET":
         return render(request, 'market/monitor.html', context)
@@ -172,7 +172,9 @@ def traders_this_round(request, market_id):
 
 @require_GET
 def trader_api(request, market_id):
+    
     market = get_object_or_404(Market, market_id=market_id)
+
     traders = [
         {
             'name': trader.name,
@@ -182,6 +184,7 @@ def trader_api(request, market_id):
         }
         for trader in Trader.objects.filter(market=market)
     ]
+    
     num_ready_traders = Trade.objects.filter(market=market).filter(round=market.round).count()
 
     data = {
@@ -190,6 +193,7 @@ def trader_api(request, market_id):
         'num_ready_traders': num_ready_traders,
 
     }
+
     return JsonResponse(data)
 
 
