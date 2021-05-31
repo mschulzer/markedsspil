@@ -6,22 +6,24 @@
 {% block content %}
 
 <br><br>
-    <p><b>Trader name:</b> {{ trader.name }}</p>
-    <p><b>Market:</b> {{ market.market_id }}</p>
-    <p><b>Round:</b> {{ market.round }}</p>
+<div>
+    <p>
+        <b>Trader name:</b> {{ trader.name }} <br> 
+        <b>Market:</b> {{ market.market_id }} <br>
+        <b>Round:</b> {{ market.round }} <br> 
+        <b>Your fixed production costs per unit :</b> {{ trader.prod_cost }} per unit <br>
+        <b>Your current balance:</b> {{ trader.balance }} <br>  
+    <p>
+</div>
 <br><br>
 
 <form action="" method="post">{% csrf_token %}
-    {{ form|crispy 	}}
+    {{ form|crispy }}
     <input type="submit" value="Ready" class="btn btn-outline-primary">
 </form>
 
 <br><br><br>
 
-<div>
-    <p><b>Production cost:</b> {{ trader.prod_cost }} per unit</p>
-    <p><b>Your balance:</b> {{ trader.balance }}</p>
-</div>
 {% endblock %}
 
 {% block javascript %}

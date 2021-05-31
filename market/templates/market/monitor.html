@@ -86,43 +86,39 @@
 
 <br><br><br>
 
-{% if market.round == 0 %}
-    <div style="display:none">
-{% else %}
-    <div>
-{% endif %}
-        {% for field in show_stats_fields %}
-            <h3>{{ field|field_name_to_label }}</h3>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
+{% if market.round > 0 %}
+    {% for field in show_stats_fields %}
+        <h3>{{ field|field_name_to_label }}</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        {% for round in rounds %}
+                        <th scope="col">Round {{ round }}</th>
+                        {% endfor %}
+                    </tr>
+                <thead>
+                <tbody>
+                    {% for trader in traders %}
                         <tr>
-                            <th></th>
-                            {% for round in rounds %}
-                            <th scope="col">Round {{ round }}</th>
+                            <th scope="row"> {{trader.name }}</th>
+                            {% for trade in trader.trade_set.all %}
+                                <td>{{ trade|get_attribute:field }}</td>
                             {% endfor %}
                         </tr>
-                    <thead>
-                    <tbody>
-                        {% for trader in traders %}
-                            <tr>
-                                <th scope="row"> {{trader.name }}</th>
-                                {% for trade in trader.trade_set.all %}
-                                    <td>{{ trade|get_attribute:field }}</td>
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                </table>
-            </div>
-            <br><br>
+                    {% endfor %}
+            </table>
+        </div>
+        <br><br>
 
-        {% endfor %}
+    {% endfor %}
 
-        <button type="button" class="btn btn-primary" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
-            Download statistics
-        </button>
+    <button type="button" class="btn btn-primary" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
+        Download statistics
+    </button>
 </div> 
-
+{% endif %}
 <br>
 <!-- Pop-up confirmation -->
 <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
