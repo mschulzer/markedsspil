@@ -152,25 +152,32 @@ class JoinViewTest(TestCase):
         self.assertEqual(response['Location'], reverse('market:play', args=(market.market_id,)))
         
     def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(self):
+        # a market is in round 3
         market = Market.objects.create(round=3)
+
+        # a players named Hanne tries to join the market (she is late)
         response = self.client.post(reverse('market:join'), {
                                     'username': 'Hanne', 'market_id': market.market_id})
-
-        all_trades = Trade.objects.all()
-        self.assertEqual(all_trades.count(), 3)
-
-        self.assertEqual(all_trades[0].trader.name, 'Hanne')
-        self.assertEqual(all_trades[0].unit_price, 0)
-        self.assertEqual(all_trades[0].unit_amount, 0)
-
-        self.assertEqual(all_trades[0].was_forced, True)
-        self.assertEqual(all_trades[2].profit, 0)
-
-        self.assertEqual(all_trades[1].was_forced, True)
-        self.assertEqual(all_trades[2].was_forced, True)
-
-        self.assertEqual(all_trades[2].balance_after, 5000)
         
+        # the trader hanne was created
+        hanne = Trader.objects.get(name='Hanne')
+
+        # when hanne joined, 3 forced trades was made for her in previous rounds 
+        hannes_trades = hanne.trade_set.all()
+        self.assertEqual(hannes_trades.count(), 3)
+        for i in range(3):
+            self.assertEqual(hannes_trades[i].was_forced, True)
+            self.assertEqual(hannes_trades[i].trader.name, 'Hanne')
+            self.assertEqual(hannes_trades[i].unit_price, None)
+            self.assertEqual(hannes_trades[i].profit, None)
+            self.assertEqual(hannes_trades[i].unit_amount, None)
+            self.assertEqual(hannes_trades[i].round, i)
+            self.assertEqual(hannes_trades[i].balance_after, None)
+
+        # The balance of the trader be equal the initial balance
+        self.assertEqual(hanne.balance, Trader.initial_balance)
+
+        # status code and redirect are corrext        
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse(
             'market:play', args=(market.market_id,)))
@@ -201,9 +208,6 @@ class MonitorViewGETRequestsTest(TestCase):
         market = Market.objects.create(round = 3)
         trader = Trader.objects.create(market=market)
         trade = Trade.objects.create(trader=trader)
-        print(market.round)
-        print(trade.round)
-        print(trader.is_ready())
         response = self.client.get(
             reverse('market:monitor', args=(market.market_id,)))
         html = response.content.decode('utf8')
@@ -235,7 +239,6 @@ class MonitorViewPOSTRequestsTest(TestCase):
 
 
 class MonitorViewPOSTRequestsExtraTest(TestCase):
-    
     
     def test_one_trader_has_made_one_trade_this_round(self):
 
@@ -276,34 +279,46 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
         # The following assertion only works if I query the market again... why?
 
         trade_now = Trade.objects.filter(market=market).first()
-        self.assertEqual(trade_now.balance_after, 5000)
+        self.assertEqual(trade_now.balance_after, Trader.initial_balance)
         self.assertEqual(trade_now.profit, 0)
 
     def test_monitor_view_created_forced_moves_for_inactive_player(self):
-        # There is a market in round 7 & a trader in this market
+        # There is a market in round 7 & a two traders in this market
         market = Market.objects.create(round=7)
-        trader = Trader.objects.create(
+        trader1 = Trader.objects.create(
             name='Hansi', market=market)
+        trader2 = Trader.objects.create(
+            name='Kwaganzi', market=market)
 
-        # the trader has not made any trades...
-        self.assertEqual(Trade.objects.filter(trader=trader).count(),0)
-        
-        # The teacher finishes the round...
+        # for testing purposes we set a balance for trader 2:
+        trader2.balance=123456
+        trader2.save()
+
+        # trader1 makes a trade...
+        Trade.objects.create(trader=trader1)
+
+        # this trade is not saved as a forced trade
+        self.assertEqual(Trade.objects.get(trader=trader1).was_forced, False)
+
+        # trader2 has not made any trades
+        self.assertEqual(Trade.objects.filter(trader=trader2).count(),0)
+
+        # The teacher finishes the round anyway..
         url = reverse('market:monitor', args=(market.market_id,))
-        response = self.client.post(url)
+        response = self.client.post(url)        
 
         # Reponse codes and redict location looks good
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], url) 
 
-        # A forced trade for round 7 has been created
-        trade = Trade.objects.get(trader=trader)
+        # A forced trade for trader2 in round 7 has been created
+        trade = Trade.objects.get(trader=trader2)
         self.assertEqual(trade.was_forced, True)
         self.assertEqual(trade.round, 7)
-        self.assertEqual(trade.profit, 0)
+        self.assertEqual(trade.profit, None)
 
-
-
+        # The balance of trader2 should not be affected by the forced trade
+        self.assertEqual(Trader.objects.all()[1].balance, 123456)
 
 
 

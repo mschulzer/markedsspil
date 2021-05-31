@@ -45,8 +45,8 @@
                 <th scope="col">#</th>
                 <th scope="col">Name</th>
                 <th scope="col">Ready</th>
-                <th scope="col">Current Balance</th>
                 <th scope="col">Prod Cost</th>
+                <th scope="col">Current Balance</th>
                 <th scope="col">Remove</th>
             </tr>
         </thead>
@@ -56,9 +56,9 @@
                 <th scope="row">{{i|add:1}}</th>  
                 <td id="name{{i}}">name{{i}}</td>
                 <td id="ready{{i}}">ready{{i}}</td>
-                <td id="balance{{i}}">balance{{i}}</td>
                 <td id="prod_cost{{i}}">prod_cost{{i}}</td>
-                <td id="remove{{i}}"><button class="btn btn-secondary" onclick="alert('feature not implemented yes')">remove</button></td>
+                <td>{{ initial_balance }} </td>
+                <td id="remove{{i}}"><button class="btn btn-secondary" onclick="alert('feature not implemented yet')">remove</button></td>
             </tr>
         {% endfor %}
         </tbody>

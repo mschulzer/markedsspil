@@ -43,7 +43,7 @@ class TradeForm(forms.ModelForm):
         }
         help_texts = {
             'unit_price': ('Select a price for one unit of your product'),
-            'unit_amount': ('How many unit do you want to produce?'),
+            'unit_amount': ('How many units do you want to produce?'),
 
         }
 

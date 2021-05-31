@@ -9,12 +9,15 @@ def field_name_to_label(value):
         value = value.replace('_', ' ')
     return value.title()
 
-def get_attribute(value, arg):
+def get_attribute(value, arg): 
 
     if hasattr(value, str(arg)):
-        return getattr(value, arg)
-    elif hasattr(value, 'has_key') and value.has_key(arg):
-        return value[arg]
+        attr = getattr(value, arg)
+        if attr == None:
+            return ' ---- '
+        else:
+            return attr
+    
 
 register.filter('field_name_to_label', field_name_to_label)
 register.filter('get_attribute', get_attribute)

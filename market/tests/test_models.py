@@ -56,7 +56,7 @@ class TraderModelTest(TestCase):
 
                
     def test_object_name(self):  
-        expected_object_name = f"Stefan [{self.market.market_id}] - $5000"
+        expected_object_name = f"Stefan [{self.market.market_id}] - ${Trader.initial_balance}"
         self.assertEqual(str(self.trader), expected_object_name)
     
     def test_is_ready_is_false(self):

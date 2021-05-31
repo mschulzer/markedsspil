@@ -14,6 +14,9 @@ class Market(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def save(self, *args, **kwargs):
+        """
+        Create Market ID before saving
+        """
         if not self.market_id:
             good_id = False
             market_id = ""
@@ -52,8 +55,8 @@ class Trader(models.Model):
 class Trade(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE, blank=True)
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    unit_amount = models.IntegerField(default=0)
+    unit_price = models.DecimalField(max_digits=10, default=0, decimal_places=2, null=True)
+    unit_amount = models.IntegerField(null=True, default=0)
     round = models.IntegerField(blank=True)
     was_forced = models.BooleanField(default=False) 
     profit = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
