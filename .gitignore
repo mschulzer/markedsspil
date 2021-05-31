@@ -5,4 +5,4 @@ __pycache__/
 geckodriver.log
 geckodriver
 .DS_Store
-
+.env.prod
