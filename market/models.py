@@ -46,6 +46,8 @@ class Trader(models.Model):
         has_traded_this_round = Trade.objects.filter(trader=self, market=self.market, round=self.market.round).count() == 1
         if has_traded_this_round:
             return True
+        else: 
+            return False
 
 class Trade(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE, blank=True)
@@ -61,7 +63,7 @@ class Trade(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             if (type(self.round) == int) and not self.was_forced:
-                raise Exception("Don't specify a round when creating a trade (round is inferred from market)")         
+                raise Exception("Don't specify a round when creating a trade that is not forced (round is inferred from market)")         
             try:
                 self.market
             except:            
@@ -71,6 +73,6 @@ class Trade(models.Model):
             else:  
                 raise Exception("Don't specify a market when creating a trade (market is inferred from trader")
         return super(Trade, self).save(*args, **kwargs)
-
+    
     def __str__(self):
-        return f"{self.trader.name} ${self.unit_price} x {self.unit_amount} [{self.market.market_id}]"
+        return f"{self.trader.name} ${self.unit_price} x {self.unit_amount} [{self.market.market_id}][{self.round}]"

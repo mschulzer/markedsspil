@@ -198,10 +198,14 @@ class MonitorViewGETRequestsTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_custom_template_tags(self):
-        trader = Trader.objects.create(market=self.market)
+        market = Market.objects.create(round = 3)
+        trader = Trader.objects.create(market=market)
         trade = Trade.objects.create(trader=trader)
+        print(market.round)
+        print(trade.round)
+        print(trader.is_ready())
         response = self.client.get(
-            reverse('market:monitor', args=(self.market.market_id,)))
+            reverse('market:monitor', args=(market.market_id,)))
         html = response.content.decode('utf8')
         self.assertIn("Unit Price", html)
         self.assertNotIn("unit_price", html)

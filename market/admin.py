@@ -10,7 +10,7 @@ class TraderAdmin(admin.ModelAdmin):
 
 class TradeAdmin(admin.ModelAdmin):
     list_display = ('id', 'market', 'trader', 'unit_price', 'unit_amount', 'round', 'was_forced', 'profit', 'balance_after')
-    readonly_fields = ('market','round', 'profit', 'balance_after')
+    readonly_fields = ('market',)
 
 admin.site.register(Market, MarketAdmin)
 admin.site.register(Trader, TraderAdmin)

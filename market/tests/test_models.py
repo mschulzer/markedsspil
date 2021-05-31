@@ -86,7 +86,7 @@ class TradeModelTest(TestCase):
         self.assertEqual(self.trade.round, self.market.round)
 
     def test_object_name(self):
-        expected_object_name = f"Joe Salesman $13.45 x 34 [{self.market.market_id}]"
+        expected_object_name = f"Joe Salesman $13.45 x 34 [{self.market.market_id}][5]"
         self.assertEqual(str(self.trade), expected_object_name)
         
     def test_raises_error_when_creating_a_trade_with_forbidden_kwargs(self):

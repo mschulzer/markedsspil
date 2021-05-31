@@ -36,7 +36,7 @@ def join(request):
             )
             request.session['trader_id'] = new_trader.pk
             
-            # if player joins a game in round n>0, create trades for round 0,1,..,n-1 
+            # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1 
             if market.round > 0:
                 for round_num in range(market.round):
                     create_forced_trade(new_trader, round_num, balance_after=Trader.initial_balance, profit=0)
@@ -67,14 +67,14 @@ def monitor(request, market_id):
     if request.method == "POST":
         #ikke ordentligt testet
         for trader in traders:
-            traders_num_trades = Trade.objects.filter(trader=trader, round=market.round).count()
-            assert(traders_num_trades == 0 or traders_num_trades ==1)
+            trader_num_trades = Trade.objects.filter(trader=trader, round=market.round).count()
+            assert(trader_num_trades == 0 or trader_num_trades == 1), "More than one trade has been saved for a trader in this round. If you are testing a multiplayer game on one machine this might be caused by sessions colliding"
             # if trader has not traded this round, make a forced trade: 
-            if traders_num_trades == 0:
+            if trader_num_trades == 0:
                 create_forced_trade(trader=trader, round_num=market.round)
         trades = Trade.objects.filter(round=market.round).filter(market=market)
         assert(len(trades) > 0), "No trades in market this round. Can't calculate avg. price."
-        assert(len(trades) == len(traders)), "Num trades does equal num traders."
+        assert(len(trades) == len(traders)), f"Number of trades in this round {{market.round}} does not equal num traders."
         alpha, beta, theta = market.alpha, market.beta, market.theta
         avg_price = sum([trade.unit_price for trade in trades]) / len(trades)
         profit = []
