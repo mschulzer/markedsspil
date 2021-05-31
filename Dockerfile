@@ -10,7 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 WORKDIR /code
 COPY . /code
 RUN mkdir /code/static
-COPY Pipfile Pipfile.lock /code
+COPY Pipfile Pipfile.lock /code/
 
 # Install pip, pipenv, and requirements
 RUN pip install --upgrade pip
