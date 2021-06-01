@@ -41,7 +41,6 @@ def join(request):
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num)
 
-
             return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
     elif request.method == 'GET':
         if 'market_id' in request.GET:
@@ -141,6 +140,7 @@ def play(request, market_id):
 
     if request.method == 'POST':
         form = TradeForm(request.POST)
+
         if form.is_valid():
             new_trade = form.save(commit=False)
             new_trade.trader = trader

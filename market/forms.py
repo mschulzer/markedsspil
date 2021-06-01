@@ -28,14 +28,6 @@ class TraderForm(forms.Form):
             raise forms.ValidationError('There is no market with this ID')
         return market_id
 
-    def clean_username(self):
-        """ Additional validation of the form's name field """
-        username = self.cleaned_data['username']
-        if Trader.objects.filter(name=username).exists():
-            raise forms.ValidationError('This name is already taken. Please select another')
-        return username
-
-
 class TradeForm(forms.ModelForm):
     class Meta:
         model = Trade
