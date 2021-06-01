@@ -57,7 +57,7 @@
                 <td id="name{{i}}">name{{i}}</td>
                 <td id="ready{{i}}">ready{{i}}</td>
                 <td id="prod_cost{{i}}">prod_cost{{i}}</td>
-                <td>{{ initial_balance }} </td>
+                <td id="balance{{ i }}">balance{{i}}</td>
                 <td id="remove{{i}}"><button class="btn btn-secondary" onclick="alert('feature not implemented yet')">remove</button></td>
             </tr>
         {% endfor %}
@@ -197,13 +197,13 @@
             data: {},
             dataType: 'json',
             success: function (data) {
+                console.log(data)
                 if (data.num_traders > 0){
                     document.getElementById("num_traders").innerHTML = data.num_traders;
                     document.getElementById("num_ready_traders").innerHTML = data.num_ready_traders;
                     render_table(data);
                     update_next_round_btn(data)
                     document.getElementById("waiting_for_first_trader").style.display ="none";
-
                 }
             }       
         });

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Market, Trade
+from .models import Market, Trade, Trader
 from django.core.exceptions import ValidationError
 
 class MarketForm(forms.ModelForm):
@@ -27,6 +27,13 @@ class TraderForm(forms.Form):
         if not Market.objects.filter(pk=market_id).exists():
             raise forms.ValidationError('There is no market with this ID')
         return market_id
+
+    def clean_username(self):
+        """ Additional validation of the form's name field """
+        username = self.cleaned_data['username']
+        if Trader.objects.filter(name=username).exists():
+            raise forms.ValidationError('This name is already taken. Please select another')
+        return username
 
 
 class TradeForm(forms.ModelForm):

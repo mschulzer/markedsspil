@@ -96,6 +96,7 @@ class TradeFormTest(TestCase):
         trader = Trader.objects.create(market=market, name="joe")
         new_trade = form.save(commit=False)
         new_trade.trader = trader
+        new_trade.round = market.round
         new_trade.save()
         self.assertIsInstance(new_trade, Trade)
         self.assertEqual(Trade.objects.all().count(), 1)

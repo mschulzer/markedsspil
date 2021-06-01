@@ -63,72 +63,23 @@ class TraderModelTest(TestCase):
         self.assertFalse(self.trader.is_ready()) 
         
     def test_is_ready_is_true(self):
-        Trade.objects.create(trader=self.trader)
+        Trade.objects.create(trader=self.trader, round=self.trader.market.round)
         self.assertTrue(self.trader.is_ready())
 
     def test_is_ready_is_no_longer_true(self):
-        Trade.objects.create(trader=self.trader)
+        Trade.objects.create(trader=self.trader, round=self.trader.market.round)
         self.market.round += 1
         self.assertFalse(self.trader.is_ready())      
 
 
 class TradeModelTest(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.market = Market.objects.create(round=5)
-        cls.trader = Trader.objects.create(market=cls.market, name='Joe Salesman')
-        cls.trade = Trade.objects.create(trader=cls.trader, unit_price=13.45, unit_amount=34)
-   
-    def test_trade_object_creation(self):
-        self.assertIsInstance(self.trade, Trade)
-        self.assertEqual(self.trade.market, self.market)
-        self.assertEqual(self.trade.round, self.market.round)
-
-    def test_object_name(self):
-        expected_object_name = f"Joe Salesman $13.45 x 34 [{self.market.market_id}][5]"
-        self.assertEqual(str(self.trade), expected_object_name)
-        
-    def test_raises_error_when_creating_a_trade_with_forbidden_kwargs(self):
-        market = Market.objects.create()
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
-        Trade.objects.create(
-            trader=trader)
-
-        with self.assertRaises(Exception):
-            Trade.objects.create(
-                market=market, trader=trader)
-
-        with self.assertRaises(Exception):
-            Trade.objects.create(
-                round=4, trader=trader)
     
-        with self.assertRaises(Exception):
-            Trade.objects.create(
-                round=0, trader=trader)
+    def test_object_name(self):
+        market = Market.objects.create(round=5)
+        trader = Trader.objects.create(market=market, name='Joe Salesman')
+        trade = Trade.objects.create(
+        trader= trader, round=market.round, unit_price=13.45, unit_amount=34)
 
-        with self.assertRaises(Exception):
-            Trade.objects.create(
-                round=0, market=market, trader=trader)
-
-
-    def test_specifying_round_num_is_allowed_when_trade_is_forced(self):
-        market = Market.objects.create(round=1)
-        trader = Trader.objects.create(market=market, name='KomForSent')
-
-        Trade.objects.create(
-            trader=trader, round=0, was_forced=True)
-        
-        new_trade = Trade.objects.get(trader=trader)
-        self.assertEqual(new_trade.trader.name, 'KomForSent')
-        self.assertEqual(new_trade.round, 0)
-
-        market.round = 18 
-        market.save()
-
-        Trade.objects.create(
-            trader=trader, round=8, was_forced=True)
-
-        new_trade = Trade.objects.get(trader=trader, round=8)
-        self.assertEqual(new_trade.trader.name, 'KomForSent')
-        self.assertEqual(new_trade.round, 8)
+        expected_object_name = f"Joe Salesman $13.45 x 34 [{market.market_id}][5]"
+        self.assertEqual(str(trade), expected_object_name)
+    

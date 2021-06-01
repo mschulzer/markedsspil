@@ -7,7 +7,7 @@ from random import randint
 from .models import Market, Trader, Trade
 from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
-from .helpers import create_forced_trade
+from .helpers import create_forced_trade, get_trades
 
 @require_GET
 def home(request):
@@ -68,7 +68,9 @@ def monitor(request, market_id):
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
-        real_trades = Trade.objects.filter(round=market.round).filter(market=market)
+        real_trades = get_trades(market=market, round=market.round)
+        for trade in real_trades:
+            assert(trade.was_forced is False)
         assert(len(real_trades) > 0), "No trades in market this round. Can't calculate avg. price."
         alpha, beta, theta = market.alpha, market.beta, market.theta
         avg_price = sum([trade.unit_price for trade in real_trades]) / len(real_trades)
@@ -86,17 +88,13 @@ def monitor(request, market_id):
             trade.save()
       
         for trader in traders:
-            num_trades_this_round = Trade.objects.filter(trader=trader, round=market.round).count()
-            assert(num_trades_this_round in [0,1]), "More than one trade has been saved for a trader in this round. Perhaps you are manually testing a multiplayer game on one machine with sessions colliding?"
-            if num_trades_this_round == 0:
-                # the trader has not made any trades this round, so a forced trade should be made
+            traders_number_of_real_trades_this_round = get_trades(market=market, round=market.round).filter(trader=trader).count()
+            if traders_number_of_real_trades_this_round == 0:
                 create_forced_trade(trader=trader, round_num=market.round)
                 
-        all_trades_this_round = Trade.objects.filter(
-                    round=market.round).filter(market=market)
-        assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round {{market.round}} does not equal num traders."
-
-
+        all_trades_this_round = get_trades(market=market, round=market.round)        
+        assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round does not equal num traders ."
+        
         market.round += 1
         market.save()
 
@@ -146,6 +144,7 @@ def play(request, market_id):
         if form.is_valid():
             new_trade = form.save(commit=False)
             new_trade.trader = trader
+            new_trade.round = market.round
             new_trade.save()
             return HttpResponseRedirect(reverse('market:wait', args=(market.market_id,)))
 
@@ -167,8 +166,7 @@ def wait(request, market_id):
 @require_GET
 def traders_this_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
-    round = market.round
-    traders = [trade.trader.name for trade in Trade.objects.filter(market=market).filter(round=round)]
+    traders = [trade.trader.name for trade in get_trades(market=market, round=market.round)]
     data = {
         'traders':traders
     }
@@ -190,7 +188,7 @@ def trader_api(request, market_id):
         for trader in Trader.objects.filter(market=market)
     ]
     
-    num_ready_traders = Trade.objects.filter(market=market).filter(round=market.round).count()
+    num_ready_traders = get_trades(market=market, round=market.round).count()
 
     data = {
         'traders': traders,
