@@ -18,6 +18,7 @@ services:
   nginx:
     restart: always
     image: nginx:latest
+    hostname: market.dataekspeditioner.dk
     volumes:
       - static_volume:/code/static
       - type: bind
