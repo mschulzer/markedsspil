@@ -1,5 +1,5 @@
 from django import forms
-from .models import Market, Trade
+from .models import Market, Trade, Trader
 from django.core.exceptions import ValidationError
 
 class MarketForm(forms.ModelForm):
@@ -28,7 +28,6 @@ class TraderForm(forms.Form):
             raise forms.ValidationError('There is no market with this ID')
         return market_id
 
-
 class TradeForm(forms.ModelForm):
     class Meta:
         model = Trade
@@ -43,7 +42,7 @@ class TradeForm(forms.ModelForm):
         }
         help_texts = {
             'unit_price': ('Select a price for one unit of your product'),
-            'unit_amount': ('How many unit do you want to produce?'),
+            'unit_amount': ('How many units do you want to produce?'),
 
         }
 
