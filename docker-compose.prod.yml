@@ -6,7 +6,7 @@ services:
     build: .
     command: /bin/sh -c /code/entrypoint.prod.sh
     volumes:
-      - database_volume:/market_sim/db.sqlite3
+      - database_volume:/code/db/db.sqlite3
       - static_volume:/code/static
     expose:
       - 8000
