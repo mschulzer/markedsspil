@@ -1,0 +1,15 @@
+version: "3.3"
+   
+services:
+  web:
+    build: .
+    command: /bin/sh -c /code/entrypoint.sh
+    volumes:
+      - market_db:/market_sim/db.sqlite3
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env.dev
+
+volumes:
+  market_db:
