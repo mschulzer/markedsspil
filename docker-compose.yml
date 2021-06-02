@@ -5,7 +5,7 @@ services:
     build: .
     command: /bin/sh -c /code/entrypoint.sh
     volumes:
-      - database_volume:/code/db/db.sqlite3
+      - database_volume:/db/
     ports:
       - "8000:8000"
     env_file:
