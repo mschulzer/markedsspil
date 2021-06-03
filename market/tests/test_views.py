@@ -458,10 +458,10 @@ class PlayViewTest(TestCase):
         session.save()
         self.assertEqual(Trade.objects.all().count(), 0)
         response = self.client.post(
-            reverse('market:play', args=(self.market.market_id,)), {'unit_price': '10.9', 'unit_amount': '45'})
+            reverse('market:play', args=(self.market.market_id,)), {'unit_price': '11', 'unit_amount': '45'})
         self.assertEqual(Trade.objects.all().count(), 1)
         trade = Trade.objects.first()
-        self.assertEqual(float(trade.unit_price), 10.9)
+        self.assertEqual(float(trade.unit_price), 11)
         self.assertEqual(trade.unit_amount, 45)
         self.assertEqual(trade.trader.market, self.market)
         self.assertEqual(trade.trader, self.trader_on_market)

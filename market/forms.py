@@ -67,7 +67,7 @@ class TradeForm(forms.ModelForm):
         model = Trade
         fields = ['unit_price', 'unit_amount']
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'value':10, 'class':'slider', 'step':0.1}),
+            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'value':10, 'class':'slider', 'step':1}),
             'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'max': 400, 'value': 20, 'class': 'slider'}),
         }
         labels = {

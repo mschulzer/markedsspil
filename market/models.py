@@ -51,11 +51,11 @@ class Trader(models.Model):
 
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
-    unit_price = models.DecimalField(max_digits=10, default=0, decimal_places=2, null=True)
-    unit_amount = models.IntegerField(null=True, default=0)
+    unit_price = models.IntegerField(default=0,null=True)
+    unit_amount = models.PositiveIntegerField(null=True, default=0)
     round = models.PositiveIntegerField() # not always equal to trader.market.round
     was_forced = models.BooleanField(default=False) 
-    profit = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+    profit = models.IntegerField(null=True, blank=True)
     balance_after = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
