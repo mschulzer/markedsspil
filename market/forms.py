@@ -25,16 +25,16 @@ class MarketForm(forms.ModelForm):
         return cleaned_data
     
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market join you want to join') 
+    market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market you want to join') 
 
     class Meta:
         model = Trader
         fields = ['name']
         labels = {
-            'name': ('Your name'),
+            'name': ('Username'),
         }
         help_texts = {
-            'name': ('The name you choose here will be visible in the scoreboard'),
+            'name': ('The name you choose here will be visible in the scoreboard for this market'),
         }
 
 

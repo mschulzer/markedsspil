@@ -40,7 +40,7 @@ def join(request):
             # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1 
             if market.round > 0:
                 for round_num in range(market.round):
-                    create_forced_trade(trader=new_trader, round_num=round_num)
+                    create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
 
             return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
     elif request.method == 'GET':
@@ -90,7 +90,7 @@ def monitor(request, market_id):
         for trader in traders:
             traders_number_of_real_trades_this_round = get_trades(market=market, round=market.round).filter(trader=trader).count()
             if traders_number_of_real_trades_this_round == 0:
-                create_forced_trade(trader=trader, round_num=market.round)
+                create_forced_trade(trader=trader, round_num=market.round, is_new_trader=False)
                 
         all_trades_this_round = get_trades(market=market, round=market.round)        
         assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round does not equal num traders ."

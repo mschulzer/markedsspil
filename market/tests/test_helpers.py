@@ -9,24 +9,33 @@ class TestCreateForcedTrade(TestCase):
         """ Setup this test data before each test method in clas """
         pass
     
-    def test_market_in_round_5_forced_trades_made_in_round_3(self):
+    def test_create_forced_trade_NOT_new_trader(self):
 
-        # a game is in round 5
         market = Market.objects.create(round=5)
-        
-        # there is a trader in the market - he has same round
         trader = Trader.objects.create(market=market)
+        forced_trade = create_forced_trade(trader=trader, round_num=5, is_new_trader=False)
 
-        # a forced trade is made in round 3
-        forced_trade = create_forced_trade(trader=trader, round_num=3)
-
-        # the forced trade has been made with correct values
         self.assertEqual(forced_trade.was_forced, True)
-        self.assertEqual(forced_trade.round, 3)
-        self.assertEqual(forced_trade.balance_after, None)
+        self.assertEqual(forced_trade.round, 5)
+        self.assertEqual(forced_trade.balance_after, trader.balance) # balance from previous round should carry over
         self.assertEqual(forced_trade.profit, None)
         self.assertEqual(forced_trade.unit_price, None)
         self.assertEqual(forced_trade.unit_amount, None)
+
+    def test_create_forced_trade_new_trader(self):
+        market = Market.objects.create(round=5)
+        trader = Trader.objects.create(market=market)
+        forced_trade = create_forced_trade(trader=trader, round_num=3, is_new_trader=True)
+
+        # we create a forced trade for an earlier round (when the trader was not yet in the market)
+        self.assertEqual(forced_trade.was_forced, True)
+        self.assertEqual(forced_trade.round, 3)
+        self.assertEqual(forced_trade.balance_after, None) # balance should be set to zero as trader is new
+        self.assertEqual(forced_trade.profit, None)
+        self.assertEqual(forced_trade.unit_price, None)
+        self.assertEqual(forced_trade.unit_amount, None)
+
+
 
 
 class TestGetTrades(TestCase):
