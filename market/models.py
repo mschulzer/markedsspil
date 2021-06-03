@@ -7,7 +7,7 @@ def new_unique_market_id():
     """
     Create a new unique market ID (8 alphabetic chars)
     """
-    while not unique:
+    while True:
         market_id = get_random_string(
             8, allowed_chars='ABCDEFGHIJKLMSOPQRSTUVXYZ')
         if not Market.objects.filter(market_id=market_id).exists():
