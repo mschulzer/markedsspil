@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     name: Run test suite in Docker container
+    runs-on: ubuntu-latest
     steps:
       - name Checkout code
         uses: actions/checkout@v2
