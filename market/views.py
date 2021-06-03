@@ -22,18 +22,19 @@ def create(request):
     elif request.method == 'GET':
         form = MarketForm()
     return render(request, 'market/create.html', {'form': form})
-
+            
 def join(request):
     if request.method == 'POST':
         form = TraderForm(request.POST)
         if form.is_valid():
             market = Market.objects.get(market_id=form.cleaned_data['market_id'])
-            new_trader = Trader.objects.create(
-                market = market,
-                name = form.cleaned_data['username'],
-                prod_cost = randint(market.min_cost, market.max_cost),
-                balance = Trader.initial_balance
-            )
+
+            new_trader = form.save(commit=False)
+            new_trader.market = market
+            new_trader.prod_cost = randint(market.min_cost, market.max_cost)
+            new_trader.balance = Trader.initial_balance
+            new_trader.save()
+            
             request.session['trader_id'] = new_trader.pk
             
             # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1 

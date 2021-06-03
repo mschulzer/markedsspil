@@ -34,9 +34,9 @@ class Market(models.Model):
 class Trader(models.Model):
     initial_balance = 5000
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
-    name = models.CharField(max_length=16, default='John Doe')
+    name = models.CharField(max_length=16,)
     prod_cost = models.IntegerField(default=0)
-    balance = models.IntegerField(default=initial_balance, blank=True) 
+    balance = models.IntegerField(default=initial_balance, blank=True) # This field is not strictly necessary, as it should always be possible to find this value in a stored Trade object
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):

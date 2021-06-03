@@ -24,9 +24,19 @@ class MarketForm(forms.ModelForm):
                 raise ValidationError("Min cost can't be bigger than max cost")
         return cleaned_data
     
-class TraderForm(forms.Form):
-    username = forms.CharField(max_length=16)
-    market_id = forms.CharField(max_length=16) 
+class TraderForm(forms.ModelForm):
+    market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market join you want to join') 
+
+    class Meta:
+        model = Trader
+        fields = ['name']
+        labels = {
+            'name': ('Your name'),
+        }
+        help_texts = {
+            'name': ('The name you choose here will be visible in the scoreboard'),
+        }
+
 
     def clean_market_id(self):
         """ Additional validation of the form's market_id field """
@@ -42,11 +52,11 @@ class TraderForm(forms.Form):
         Validate that there are no other users on the market with the chosen username
         """
         cleaned_data = super().clean()
-        cleaned_username = cleaned_data.get("username")
+        cleaned_name = cleaned_data.get("name")
         cleaned_market_id = cleaned_data.get('market_id')
-        if cleaned_username and cleaned_market_id:
+        if cleaned_name and cleaned_market_id:
             market = Market.objects.get(market_id = cleaned_market_id)
-            if Trader.objects.filter(name=cleaned_username, market=market).exists():
+            if Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
                     'There is already a trader with this name on the market. Please select another name')
         return cleaned_data

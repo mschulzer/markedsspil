@@ -54,19 +54,19 @@ class TraderFormTest(TestCase):
 
     def test_form_is_valid_if_market_exists_and_username_not_taken(self):
         market = Market.objects.create()
-        data = {'username': 'TestUser', 'market_id': market.market_id}
+        data = {'name': 'TestUser', 'market_id': market.market_id}
         form = TraderForm(data=data)
         self.assertTrue(form.is_valid())
        
     def test_form_invalid_if_username_available_but_no_market_with_given_id(self):
-        data = {'username': 'TestUser', 'market_id': 'VESJYPEF'}
+        data = {'name': 'TestUser', 'market_id': 'VESJYPEF'}
         form = TraderForm(data=data)
         self.assertFalse(form.is_valid())
 
     def test_form_invalid_if_market_exits_but_username_is_taken_by_a_trader_on_this_marker(self):
         market = Market.objects.create()
         Trader.objects.create(name="grethen", market=market)
-        data = {'username': 'grethen', 'market_id': market.market_id}
+        data = {'name': 'grethen', 'market_id': market.market_id}
         form = TraderForm(data=data)
         self.assertFalse(form.is_valid())
     
@@ -75,7 +75,7 @@ class TraderFormTest(TestCase):
         market2 = Market.objects.create()
         Trader.objects.create(name="grethen", market=market2)
         market1.refresh_from_db()
-        data = {'username': 'grethen', 'market_id': market1.market_id}
+        data = {'name': 'grethen', 'market_id': market1.market_id}
         form = TraderForm(data=data)
         self.assertTrue(form.is_valid())
 

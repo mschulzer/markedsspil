@@ -50,11 +50,11 @@ class CreateMarketViewTests(TestCase):
 
         # test post requests
         
-        def test_market_is_created_when_data_is_valid(self):
-            self.assertEqual(Market.objects.all().count(), 0)
-            self.client.post(
-                reverse('market:create'), self.valid_data)
-            self.assertEqual(Market.objects.all().count(), 1)
+    def test_market_is_created_when_data_is_valid(self):
+        self.assertEqual(Market.objects.all().count(), 0)
+        self.client.post(
+            reverse('market:create'), self.valid_data)
+        self.assertEqual(Market.objects.all().count(), 1)
 
     def test_redirect_to_corrent_url_after_market_creation(self):
         response = self.client.post(
@@ -150,7 +150,7 @@ class JoinViewTest(TestCase):
     def test_new_trader_created_when_form_is_valid(self):
         market = Market.objects.create()
         response = self.client.post(reverse('market:join'), {
-                                    'username': 'Hanne', 'market_id': market.market_id})
+                                    'name': 'Hanne', 'market_id': market.market_id})
         self.assertEqual(Trader.objects.all().count(), 1)
         new_trader = Trader.objects.first()
         self.assertEqual(new_trader.market, market)
@@ -164,7 +164,7 @@ class JoinViewTest(TestCase):
 
         # a players named Hanne tries to join the market (she is late)
         response = self.client.post(reverse('market:join'), {
-                                    'username': 'Hanne', 'market_id': market.market_id})
+                                    'name': 'Hanne', 'market_id': market.market_id})
         
         # the trader hanne was created
         hanne = Trader.objects.get(name='Hanne')
