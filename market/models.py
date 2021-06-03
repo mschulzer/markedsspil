@@ -1,6 +1,14 @@
 from django.db import models
-from random import randint
 from django.utils.crypto import get_random_string
+
+def create_market_id():
+    unique = False
+    while not unique:
+        market_id = get_random_string(
+            8, allowed_chars='ABCDEFGHIJKLMSOPQRSTUVXYZ')
+        if not Market.objects.filter(market_id=id).exists():
+            unique = True
+    return market_id
 
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
@@ -14,16 +22,10 @@ class Market(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Create unique custom id before creating a new market object (not when updating a market)
+        Set unique custom id for market before creating a new market object (not when updating an existing market)
         """
         if not self.market_id: 
-            unique = False
-            while not unique:
-                id = get_random_string(
-                    8, allowed_chars='ABCDEFGHIJKLMSOPQRSTUVXYZ')
-                if not Market.objects.filter(market_id=id).exists():
-                    unique = True
-                    self.market_id = id                
+            self.market_id = create_market_id()   
         super(Market, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -34,7 +36,7 @@ class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16, default='John Doe')
     prod_cost = models.IntegerField(default=0)
-    balance = models.IntegerField(default=initial_balance, blank=True) # not really used anywhere.
+    balance = models.IntegerField(default=initial_balance, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):
@@ -51,7 +53,7 @@ class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
     unit_price = models.DecimalField(max_digits=10, default=0, decimal_places=2, null=True)
     unit_amount = models.IntegerField(null=True, default=0)
-    round = models.IntegerField() # not always equal to trader.market.round
+    round = models.PositiveIntegerField() # not always equal to trader.market.round
     was_forced = models.BooleanField(default=False) 
     profit = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
     balance_after = models.IntegerField(null=True, blank=True)
