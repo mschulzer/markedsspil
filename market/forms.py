@@ -79,4 +79,3 @@ class TradeForm(forms.ModelForm):
             'unit_amount': ('How many units do you want to produce?'),
         }
 
-
