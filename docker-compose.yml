@@ -6,6 +6,7 @@ services:
     command: /bin/sh -c /code/entrypoint.sh
     volumes:
       - database_volume:/db/
+      - .:/code
     ports:
       - "8000:8000"
     env_file:
