@@ -7,9 +7,9 @@ class Market(models.Model):
     alpha = models.DecimalField(max_digits=10, decimal_places=4, default=105)
     beta = models.DecimalField(max_digits=10, decimal_places=4, default=17.5)
     theta = models.DecimalField(max_digits=10, decimal_places=4, default=14.58)
-    min_cost = models.IntegerField(default=5)
-    max_cost = models.IntegerField(default=15)
-    round = models.IntegerField(default=0)
+    min_cost = models.PositiveIntegerField(default=5)
+    max_cost = models.PositiveIntegerField(default=15)
+    round = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def save(self, *args, **kwargs):
