@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Create working directory and copy project files
 WORKDIR /code
 COPY . /code
-RUN mkdir /code/static
+RUN mkdir -p /code/static
 COPY Pipfile Pipfile.lock /code/
 
 # Install pip, pipenv, and requirements
