@@ -2,6 +2,19 @@ from django.db import models
 from random import randint
 from django.utils.crypto import get_random_string
 
+
+def new_unique_market_id():
+    """
+    Create a new unique market ID (8 alphabetic chars)
+    """
+    while not unique:
+        market_id = get_random_string(
+            8, allowed_chars='ABCDEFGHIJKLMSOPQRSTUVXYZ')
+        if not Market.objects.filter(market_id=market_id).exists():
+            break
+    return market_id
+
+
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
     alpha = models.DecimalField(max_digits=10, decimal_places=4, default=105)
@@ -16,14 +29,8 @@ class Market(models.Model):
         """
         Create unique custom id before creating a new market object (not when updating a market)
         """
-        if not self.market_id: 
-            unique = False
-            while not unique:
-                id = get_random_string(
-                    8, allowed_chars='ABCDEFGHIJKLMSOPQRSTUVXYZ')
-                if not Market.objects.filter(market_id=id).exists():
-                    unique = True
-                    self.market_id = id                
+        if not self.market_id:
+            self.market_id = new_unique_market_id()
         super(Market, self).save(*args, **kwargs)
 
     def __str__(self):
