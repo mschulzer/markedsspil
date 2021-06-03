@@ -5,7 +5,7 @@ from ..forms import MarketForm, TraderForm, TradeForm
 from django.core.exceptions import ValidationError
 
 
-class TestMarketForm(TestCase):
+class MarketFormTest(TestCase):
 
     def setUp(self):
         # Do this setup before running all test methods in class
@@ -50,18 +50,34 @@ class TestMarketForm(TestCase):
         self.assertRaises(ValueError, form.save)
 
 
-class TestTraderForm(TestCase):
+class TraderFormTest(TestCase):
 
-    def test_valid_data_gives_valid_form(self):
+    def test_form_is_valid_if_market_exists_and_username_not_taken(self):
         market = Market.objects.create()
         data = {'username': 'TestUser', 'market_id': market.market_id}
         form = TraderForm(data=data)
         self.assertTrue(form.is_valid())
        
-    def test_form_invalid_if_no_market_with_given_id(self):
+    def test_form_invalid_if_username_available_but_no_market_with_given_id(self):
         data = {'username': 'TestUser', 'market_id': 'VESJYPEF'}
         form = TraderForm(data=data)
         self.assertFalse(form.is_valid())
+
+    def test_form_invalid_if_market_exits_but_username_is_taken_by_a_trader_on_this_marker(self):
+        market = Market.objects.create()
+        Trader.objects.create(name="grethen", market=market)
+        data = {'username': 'grethen', 'market_id': market.market_id}
+        form = TraderForm(data=data)
+        self.assertFalse(form.is_valid())
+    
+    def test_form_valid_if_market_exists_and__username_is_taken_by_a_trader_on_ANOTHER_market(self):
+        market1 = Market.objects.create()
+        market2 = Market.objects.create()
+        Trader.objects.create(name="grethen", market=market2)
+        market1.refresh_from_db()
+        data = {'username': 'grethen', 'market_id': market1.market_id}
+        form = TraderForm(data=data)
+        self.assertTrue(form.is_valid())
 
 
 class TradeFormTest(TestCase):

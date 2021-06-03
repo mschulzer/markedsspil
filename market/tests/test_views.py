@@ -77,7 +77,9 @@ class CreateMarketViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Market.objects.all().count(), 0)
         html = response.content.decode('utf8')
-        self.assertIn("This field is required.", html)
+        error_english = "This field is required." in html
+        error_danish = "Dette felt er påkrævet." in html
+        self.assertTrue(error_english or error_danish, html)
         # other errors that could be tested: alpha has too many digits, min_cost not integer....
 
 
@@ -117,7 +119,10 @@ class JoinViewTest(TestCase):
         self.assertFalse('trader_id' in self.client.session)
 
         html = response.content.decode('utf8')
-        self.assertIn('This field is required', html)
+        error_english = "This field is required." in html
+        error_danish = "Dette felt er påkrævet." in html
+        self.assertTrue(error_english or error_danish, html)
+
         self.assertEqual(Trader.objects.all().count(), 0)
 
     def test_proper_behavior_when_no_username_in_form(self):
@@ -127,7 +132,9 @@ class JoinViewTest(TestCase):
         self.assertFalse('trader_id' in self.client.session)
 
         html = response.content.decode('utf8')
-        self.assertIn('<strong>This field is required.</strong>', html)
+        error_english = "This field is required." in html
+        error_danish = "Dette felt er påkrævet." in html
+        self.assertTrue(error_english or error_danish, html)
         self.assertEqual(Trader.objects.all().count(), 0)
 
     def test_proper_behavior_when_no_market_with_posted_market_id(self):
