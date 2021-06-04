@@ -444,6 +444,7 @@ class PlayViewTest(TestCase):
 
         response = self.client.get(
             reverse('market:play', args=(self.market.market_id,)))
+        
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/play.html'),
 
@@ -453,12 +454,12 @@ class PlayViewTest(TestCase):
         session.save()
         Trade.objects.create(trader=self.trader_on_market,
                              round=self.market.round)
+        self.assertEqual(Trade.objects.filter(trader=self.trader_on_market, round=0).count(),1)
         response = self.client.get(
             reverse('market:play', args=(self.market.market_id,)),)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/wait.html'),
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], reverse('market:wait', args=(self.market.market_id,)))
 
-        
     ######## test post requests ##########
 
     def test_post_market_id_not_found_redirects_to_join(self):
@@ -490,7 +491,6 @@ class PlayViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         expected_redirect_url = reverse('market:wait', args=(self.market.market_id,))
         self.assertEqual(response['Location'], expected_redirect_url)
-
 
 
 class WaitViewTest(TestCase):

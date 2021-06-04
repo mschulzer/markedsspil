@@ -4,8 +4,8 @@
 {% block title %}Trade{% endblock %}
 
 {% block content %}
+<div class="container mt-4">
 
-<br><br>
 <div>
     <p>
         <b>Trader name:</b> {{ trader.name }} <br> 
@@ -13,16 +13,17 @@
         <b>Round:</b> {{ market.round }} <br> 
         <b>Your fixed production costs per unit :</b> {{ trader.prod_cost }} per unit <br>
         <b>Your current balance:</b> {{ trader.balance }} <br>  
-    <p>
+        <p>
 </div>
 <br><br>
 
-<form action="" method="post">{% csrf_token %}
-    {{ form|crispy }}
+<form action="{% url 'market:play' market.market_id %}" method="post">{% csrf_token %}
+    {{ form|crispy }}    
     <input type="submit" value="Ready" class="btn btn-outline-primary">
 </form>
 
 <br><br><br>
+</div>
 
 {% endblock %}
 
