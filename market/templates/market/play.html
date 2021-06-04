@@ -17,7 +17,7 @@
 </div>
 <br><br>
 
-<form action="{% url 'market:play' market.market_id %}" method="post">{% csrf_token %}
+<form action="{% url 'market:play' %}" method="post">{% csrf_token %}
     {{ form|crispy }}    
     <input type="submit" value="Ready" class="btn btn-outline-primary">
 </form>

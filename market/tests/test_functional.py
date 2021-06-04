@@ -6,7 +6,6 @@ from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade
 from ..forms import TraderForm
-from ..views import validate_market_and_trader
 from ..helpers import get_trades
 
 class TwoPlayerGame(TestCase):

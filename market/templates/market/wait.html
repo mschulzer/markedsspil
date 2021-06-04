@@ -31,7 +31,7 @@
             success: function (data) {
                 console.log(data, data.round, round_num);
                 if (data.round > round_num) {
-                        window.location.href = "{% url 'market:play' market.market_id %}"
+                        window.location.href = "{% url 'market:play' %}"
                 }
             }
         });

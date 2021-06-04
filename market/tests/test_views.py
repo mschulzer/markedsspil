@@ -3,7 +3,6 @@ from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade
 from ..forms import TraderForm
-from ..views import validate_market_and_trader
 from ..helpers import get_trades
 
 class HomeViewTests(TestCase):
@@ -82,7 +81,6 @@ class CreateMarketViewTests(TestCase):
         self.assertTrue(error_english or error_danish, html)
         # other errors that could be tested: alpha has too many digits, min_cost not integer....
 
-
 class JoinViewTest(TestCase):
 
     # test get requests
@@ -156,7 +154,7 @@ class JoinViewTest(TestCase):
         self.assertEqual(new_trader.market, market)
         self.assertTrue('trader_id' in self.client.session)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:play', args=(market.market_id,)))
+        self.assertEqual(response['Location'], reverse('market:play'))
         
     def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(self):
         # a market is in round 3
@@ -187,7 +185,8 @@ class JoinViewTest(TestCase):
         # status code and redirect are corrext        
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse(
-            'market:play', args=(market.market_id,)))
+            'market:play'))
+
 
 class MonitorViewGETRequestsTest(TestCase):
  
@@ -329,208 +328,128 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
         market.refresh_from_db()
         self.assertEqual(market.round, 8)
 
+class PlayViewGetRequestTest(TestCase):
 
-class ValidateMarketAndTrader(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        # Set up non-modified objects used by all test methods in class
-        cls.market = Market.objects.create()
+    def test_no_trader_id_in_session_redirects_to_join(self):
 
-    def test_market_not_in_db_redirects_to_join(self):
-        validation = validate_market_and_trader(self.client.session, 'BADMARKETID')
-        self.assertTrue('error_redirect' in validation)
-        response = validation['error_redirect']
+        # some client who has not joined tries to access the wait page
+        response = self.client.get(reverse('market:play'))
+
+        # he should be redirected to the join page
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
 
-    def test_market_in_db_but_trader_id_not_in_session_redirects_to_join_with_market_id_as_get_param(self):
-        # Market exists in database
-        # Problem: No 'trader_id' in session
-        # Expected behavior: Redirect to 'join'-page with market-id filled out
-        validation = validate_market_and_trader(
-            self.client.session, self.market.market_id)
-        self.assertTrue('error_redirect' in validation)
-        response = validation['error_redirect']
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse(
-            'market:join') + f'?market_id={self.market.market_id}')
-
-    def test_good_market_id_and_trader_id_in_session_but_user_not_in_db_redirects_to_join_with_market_id_as_get_param(self):
-        # Market exists in Market database
-        # 'trader_id' is in session
-        # Problem: 'trader_id' not found in Trader database
-        # Expected behavior: Redirect to 'join'-page with market-id filled out
-        session = self.client.session
-        session['trader_id'] = 17
-        session.save()
-        self.assertTrue('trader_id' in self.client.session)
-        self.assertEqual(self.client.session['trader_id'], 17)
-
-        validation = validate_market_and_trader(session, self.market.market_id)
-        self.assertTrue('error_redirect' in validation)
-        response = validation['error_redirect']
-        self.assertEqual(response['Location'], reverse('market:join') + f'?market_id={self.market.market_id}')
-
-    def test_good_market_id_and_trader_id_in_session_but_trader_in_wrong_market_returns_redirect_to_join(self):
-        # Market exists in Market databate
-        # trader_id is in session
-        # trader_id has matching entry in Trader database
-        # Problem: trader is associated to the wrong market
-        # expected behavior: redirect to join with no filled-out values
-        other_market = Market.objects.create()
-        trader = Trader.objects.create(name='otto', market=other_market)
-
-        session = self.client.session
-        session['trader_id'] = trader.pk
-        session.save()
-
-        validation = validate_market_and_trader(
-            session, self.market.market_id)
-        self.assertTrue('error_redirect' in validation)
-        response = validation['error_redirect']
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:join'))
-
-    def test_if_no_errors_views_returns_context_with_market_and_tracer(self):
-        # Market exists in Market databate
-        # trader_id is in session
-        # trader_id has matching entry in Trader database
-        # trader is associated with the correct market
-        # expected behavior: return play template
-        trader = Trader.objects.create(name='otto', market=self.market)
-
-        session = self.client.session
-        session['trader_id'] = trader.pk
-        session.save()
-
-        context = validate_market_and_trader(session, self.market.market_id)
-        self.assertIsInstance(context, dict)
-        self.assertTrue('market' in context)
-        self.assertTrue('trader' in context)
-        self.assertEqual(context['trader'], trader)
-        self.assertEqual(context['market'], self.market)
-
-
-class PlayViewTest(TestCase):
-    # note: most of the below tests are not really necessary, as the same stuff is being tested in ErrorTrackerTestst
-
-    @classmethod
-    def setUpTestData(cls):
-        # Set up non-modified objects used by all test methods in class
-        cls.market = Market.objects.create()
-        cls.trader_on_market = Trader.objects.create(
-                        market=cls.market, name="TraderOnMarket")
     
-    ######## test get requests ##########
+    def test_if_no_errors_return_play_template_and_code_200(self):
+        # some market is in round 0
+        market=Market.objects.create()
 
-    def test_get_market_id_not_found_redirects_to_join(self):
-        response = self.client.get(
-            reverse('market:play', args=('BADMARKETID',))
-        )
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:join'))
-
-    def test_if_no_errors_views_returns_play_template_and_code_200(self):
-        # Market exists in Market databate
-        # trader_id is in session
-        # trader_id has matching entry in Trader database
-        # trader is associated with the correct market
-        # expected behavior: return play template
-        trader = Trader.objects.create(name='otto', market=self.market)
-
+        # a user has joined properly
+        trader = Trader.objects.create(name='otto', market=market)
         session = self.client.session
         session['trader_id'] = trader.pk
         session.save()
 
-        response = self.client.get(
-            reverse('market:play', args=(self.market.market_id,)))
-        
+        # user goes to play url and should get good result
+        response = self.client.get(reverse('market:play'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/play.html'),
 
-    def test_if_trader_has_already_made_trade_go_to_wait(self):
-        session = self.client.session
-        session['trader_id'] = self.trader_on_market.pk
-        session.save()
-        Trade.objects.create(trader=self.trader_on_market,
-                             round=self.market.round)
-        self.assertEqual(Trade.objects.filter(trader=self.trader_on_market, round=0).count(),1)
-        response = self.client.get(
-            reverse('market:play', args=(self.market.market_id,)),)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:wait', args=(self.market.market_id,)))
 
-    ######## test post requests ##########
+    def test_if_trader_has_already_made_trade_go_to_wait(self):
+        # some market is in round 0
+        market=Market.objects.create()
+
+        # a user has joined properly
+        trader = Trader.objects.create(name='otto', market=market)
+        session = self.client.session
+        session['trader_id'] = trader.pk
+        session.save()
+        
+        # the user has made a trade in this round (and should not be waiting)
+        Trade.objects.create(trader=trader, round=market.round)
+        self.assertEqual(Trade.objects.filter(trader=trader, round=0).count(),1)
+        
+        # user tries to go to play page & should be redirected to wait
+        response = self.client.get(
+            reverse('market:play'))
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], reverse('market:wait'))
+
+
+class PlayViewPOSTRequestTest(TestCase):
 
     def test_post_market_id_not_found_redirects_to_join(self):
-
+        # client this to go the play page without having joined a market
         response = self.client.post(
-            reverse('market:play', args=('BADMARKETID',))
-        )
+            reverse('market:play'))
+        # client should be redirected to join
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
-  
+
     def test_if_all_data_is_good_then_save_trade_and_redirect_to_play(self):
+        # some market is in round 0
+        market = Market.objects.create()
+
+        # a user has joined properly
+        trader = Trader.objects.create(name='otto', market=market)
         session = self.client.session
-        session['trader_id'] = self.trader_on_market.pk
+        session['trader_id'] = trader.pk
         session.save()
-        self.assertEqual(Trade.objects.all().count(), 0)
+
+        # the client sends in a trade form with valid data
         response = self.client.post(
-            reverse('market:play', args=(self.market.market_id,)), {'unit_price': '11', 'unit_amount': '45'})
+            reverse('market:play'), {'unit_price': '11', 'unit_amount': '45'})
         self.assertEqual(Trade.objects.all().count(), 1)
+        
+        # we check that the new trade object has correct properties
         trade = Trade.objects.first()
         self.assertEqual(float(trade.unit_price), 11)
         self.assertEqual(trade.unit_amount, 45)
-        self.assertEqual(trade.trader.market, self.market)
-        self.assertEqual(trade.trader, self.trader_on_market)
+        self.assertEqual(trade.trader.market, market)
+        self.assertEqual(trade.trader, trader)
         self.assertEqual(trade.round, 0)
         self.assertFalse(trade.was_forced)
         self.assertEqual(trade.profit, None)
         self.assertFalse(trade.balance_after, None)
 
+        # after a succesfull post request, we should redirect to wait
+
         self.assertEqual(response.status_code, 302)
-        expected_redirect_url = reverse('market:wait', args=(self.market.market_id,))
+        expected_redirect_url = reverse('market:wait')
         self.assertEqual(response['Location'], expected_redirect_url)
 
+  
+class WaitViewGetRequestTest(TestCase):
 
-class WaitViewTest(TestCase):
-    # note: tests in this class are identical to play tests 
-
-    @classmethod
-    def setUpTestData(cls):
-        # Set up non-modified objects used by all test methods in class
-        cls.market = Market.objects.create()
-
-    def test_post_requests_not_allowed(self):
-        url = reverse('market:wait', args=(self.market.market_id,))
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 405)
-
-    def test_market_id_not_found_redirects_to_join(self):
-
-        response = self.client.get(
-            reverse('market:wait', args=('BADMARKETID',))
-        )
+    def test_no_trader_id_in_session_redirects_to_join(self):
+        
+        # some client who has not joined tries to access the wait page
+        response = self.client.get(reverse('market:wait'))
+        
+        # he should be redirected to the join page
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
-
-    def test_if_no_errors_views_returns_play_template_and_code_200(self):
-
-        # Market exists in Market databate
-        # trader_id is in session
-        # trader_id has matching entry in Trader database
-        # trader is associated with the correct market
-        # expected behavior: return play template
-        trader = Trader.objects.create(name='otto', market=self.market)
-
+        
+    def test_if_no_errors_return_play_template_and_code_200(self):
+        
+        # some user is properly signed in
+        market=Market.objects.create(round=3)
+        trader = Trader.objects.create(name='otto', market=market)
         session = self.client.session
         session['trader_id'] = trader.pk
         session.save()
+        
+        # the user has made a trade this round, so he should now be waiting
+        Trade.objects.create(trader=trader, round=market.round)
 
-        response = self.client.get(
-            reverse('market:wait', args=(self.market.market_id,)))
+        # user goes to wait url
+        response = self.client.get(reverse('market:wait'))
+        
+        # the view should return code 200 and the wait template
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/wait.html'),
+
 
 class TraderAPITest(TestCase):
 
@@ -646,8 +565,3 @@ class CurrentRoundViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.json(), {"round": 11})
 
-
-class DownloadViewTest(TestCase):
-    # check for cases, where not all traders have made trades in all rounds
-    # check for case where no trades
-    pass

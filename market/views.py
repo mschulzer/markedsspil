@@ -41,7 +41,7 @@ def join(request):
             if market.round > 0:
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
-            return redirect(reverse('market:play', args=(market.market_id,)))
+            return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
         if 'market_id' in request.GET:
@@ -100,74 +100,40 @@ def monitor(request, market_id):
         return redirect(reverse('market:monitor', args=(market.market_id,)))
     
 
-def validate_market_and_trader(session, market_id):
-    """ 
-    helper function that checks the following:
-    1) There is a market with the given id
-    2) There is a trader_id in the current session
-    3) This trader exists in database
-    3) The trader is on the market given by the market_id, and not some other market
-    """
+def play(request):
     try:
-        market = Market.objects.get(pk=market_id)
+        trader = Trader.objects.get(id=request.session['trader_id'])
     except:
-        return {'error_redirect':redirect(reverse('market:join'))}
-
-    if 'trader_id' not in session:
-        return {'error_redirect': redirect(reverse('market:join') + f'?market_id={market_id}')}
+        return redirect(reverse('market:join'))
     else:
-        pk = session['trader_id']
-        try:
-            trader = Trader.objects.get(pk=session['trader_id'])
-        except:
-            return {'error_redirect': redirect(reverse('market:join') + f'?market_id={market_id}')}
-        else:
-            if trader.market.market_id != market_id:
-                return {'error_redirect': redirect(reverse('market:join'))}
-            else: 
-                return {'market': market, 'trader': trader}
-
-
-def play(request, market_id):
-
-    validation = validate_market_and_trader(request.session, market_id)
+        market = trader.market
     
-    if 'error_redirect' in validation:
-        return validation['error_redirect']
- 
-    market = validation['market']
-    trader = validation['trader']
+        # Check if trader by accident has already made a trade this round (he might have pressed 'go back-button' in browser after trading)
+        if Trade.objects.filter(trader=trader, round=market.round).exists():
+            return redirect(reverse('market:wait'))
 
-    # Check if trader by accident has already made a trade this round (he might have pressed 'go back-button' in browser after trading)
-    if Trade.objects.filter(trader=trader, round=market.round).exists():
-        return redirect(reverse('market:wait', args=(market.market_id,)))
+        if request.method == 'POST':
+            form = TradeForm(request.POST)
+            if form.is_valid():
+                new_trade = form.save(commit=False)
+                new_trade.trader = trader
+                new_trade.round = market.round
+                new_trade.save()
+                return redirect(reverse('market:wait'))
 
-    if request.method == 'POST':
-        form = TradeForm(request.POST)
-        if form.is_valid():
-            new_trade = form.save(commit=False)
-            new_trade.trader = trader
-            new_trade.round = market.round
-            new_trade.save()
-            return redirect(reverse('market:wait', args=(market.market_id,)))
-
-    elif request.method == 'GET':
-        form = TradeForm()
-    
-    return render(request, 'market/play.html', {'market':market, 'trader':trader, 'form':form})
+        elif request.method == 'GET':
+            form = TradeForm()
+        
+        return render(request, 'market/play.html', {'market':market, 'trader':trader, 'form':form})
 
 @require_GET
-def wait(request, market_id):
-
-    validation = validate_market_and_trader(request.session, market_id)
-
-    if 'error_redirect' in validation:
-        return validation['error_redirect']
-
-    market = validation['market']
-    trader = validation['trader']
-
-    return render(request, 'market/wait.html', {'market': market, 'trader': trader})
+def wait(request):
+    try:
+        trader = Trader.objects.get(id=request.session['trader_id'])
+    except:
+        return redirect(reverse('market:join'))
+    else:
+        return render(request, 'market/wait.html', {'market': trader.market, 'trader': trader})
 
 
 @require_GET
