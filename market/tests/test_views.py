@@ -447,6 +447,17 @@ class PlayViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/play.html'),
 
+    def test_if_trader_has_already_made_trade_go_to_wait(self):
+        session = self.client.session
+        session['trader_id'] = self.trader_on_market.pk
+        session.save()
+        Trade.objects.create(trader=self.trader_on_market,
+                             round=self.market.round)
+        response = self.client.get(
+            reverse('market:play', args=(self.market.market_id,)),)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'market/wait.html'),
+
         
     ######## test post requests ##########
 
@@ -479,6 +490,7 @@ class PlayViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         expected_redirect_url = reverse('market:wait', args=(self.market.market_id,))
         self.assertEqual(response['Location'], expected_redirect_url)
+
 
 
 class WaitViewTest(TestCase):

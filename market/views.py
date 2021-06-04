@@ -137,8 +137,14 @@ def play(request, market_id):
  
     market = validation['market']
     trader = validation['trader']
+    context = validation 
+
+    # If trader has already made a trade don't show this page (she might have pressed 'go back-button' in browser)
+    if Trade.objects.filter(trader=trader, round=market.round).exists():
+        return render(request, 'market/wait.html', {'market': market, 'trader': trader})
 
     if request.method == 'POST':
+        
         form = TradeForm(request.POST)
 
         if form.is_valid():
