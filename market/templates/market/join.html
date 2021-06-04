@@ -5,11 +5,16 @@
 
 {% block content %}
 
-<h3>Choose a name and join a market:</h3>
-<form action="" method="post">{% csrf_token %}
-	{{ form|crispy }}
-	<input type="submit" value="Join" class="btn btn-primary">
-</form>
-
+<div class="container mt-5" >
+	<h3>Choose a name and join a market:</h3>
+	<form action="" method="post">{% csrf_token %}
+		{{ form|crispy }}
+		<input type="submit" value="Join" class="btn btn-primary">
+	</form>
+	<br><br>
+	{% if request.session.trader_id %}
+		<p>It looks like you already joined a market? <a href= "{% url 'market:play' %}">Go to your market</a></p>
+{% endif %}
+</div>
 
 {% endblock %}
