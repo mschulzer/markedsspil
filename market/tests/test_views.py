@@ -278,11 +278,13 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
         self.assertEqual(response['Location'], url) 
 
         # The profit and balance should now be on the trade object
-        # The following assertion only works if I query the market again... why?
+        trade.refresh_from_db()
+        self.assertEqual(trade.balance_after, Trader.initial_balance)
+        self.assertEqual(trade.profit, 0)
 
-        trade_now = get_trades(market=market).first()
-        self.assertEqual(trade_now.balance_after, Trader.initial_balance)
-        self.assertEqual(trade_now.profit, 0)
+        # the round of the market should be 7+1=8
+        market.refresh_from_db()
+        self.assertEqual(market.round, 8)
 
     def test_monitor_view_created_forced_moves_for_inactive_player(self):
         # There is a market in round 7 & a two traders in this market
@@ -320,8 +322,12 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
         self.assertEqual(trade.profit, None)
 
         # The balance of trader2 should not be affected by the forced trade
-        self.assertEqual(Trader.objects.all()[1].balance, 123456)
-
+        trader2.refresh_from_db()
+        self.assertEqual(trader2.balance, 123456)
+        
+        # The round num has gone up by round
+        market.refresh_from_db()
+        self.assertEqual(market.round, 8)
 
 
 class ValidateMarketAndTrader(TestCase):

@@ -70,7 +70,7 @@ def monitor(request, market_id):
     if request.method == "POST":
         real_trades = get_trades(market=market, round=market.round)
         for trade in real_trades:
-            assert(trade.was_forced is False)
+            assert(trade.was_forced is False), "Forced trade in 'real trades'"
         assert(len(real_trades) > 0), "No trades in market this round. Can't calculate avg. price."
         alpha, beta, theta = market.alpha, market.beta, market.theta
         avg_price = sum([trade.unit_price for trade in real_trades]) / len(real_trades)
@@ -81,9 +81,8 @@ def monitor(request, market_id):
             trade_profit = income - expenses
             trade.profit = trade_profit
             trader = trade.trader
-            balance_before_trade = trader.balance
             trader.balance += trade_profit 
-            trade.balance_after = balance_before_trade + trade_profit
+            trade.balance_after = trader.balance
             trader.save()
             trade.save()
       

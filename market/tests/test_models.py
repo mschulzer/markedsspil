@@ -71,15 +71,30 @@ class TraderModelTest(TestCase):
         self.market.round += 1
         self.assertFalse(self.trader.is_ready())      
 
-
 class TradeModelTest(TestCase):
     
     def test_object_name(self):
         market = Market.objects.create(round=5)
         trader = Trader.objects.create(market=market, name='Joe Salesman')
         trade = Trade.objects.create(
-        trader= trader, round=market.round, unit_price=13.45, unit_amount=34)
+        trader= trader, round=market.round, unit_price=13.45, unit_amount=34, profit=-4, balance_after=-400, was_forced=False)
 
         expected_object_name = f"Joe Salesman $13.45 x 34 [{market.market_id}][5]"
         self.assertEqual(str(trade), expected_object_name)
     
+    def test_constraint_trade_and_round_unique_together(self):
+        market = Market.objects.create(round=5)
+        trader = Trader.objects.create(market=market, name='Joe Salesman')
+
+        # we try to make a trade with same trader and same round - this should cast an integrety error in the database
+    
+        Trade.objects.create(
+            trader=trader, round=market.round, unit_price=4, unit_amount=434)
+        try:
+            Trade.objects.create(
+                trader=trader, round=market.round, unit_price=4, unit_amount=434)
+        except:
+            pass
+        else:
+            assert(False) 
+            
