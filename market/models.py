@@ -42,16 +42,19 @@ class Trader(models.Model):
     prod_cost = models.IntegerField(default=0)
     balance = models.IntegerField(default=initial_balance, blank=True) # This field is not strictly necessary, as it should always be possible to find this value in a stored Trade object
     created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['market', 'name'], name='market_and_name_unique_together'),
+        ]
     
     def __str__(self):
         return f"{self.name} [{self.market.market_id}] - ${self.balance}"
 
     def is_ready(self):
         has_traded_this_round = Trade.objects.filter(trader=self, round=self.market.round, was_forced=False).count() == 1     
-        if has_traded_this_round:
-            return True
-        else: 
-            return False
+        return has_traded_this_round
 
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
@@ -59,13 +62,13 @@ class Trade(models.Model):
     unit_amount = models.PositiveIntegerField(null=True, default=0)
     round = models.PositiveIntegerField() # not always equal to trader.market.round
     was_forced = models.BooleanField(default=False) 
-    profit = models.IntegerField(null=True, blank=True)
+    profit = models.PositiveIntegerField(null=True, blank=True)
     balance_after = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['trader', 'round'], name='trader_and_round_unique'),
+            models.UniqueConstraint(fields=['trader', 'round'], name='trader_and_round_unique_together'),
         ]
     
     def __str__(self):

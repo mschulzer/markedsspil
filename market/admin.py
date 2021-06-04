@@ -4,6 +4,7 @@ from .models import Market, Trader, Trade
 
 class MarketAdmin(admin.ModelAdmin):
     list_display = ('market_id', 'round', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost', 'created_at')
+    readonly_fields = ['market_id']
 
 class TraderAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'market', 'prod_cost', 'created_at')
