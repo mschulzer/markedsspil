@@ -5,16 +5,27 @@
 
 {% block content %}
 
-<div class="container mt-5">
-    <h2>Welcome to Market Simulator</h2>
-        <br><br>
-        <form action="{% url 'market:join' %}" method="GET">
-            <input type="submit" value="Join Market" class="btn btn-primary">
-        </form>
-        <br>
-        <form action="{% url 'market:create' %}" method="GET">
-            <input type="submit" value="Create Market" class="btn btn-secondary">
-        </form>
-    </form>
-</div>
+<h2>Welcome to Market Simulator</h2>
+<br><br>
+<form action="{% url 'market:join' %}" method="GET">
+    <input type="submit" value="Join Market" class="btn btn-primary">
+</form>
+<br>
+<form action="{% url 'market:create' %}" method="GET">
+    <input type="submit" value="Create Market" class="btn btn-secondary">
+</form>
+
+<br><br>
+{% if request.session.trader_id %}
+<p>You've already joined the market
+    <b>{{ request.session.market_id }}</b>
+    with the username
+    <b>{{ request.session.username }}</b>.
+
+<p>Play on this market?
+    <a href="{% url 'market:play' %}">
+        Play
+    </a>
+</p>
+{% endif %}
 {% endblock %}

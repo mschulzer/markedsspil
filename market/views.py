@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
 from random import randint
-from .models import Market, Trader, Trade
+from .models import Market, Trader, Trade, RoundStat
 from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades
@@ -53,6 +53,7 @@ def join(request):
             form = TraderForm()
     return render(request, 'market/join.html', {'form':form})
 
+
 def monitor(request, market_id):
 
     market = get_object_or_404(Market, market_id=market_id)
@@ -70,17 +71,24 @@ def monitor(request, market_id):
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
+
         real_trades = filter_trades(market=market, round=market.round)
         for trade in real_trades:
             assert(trade.was_forced is False), "Forced trade in 'real trades'"
         assert(len(real_trades) > 0), "No trades in market this round. Can't calculate avg. price."
-        alpha, beta, theta = market.alpha, market.beta, market.theta
+
         avg_price = sum([trade.unit_price for trade in real_trades]) / len(real_trades)
-        for trade in real_trades:  
+
+        alpha, beta, theta = market.alpha, market.beta, market.theta
+        for trade in real_trades: 
+            # calculate values 
             demand = alpha - beta * Decimal(trade.unit_price) + theta * Decimal(avg_price)
             expenses = trade.trader.prod_cost * trade.unit_amount
-            income = trade.unit_price * min(demand, trade.unit_amount)
+            units_sold = min(demand, trade.unit_amount)
+            income = trade.unit_price * units_sold
             trade_profit = income - expenses
+            # store values
+            trade.units_sold = units_sold
             trade.profit = trade_profit
             trader = trade.trader
             trader.balance += trade_profit 
@@ -96,9 +104,11 @@ def monitor(request, market_id):
         all_trades_this_round = filter_trades(market=market, round=market.round)        
         assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round does not equal num traders ."
         
-
         market.round += 1
         market.save()
+
+        RoundStat.objects.create(
+            market=market, round=market.round, avg_price=avg_price)
 
         return redirect(reverse('market:monitor', args=(market.market_id,)))
   
@@ -130,6 +140,17 @@ def play(request):
             form = TradeForm()
             
         context['form'] = form
+        context['rounds'] = range(market.round)
+        context['initial_balance'] = Trader.initial_balance
+        context['round_stats'] = RoundStat.objects.filter(market=market)
+
+        if trader.balance >= Trader.initial_balance:
+            context['gain_color'] = "blue"
+        else:
+            context['gain_color'] = "red"
+     
+        #'show_stats_fields': ['profit', 'balance_after', 'unit_price', 'unit_amount', 'was_forced'],
+
         return render(request, 'market/play.html', context)
            
 

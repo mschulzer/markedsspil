@@ -1,29 +1,114 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
+{% load custom_tags %}
 
 {% block title %}Trade{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<h3>Basic Info</h3>
 
-<div>
-    <p>
-        <b>Trader name:</b> {{ trader.name }} <br> 
-        <b>Market:</b> {{ market.market_id }} <br>
-        <b>Round:</b> {{ market.round }} <br> 
-        <b>Your fixed production costs per unit :</b> {{ trader.prod_cost }} per unit <br>
-        <b>Your current balance:</b> {{ trader.balance }} <br>  
-        <p>
+<div class="row">
+    <div class="col-sm">
+        Trader name: <b>{{ trader.name }}</b><br> 
+        Market: <b>{{ market.market_id }}</b><br>
+        Round: <b>{{ market.round }}</b><br> 
+    </div>
+    <div class="col-sm">
+        Your fixed production costs per unit: <b>{{ trader.prod_cost }}</b><br>
+        Initial balance: <b> {{ initial_balance }}</b><br>
+        Current balance: <b>{{ trader.balance }}</b><br>  
+        Total gain: <b style="color:{{ gain_color }}">{{ trader.balance|subtract:initial_balance}}</b>
+    </div>
 </div>
-<br><br>
+<br>
+<br>
 
+
+<h3>Trade History </h3>
+<p>Initial balance: {{ initial_balance }}</p>
+
+{% if market.round > 0 %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th></th>
+                    {% for round in rounds %}
+                    <th scope="col">Round {{ round }}</th>
+                    {% endfor %}
+                </tr>
+                <thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">Balance</th>
+                        {% for trade in trader.trade_set.all %}
+                        <td>{{ trade|get_attribute:'balance_after' }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <th scope="row">Profit</th>
+                        {% for trade in trader.trade_set.all %}
+                        <td>{{ trade|get_attribute:'profit' }}</td>
+                        {% endfor %}
+                    </tr>
+                  
+                    <tr>
+                        <th scope="row">Sold Units</th>
+                        {% for trade in trader.trade_set.all %}
+                        <td>{{ trade|get_attribute:'units_sold' }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Units Sold</th>
+                        {% for trade in trader.trade_set.all %}
+                        <td>{{ trade|get_attribute:'units_sold' }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Units Produced</th>
+                        {% for trade in trader.trade_set.all %}
+                        <td>{{ trade|get_attribute:'unit_amount' }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Unit Price</th>
+                        {% for trade in trader.trade_set.all %}
+                        <td>{{ trade|get_attribute:'unit_price' }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <tr>
+                        <th scope="row">Market Avg. Price</th>
+                        {% for round_stat in round_stats %}
+                            <td>{{ round_stat.avg_price | floatformat:0 }}</td>
+                        {% endfor %}
+                    </tr>
+
+                </tbody>
+        </table>
+    </div>
+    <br><br>
+{% endif %}
+
+<br>
+
+<h3>Make Your Next Trade (Round #{{ market.round }})</h3>
+{% if market.round > 0 %}
+    <p style="color:grey">
+        Your number of units produced last round: <b>{{ trader.trade_set.all.last.unit_amount }}</b><br>
+        Your price last round: <b>{{ trader.trade_set.all.last.unit_price }}</b><br>
+        Market average price last round: <b>{{ round_stats.last.avg_price | floatformat:0 }}</b><br>
+    </p>
+{% endif %}
 <form action="{% url 'market:play' %}" method="post">{% csrf_token %}
-    {{ form|crispy }}    
+    {{ form|crispy }}
     <input type="submit" value="Ready" class="btn btn-outline-primary">
 </form>
 
-<br><br><br>
-</div>
+<br><br>
 
 {% endblock %}
 

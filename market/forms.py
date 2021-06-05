@@ -37,7 +37,6 @@ class TraderForm(forms.ModelForm):
             'name': ('The name you choose here will be visible in the scoreboard for this market'),
         }
 
-
     def clean_market_id(self):
         """ Additional validation of the form's market_id field """
         market_id = self.cleaned_data['market_id']
@@ -67,11 +66,11 @@ class TradeForm(forms.ModelForm):
         model = Trade
         fields = ['unit_price', 'unit_amount']
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'value':10, 'class':'slider', 'step':1}),
-            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'max': 400, 'value': 20, 'class': 'slider'}),
+            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'value':0, 'class':'slider', 'step':1}),
+            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'max': 400, 'value': 0, 'class': 'slider'}),
         }
         labels = {
-            'unit_price': ('Price: 10'),
+            'unit_price': ('Price: 0'),
             'unit_amount': ('Amount: 0')
         }
         help_texts = {

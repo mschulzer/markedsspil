@@ -5,21 +5,17 @@
 {% block content %}
 
 <br>
-    <h3>Waiting for {{ market.market_id}} ...</h3>
-    <p>Trader name: {{ trader.name }} </p>
-    <p>Round: {{ market.round }} </p>
-
-    <!-- data storage-->
-    <div id="round_number" style="display:none;">{{ market.round }}</div>
-    <div id="market_id" style="display:none;">{{ market.market_id }}</div>
+<h3>Waiting for {{ market.market_id}} ...</h3>
+<p>Trader name: {{ trader.name }} </p>
+<p>Round: {{ market.round }} </p>
 
 {% endblock %}
 
 {% block javascript %}    
 
 <script>
-    round_num = parseInt(document.getElementById("round_number").innerHTML);
-    market_id = document.getElementById("market_id").innerHTML;
+    round_num = parseInt("{{ market.round }}");
+    market_id = "{{ market.market_id }}";
     function check_for_next_round() {
         $.ajax({
             type: 'GET',

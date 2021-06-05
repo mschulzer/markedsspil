@@ -17,7 +17,10 @@ def get_attribute(value, arg):
             return ' ---- '
         else:
             return attr
-    
 
+def subtract(value, arg):
+    return value - arg
+    
 register.filter('field_name_to_label', field_name_to_label)
 register.filter('get_attribute', get_attribute)
+register.filter('subtract', subtract)
