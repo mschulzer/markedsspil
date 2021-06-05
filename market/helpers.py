@@ -26,7 +26,7 @@ def create_forced_trade(trader, round_num, is_new_trader):
     )
     return forced_trade
 
-def get_trades(market, round="all_rounds"):
+def filter_trades(market, round="all_rounds"):
     trades_by_market = Trade.objects.filter(trader__in=Trader.objects.filter(market=market))
     if round == "all_rounds":
         return trades_by_market

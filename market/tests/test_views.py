@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade
 from ..forms import TraderForm
-from ..helpers import get_trades
+from ..helpers import filter_trades
 
 class HomeViewTests(TestCase):
 
@@ -79,7 +79,6 @@ class CreateMarketViewTests(TestCase):
         error_english = "This field is required." in html
         error_danish = "Dette felt er påkrævet." in html
         self.assertTrue(error_english or error_danish, html)
-        # other errors that could be tested: alpha has too many digits, min_cost not integer....
 
 class JoinViewTest(TestCase):
 
@@ -264,7 +263,7 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
         self.assertEqual(trade.profit, None)
         
         # The teacher finishes the round
-        trades = get_trades(market=market, round=market.round)
+        trades = filter_trades(market=market, round=market.round)
         self.assertEqual(trades.count(), 1)
         self.assertEqual(trades.first().trader.market, market)
         self.assertEqual(trades.first().round, 7)
@@ -328,6 +327,7 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
         market.refresh_from_db()
         self.assertEqual(market.round, 8)
 
+
 class PlayViewGetRequestTest(TestCase):
 
     def test_no_trader_id_in_session_redirects_to_join(self):
@@ -339,8 +339,7 @@ class PlayViewGetRequestTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
 
-    
-    def test_if_no_errors_return_play_template_and_code_200(self):
+    def test_if_no_errors_and_time_to_play_return_play_template_and_code_200(self):
         # some market is in round 0
         market=Market.objects.create()
 
@@ -350,13 +349,13 @@ class PlayViewGetRequestTest(TestCase):
         session['trader_id'] = trader.pk
         session.save()
 
-        # user goes to play url and should get good result
+        # user has not made a trade yet this round
+        # user goes to play url and should get play-template back 
         response = self.client.get(reverse('market:play'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/play.html'),
 
-
-    def test_if_trader_has_already_made_trade_go_to_wait(self):
+    def test_if_no_errors_and_time_to_wait_return_wait_template_and_code_200(self):
         # some market is in round 0
         market=Market.objects.create()
 
@@ -366,15 +365,15 @@ class PlayViewGetRequestTest(TestCase):
         session['trader_id'] = trader.pk
         session.save()
         
-        # the user has made a trade in this round (and should not be waiting)
+        # the user has made a trade in this round (and should now be waiting)
         Trade.objects.create(trader=trader, round=market.round)
         self.assertEqual(Trade.objects.filter(trader=trader, round=0).count(),1)
         
-        # user tries to go to play page & should be redirected to wait
+        # user goes to play url and should get wait template back
         response = self.client.get(
             reverse('market:play'))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:wait'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'market/wait.html'),
 
 
 class PlayViewPOSTRequestTest(TestCase):
@@ -416,39 +415,8 @@ class PlayViewPOSTRequestTest(TestCase):
         # after a succesfull post request, we should redirect to wait
 
         self.assertEqual(response.status_code, 302)
-        expected_redirect_url = reverse('market:wait')
+        expected_redirect_url = reverse('market:play')
         self.assertEqual(response['Location'], expected_redirect_url)
-
-  
-class WaitViewGetRequestTest(TestCase):
-
-    def test_no_trader_id_in_session_redirects_to_join(self):
-        
-        # some client who has not joined tries to access the wait page
-        response = self.client.get(reverse('market:wait'))
-        
-        # he should be redirected to the join page
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse('market:join'))
-        
-    def test_if_no_errors_return_play_template_and_code_200(self):
-        
-        # some user is properly signed in
-        market=Market.objects.create(round=3)
-        trader = Trader.objects.create(name='otto', market=market)
-        session = self.client.session
-        session['trader_id'] = trader.pk
-        session.save()
-        
-        # the user has made a trade this round, so he should now be waiting
-        Trade.objects.create(trader=trader, round=market.round)
-
-        # user goes to wait url
-        response = self.client.get(reverse('market:wait'))
-        
-        # the view should return code 200 and the wait template
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/wait.html'),
 
 
 class TraderAPITest(TestCase):

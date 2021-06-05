@@ -74,4 +74,19 @@ class Trade(models.Model):
     def __str__(self):
         return f"{self.trader.name} ${self.unit_price} x {self.unit_amount} [{self.trader.market.market_id}][{self.round}]"
 
+"""
+class RoundStat(models.Model):
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+    round = models.PositiveIntegerField()  
+    avg_price = models.IntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['market', 'round'], name='market_and_round_unique_together'),
+        ]
+
+    def __str__(self):
+        return f"{self.market.market_id}[{self.round}]"
+"""

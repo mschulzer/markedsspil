@@ -58,7 +58,7 @@ class TraderForm(forms.ModelForm):
             market = Market.objects.get(market_id = cleaned_market_id)
             if Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
-                    'There is already a trader with this name on the market. Please select another name')
+                    'There is already a trader with this name on the requested market. Please select another name')
         return cleaned_data
         
 

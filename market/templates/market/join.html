@@ -6,15 +6,32 @@
 {% block content %}
 
 <div class="container mt-5" >
-	<h3>Choose a name and join a market:</h3>
+
+	<h4>Choose a name and join a market:</h4>
+
 	<form action="" method="post">{% csrf_token %}
 		{{ form|crispy }}
-		<input type="submit" value="Join" class="btn btn-primary">
+		<input type="submit" value="Join Market" class="btn btn-primary">
 	</form>
-	<br><br>
+
+	<br>
+	<br>
+
+	<h5><i>Please Note</i></h5>
 	{% if request.session.trader_id %}
-		<p>It looks like you already joined a market? <a href= "{% url 'market:play' %}">Go to your market</a></p>
-{% endif %}
+		<p>You've already joined the market 
+			<b>{{ request.session.market_id }}</b>
+			with the username 
+			<b>{{ request.session.username }}</b>. 
+			If you use the above form, you will loose access to your data from this market... </p>
+		
+		<p>Go to the market you've already joined? 
+			<a href="{% url 'market:play' %}">
+				Join {{ request.session.market_id }} 
+			</a>
+		</p>
+	{% endif %}
+
 </div>
 
 {% endblock %}

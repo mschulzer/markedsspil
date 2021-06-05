@@ -7,7 +7,7 @@ from random import randint
 from .models import Market, Trader, Trade
 from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
-from .helpers import create_forced_trade, get_trades
+from .helpers import create_forced_trade, filter_trades
 
 @require_GET
 def home(request):
@@ -36,6 +36,8 @@ def join(request):
             new_trader.save()
             
             request.session['trader_id'] = new_trader.pk
+            request.session['username'] = form.cleaned_data['name']
+            request.session['market_id'] = form.cleaned_data['market_id']
 
             # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1 
             if market.round > 0:
@@ -68,7 +70,7 @@ def monitor(request, market_id):
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
-        real_trades = get_trades(market=market, round=market.round)
+        real_trades = filter_trades(market=market, round=market.round)
         for trade in real_trades:
             assert(trade.was_forced is False), "Forced trade in 'real trades'"
         assert(len(real_trades) > 0), "No trades in market this round. Can't calculate avg. price."
@@ -87,30 +89,29 @@ def monitor(request, market_id):
             trade.save()
       
         for trader in traders:
-            traders_number_of_real_trades_this_round = get_trades(market=market, round=market.round).filter(trader=trader).count()
+            traders_number_of_real_trades_this_round = filter_trades(market=market, round=market.round).filter(trader=trader).count()
             if traders_number_of_real_trades_this_round == 0:
                 create_forced_trade(trader=trader, round_num=market.round, is_new_trader=False)
                 
-        all_trades_this_round = get_trades(market=market, round=market.round)        
+        all_trades_this_round = filter_trades(market=market, round=market.round)        
         assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round does not equal num traders ."
         
+
         market.round += 1
         market.save()
 
         return redirect(reverse('market:monitor', args=(market.market_id,)))
-    
+  
 
 def play(request):
+
     try:
         trader = Trader.objects.get(id=request.session['trader_id'])
     except:
         return redirect(reverse('market:join'))
     else:
         market = trader.market
-    
-        # Check if trader by accident has already made a trade this round (he might have pressed 'go back-button' in browser after trading)
-        if Trade.objects.filter(trader=trader, round=market.round).exists():
-            return redirect(reverse('market:wait'))
+        context = {'market': trader.market, 'trader': trader}
 
         if request.method == 'POST':
             form = TradeForm(request.POST)
@@ -119,27 +120,23 @@ def play(request):
                 new_trade.trader = trader
                 new_trade.round = market.round
                 new_trade.save()
-                return redirect(reverse('market:wait'))
-
+                return redirect(reverse('market:play'))
+            
         elif request.method == 'GET':
+            context = {'market': trader.market, 'trader': trader}
+            has_traded_this_round = Trade.objects.filter(trader=trader, round=market.round).exists()
+            if has_traded_this_round:
+                return render(request, 'market/wait.html', context )
             form = TradeForm()
-        
-        return render(request, 'market/play.html', {'market':market, 'trader':trader, 'form':form})
-
-@require_GET
-def wait(request):
-    try:
-        trader = Trader.objects.get(id=request.session['trader_id'])
-    except:
-        return redirect(reverse('market:join'))
-    else:
-        return render(request, 'market/wait.html', {'market': trader.market, 'trader': trader})
-
+            
+        context['form'] = form
+        return render(request, 'market/play.html', context)
+           
 
 @require_GET
 def traders_this_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
-    traders = [trade.trader.name for trade in get_trades(market=market, round=market.round)]
+    traders = [trade.trader.name for trade in filter_trades(market=market, round=market.round)]
     data = {
         'traders':traders
     }
@@ -161,7 +158,7 @@ def trader_api(request, market_id):
         for trader in Trader.objects.filter(market=market)
     ]
     
-    num_ready_traders = get_trades(market=market, round=market.round).count()
+    num_ready_traders = filter_trades(market=market, round=market.round).count()
 
     data = {
         'traders': traders,
