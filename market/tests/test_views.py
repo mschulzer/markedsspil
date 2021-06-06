@@ -339,22 +339,6 @@ class PlayViewGetRequestTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
 
-    def test_if_no_errors_and_time_to_play_return_play_template_and_code_200(self):
-        # some market is in round 0
-        market=Market.objects.create()
-
-        # a user has joined properly
-        trader = Trader.objects.create(name='otto', market=market)
-        session = self.client.session
-        session['trader_id'] = trader.pk
-        session.save()
-
-        # user has not made a trade yet this round
-        # user goes to play url and should get play-template back 
-        response = self.client.get(reverse('market:play'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/play.html'),
-
     def test_if_no_errors_and_time_to_wait_return_wait_template_and_code_200(self):
         # some market is in round 0
         market=Market.objects.create()
@@ -366,7 +350,7 @@ class PlayViewGetRequestTest(TestCase):
         session.save()
         
         # the user has made a trade in this round (and should now be waiting)
-        Trade.objects.create(trader=trader, round=market.round)
+        Trade.objects.create(trader=trader, round=market.round, profit=345)
         self.assertEqual(Trade.objects.filter(trader=trader, round=0).count(),1)
         
         # user goes to play url and should get wait template back
@@ -374,6 +358,104 @@ class PlayViewGetRequestTest(TestCase):
             reverse('market:play'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/wait.html'),
+
+         # template should contain the word Waiting
+        html = response.content.decode('utf8')
+        self.assertIn("Waiting", html)
+
+        # This is round 0, so no data from last round should be shown
+        self.assertNotIn('last round', html)
+        self.assertNotIn('Last round', html)
+
+        # --- no trade history should be shown either
+        self.assertNotIn('Trade History', html)
+        self.assertNotIn('Previous History', html)
+        self.assertNotIn('Record', html)
+
+
+        # Template should not contain a submit button
+        self.assertNotIn('submit', html)
+        
+      
+    def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_round(self):
+        """
+        User has traded in round 4, and in round 3.
+        """
+        # some market is in round 4
+        market=Market.objects.create(round=4)
+
+        # a user has joined properly
+        trader = Trader.objects.create(name='otto', market=market)
+        session = self.client.session
+        session['trader_id'] = trader.pk
+        session.save()
+
+        # the user has made a trade in_last_round
+        Trade.objects.create(trader=trader, round=3, profit=3432253, balance_after=12, was_forced=False)
+        
+        # user goes to play url
+        response = self.client.get(reverse('market:play'))
+
+        # The user has not traded in this round so he should get back play temlpate
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'market/play.html'),
+        
+        # template should contain data from last round
+        html = response.content.decode('utf8')
+        self.assertIn("3432253", html)
+
+         # template should not contain the words wait or Wait  
+        html = response.content.decode('utf8')
+        self.assertNotIn("wait", html)
+        self.assertNotIn("Wait", html)
+    
+        # template should contain a submit button
+        html = response.content.decode('utf8')
+        self.assertIn("submit", html)
+
+    def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(self):
+        """
+        User is in round 4. Traded in round 2, but not in round 3, and not yet in round 4. 
+        """
+        # some market is in round 4
+        market = Market.objects.create(round=4)
+
+        # a user has joined properly
+        trader = Trader.objects.create(name='otto', market=market)
+        session = self.client.session
+        session['trader_id'] = trader.pk
+        session.save()
+
+        # the user has made a trade in round 2
+        Trade.objects.create(trader=trader, round=2,
+                             profit=3432253, balance_after=12, was_forced=False)
+
+        # the user has not traded in round 3, so a forced trade has been created
+        Trade.objects.create(trader=trader, round=3, was_forced=True)
+
+        # user goes to play url
+        response = self.client.get(reverse('market:play'))
+
+        # The user has not traded in this round so he should get back play temlpate
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'market/play.html'),
+
+        html = response.content.decode('utf8')
+
+        # template should not contain the words wait or Wait
+        html = response.content.decode('utf8')
+        self.assertNotIn("wait", html)
+        self.assertNotIn("Wait", html)
+
+        # template should not contain the words last or Last
+        html = response.content.decode('utf8')
+
+        # template should contain a submit button
+        self.assertIn("submit", html)
+
+        # template should contain profit from round 2
+        self.assertIn("3432253", html)
+        self.assertIn("----", html)
 
 
 class PlayViewPOSTRequestTest(TestCase):
@@ -398,6 +480,7 @@ class PlayViewPOSTRequestTest(TestCase):
 
         self.assertEqual(trader.balance, 5000)
         self.assertEqual(trader.prod_cost, 1)
+
         # the client sends in a trade form with valid data
         response = self.client.post(
             reverse('market:play'), {'unit_price': '11', 'unit_amount': '45'})
@@ -414,12 +497,11 @@ class PlayViewPOSTRequestTest(TestCase):
         self.assertEqual(trade.profit, None)
         self.assertFalse(trade.balance_after, None)
 
-        # after a succesfull post request, we should redirect to wait
-
+        # after a succesfull post request, we should redirect to play
         self.assertEqual(response.status_code, 302)
         expected_redirect_url = reverse('market:play')
         self.assertEqual(response['Location'], expected_redirect_url)
-
+        html = response.content.decode('utf8')
 
 class TraderAPITest(TestCase):
 

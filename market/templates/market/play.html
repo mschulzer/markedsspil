@@ -33,15 +33,15 @@
                     <li class="list-group-item">Initial balance: <b>{{ initial_balance }}</b></li>
                     <li class="list-group-item">Current balance: <b>{{ trader.balance }}</b></li>
                     <li class="list-group-item">Net gain (all rounds): <b
-                            style="color:{{ gain_color }}">{{ trader.balance|subtract:initial_balance}}</b></li>
+                            style="color:{{ total_gain_color }}">{{ trader.balance|subtract:initial_balance}}</b></li>
                 </ul>
             </div>
         </div>
     </div>    
 </div>
 
+{% if last_round_data_available %}
 <!-- Results from last round -->
-{% if market.round > 0 and not trader.trade_set.all.last.was_forced %}
 <div class="row mb-5">
     <div class="col-12">
         <div class="card">
@@ -50,18 +50,13 @@
             </div>
             <div class="card-body">
                 <ul>
-                    <li>Your unit price last round was {{ trader.trade_set.all.last.unit_price}}</li>
+                    <li>Your unit price last round was {{ trades.last.unit_price }}</li>
                     <li>The market average unit price last round was
                         {{ round_stats.all.last.avg_price | floatformat:1 }}</li>
-                    <li>You produced {{ trader.trade_set.all.last.unit_amount}} units</li>
-                    <li>You sold produced {{ trader.trade_set.all.last.units_sold }} units</li>
-                    {% if trader.trade_set.all.last.profit < 0 %}
-                    <li>Your profit last round was: <span style="color:red">
-                            {{ trader.trade_set.all.last.profit }}</span></li>
-                    {% else %}
-                    <li>Your profit last round was <span style="color:blue">
-                            {{ trader.trade_set.all.last.profit }}</span></li>
-                    {% endif %}
+                    <li>You produced {{ trades.last.unit_amount}} units</li>
+                    <li>You sold produced {{ trades.last.units_sold }} units</li>
+                    <li>Your profit last round was: <span style="color:{{last_round_gain_color}}red">
+                            {{ trades.last.profit }}</span></li>
                 </ul>
             </div>
         </div>
@@ -70,8 +65,8 @@
 {% endif %}
 
 
-<!-- Trade history  -->
 {% if market.round > 0 %}
+<!-- Trade history  -->
 <div class="row mb-5">
     <div class="col">
         <div class="card">
@@ -92,19 +87,19 @@
                             <tbody>
                                 <tr>
                                     <td scope="row">Units Produced</td>
-                                    {% for trade in trader.trade_set.all %}
+                                    {% for trade in trades %}
                                     <td>{{ trade|get_attribute:'unit_amount' }}</td>
                                     {% endfor %}
                                 </tr>
                                 <tr>
                                     <td scope="row">Units Sold</td>
-                                    {% for trade in trader.trade_set.all %}
+                                    {% for trade in trades %}
                                     <td>{{ trade|get_attribute:'units_sold' }}</td>
                                     {% endfor %}
                                 </tr>
                                 <tr>
                                     <td scope="row">Unit Price</td>
-                                    {% for trade in trader.trade_set.all %}
+                                    {% for trade in trades %}
                                     <td>{{ trade|get_attribute:'unit_price' }}</td>
                                     {% endfor %}
                                 </tr>
@@ -116,13 +111,13 @@
                                 </tr>
                                 <tr>
                                     <td scope="row">Profit</td>
-                                    {% for trade in trader.trade_set.all %}
+                                    {% for trade in trades %}
                                     <td>{{ trade|get_attribute:'profit' }}</td>
                                     {% endfor %}
                                 </tr>
                                 <tr>
                                     <td scope="row">Balance (Initial: {{ initial_balance }})</td>
-                                    {% for trade in trader.trade_set.all %}
+                                    {% for trade in trades %}
                                     <td>{{ trade|get_attribute:'balance_after' }}</td>
                                     {% endfor %}
                                 </tr>
@@ -145,10 +140,10 @@
             <div class="card-body">
                 {% if market.round > 0 %}
                 <p class="text-secondary mb-4">
-                    {% if not trader.trade_set.all.last.was_forced %}
+                    {% if not trades.last.was_forced %}
                     
-                    Last round you produced {{ trader.trade_set.all.last.unit_amount }} unit and sold {{ trader.trade_set.all.last.units_sold }} units.<br>
-                    Your unit price last round was: {{ trader.trade_set.all.last.unit_price }}.<br>
+                    Last round you produced {{ trades.last.unit_amount }} unit and sold {{ trades.last.units_sold }} units.<br>
+                    Your unit price last round was: {{ trades.last.unit_price }}.<br>
                     {% endif %}
                     Market average unit price last round: {{ round_stats.all.last.avg_price | floatformat:1 }}.
                 </p>
@@ -172,9 +167,6 @@
         </div>
     </div>
 </div>
-
-
-<!-- last round unit_price can be queried like this: {{ trader.trade_set.all.last.unit_price}} -->
 
 {% endblock %}
 
@@ -260,7 +252,26 @@
         set_potential_net_gain();
     }
     
-
+    round_num = parseInt("{{ market.round }}");
+    market_id = "{{ market.market_id }}";
+    function check_for_next_round() {
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'market:current_round' market.market_id %}",
+            data: {
+                    'market_id': market_id
+            },
+            dataType: 'json',
+            success: function (data) {
+                console.log(data, data.round, round_num);
+                if (data.round > round_num) {
+                        window.location.href = "{% url 'market:play' %}"
+                }
+            }
+        });
+    }
+    
+    window.setInterval(check_for_next_round, 1000);
 </script>
 
 {% endblock %}

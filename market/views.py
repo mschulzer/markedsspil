@@ -122,6 +122,12 @@ def play(request):
     else:
         market = trader.market
         context = {'market': trader.market, 'trader': trader}
+        
+        last_round_data_available = False
+        if market.round > 0:
+            traders_last_trade = Trade.objects.get(trader=trader, round=market.round - 1)
+            if not traders_last_trade.was_forced:
+                last_round_data_available = True
 
         if request.method == 'POST':
             form = TradeForm(data=request.POST)
@@ -137,25 +143,32 @@ def play(request):
             has_traded_this_round = Trade.objects.filter(trader=trader, round=market.round).exists()
             if has_traded_this_round:
                 return render(request, 'market/wait.html', context )
-            form = TradeForm(trader)
-            if market.round > 0:
-                traders_last_trade = Trade.objects.get(trader=trader, round=market.round - 1)
-                if not traders_last_trade.was_forced:
-                    last_price = traders_last_trade.unit_price
-                    last_amount = traders_last_trade.unit_amount
-                    form = TradeForm(trader,
-                        initial={'unit_price': last_price, 'unit_amount': last_amount})
+            
+            if not last_round_data_available:
+                form = TradeForm(trader)
+            else:            
+                last_price = traders_last_trade.unit_price
+                last_amount = traders_last_trade.unit_amount
+                form = TradeForm(trader,
+                    initial={'unit_price': last_price, 'unit_amount': last_amount})
+
+        context['last_round_data_available'] = last_round_data_available         
         context['form'] = form
         context['rounds'] = range(market.round)
         context['initial_balance'] = Trader.initial_balance
         context['round_stats'] = RoundStat.objects.filter(market=market)
-
+        trades = Trade.objects.filter(trader=trader)
+        context['trades'] = trades
         if trader.balance >= Trader.initial_balance:
-            context['gain_color'] = "blue"
+            context['total_gain_color'] = "blue"
         else:
-            context['gain_color'] = "red"
-     
-        #'show_stats_fields': ['profit', 'balance_after', 'unit_price', 'unit_amount', 'was_forced'],
+            context['total_gain_color'] = "red"
+
+        if last_round_data_available:
+            if trades.last().profit >= 0:
+                context['last_round_gain_color'] = "blue"
+            else:
+                context['last_round_gain_color'] = "red"
 
         return render(request, 'market/play.html', context)
            
