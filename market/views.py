@@ -146,24 +146,13 @@ def play(request):
             'trades':trades
         }
 
-        if trader.balance >= Trader.initial_balance:
-            context['total_gain_color'] = "blue"
-        else:
-            context['total_gain_color'] = "red"
-
         if trades.filter(round=market.round).exists():
             context['wait'] = True
         
         elif market.round > 0:
-            print("round>0")
             last_trade = trades.get(round=market.round -1)
-            print("last_trade:", last_trade.profit)            
             if type(last_trade.profit) is int:
                 context['show_last_round_data'] = True
-                if last_trade.profit >= 0:
-                    context['last_round_gain_color'] = "blue"
-                else:
-                    context['last_round_gain_color'] = "red"
 
         return render(request, 'market/play.html', context)
            

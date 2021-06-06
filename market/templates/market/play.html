@@ -43,8 +43,15 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">Initial balance: <b>{{ initial_balance }}</b></li>
                     <li class="list-group-item">Current balance: <b>{{ trader.balance }}</b></li>
-                    <li class="list-group-item">Net gain (all rounds): <b
-                            style="color:{{ total_gain_color }}">{{ trader.balance|subtract:initial_balance}}</b></li>
+                    <li class="list-group-item">Net gain (all rounds): 
+                    <b 
+                        {% if initial_balance > trader.balance %}
+                            style="color:red"
+                        {% else %}
+                            style="color:blue"
+                        {% endif %}
+                    >
+                    {{ trader.balance|subtract:initial_balance}}</b></li>
                 </ul>
             </div>
         </div>
@@ -66,8 +73,14 @@
                         {{ round_stats.all.last.avg_price | floatformat:1 }}</li>
                     <li>You produced {{ trades.last.unit_amount}} units</li>
                     <li>You sold produced {{ trades.last.units_sold }} units</li>
-                    <li>Your profit last round was: <span style="color:{{last_round_gain_color}}">
-                            {{ trades.last.profit }}</span></li>
+                    <li>Your profit last round was:
+                        {% if trades.last.profit < 0 %}
+                            <span style="color:red">
+                        {% else %}
+                            <span style="color:blue">
+                        {% endif %}
+                        {{ trades.last.profit }}</span>
+                    </li>
                 </ul>
             </div>
         </div>
