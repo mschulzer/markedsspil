@@ -396,6 +396,8 @@ class PlayViewPOSTRequestTest(TestCase):
         session['trader_id'] = trader.pk
         session.save()
 
+        self.assertEqual(trader.balance, 5000)
+        self.assertEqual(trader.prod_cost, 1)
         # the client sends in a trade form with valid data
         response = self.client.post(
             reverse('market:play'), {'unit_price': '11', 'unit_amount': '45'})

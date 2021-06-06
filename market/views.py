@@ -124,7 +124,7 @@ def play(request):
         context = {'market': trader.market, 'trader': trader}
 
         if request.method == 'POST':
-            form = TradeForm(request.POST)
+            form = TradeForm(data=request.POST)
             if form.is_valid():
                 new_trade = form.save(commit=False)
                 new_trade.trader = trader
@@ -137,8 +137,14 @@ def play(request):
             has_traded_this_round = Trade.objects.filter(trader=trader, round=market.round).exists()
             if has_traded_this_round:
                 return render(request, 'market/wait.html', context )
-            form = TradeForm()
-            
+            form = TradeForm(trader)
+            if market.round > 0:
+                traders_last_trade = Trade.objects.get(trader=trader, round=market.round - 1)
+                if not traders_last_trade.was_forced:
+                    last_price = traders_last_trade.unit_price
+                    last_amount = traders_last_trade.unit_amount
+                    form = TradeForm(trader,
+                        initial={'unit_price': last_price, 'unit_amount': last_amount})
         context['form'] = form
         context['rounds'] = range(market.round)
         context['initial_balance'] = Trader.initial_balance
