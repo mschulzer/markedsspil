@@ -353,11 +353,11 @@ class PlayViewGetRequestTest(TestCase):
         Trade.objects.create(trader=trader, round=market.round, profit=345)
         self.assertEqual(Trade.objects.filter(trader=trader, round=0).count(),1)
         
-        # user goes to play url and should get wait template back
+        # user goes to play url and should get play-template shown
         response = self.client.get(
             reverse('market:play'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/wait.html'),
+        self.assertTemplateUsed(response, 'market/play.html'),
 
          # template should contain the word Waiting
         html = response.content.decode('utf8')
@@ -501,7 +501,6 @@ class PlayViewPOSTRequestTest(TestCase):
         self.assertEqual(response.status_code, 302)
         expected_redirect_url = reverse('market:play')
         self.assertEqual(response['Location'], expected_redirect_url)
-        html = response.content.decode('utf8')
 
 class TraderAPITest(TestCase):
 

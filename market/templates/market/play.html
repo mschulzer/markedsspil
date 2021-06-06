@@ -6,6 +6,17 @@
 
 {% block content %}
 
+{% if wait %}
+<div style="border:1px solid red" class="p-5 mb-5">
+    
+    <p> Thanks for making a trade!</p>
+    <h3>Waiting for market host to finish round #{{ market.round }} ...</h3>
+    </p>
+    <p></p>
+
+</div>
+{% endif %}
+
 <!-- Info on trader and current status -->
 <div class="row mb-5">
     <div class="col-12 col-md-6">    
@@ -40,7 +51,7 @@
     </div>    
 </div>
 
-{% if last_round_data_available %}
+{% if show_last_round_data %}
 <!-- Results from last round -->
 <div class="row mb-5">
     <div class="col-12">
@@ -80,15 +91,19 @@
                             <tr>
                                 <th></th>
                                 {% for round in rounds %}
-                                <th scope="col">Round {{ round }}</th>
+                                    <th scope="col">Round {{ round }}</th>
                                 {% endfor %}
+                                {% if wait %}
+                                    <th scope="col">Round {{ market.round }}</th>
+                                {% endif %}
+
                             </tr>
                             <thead>
                             <tbody>
                                 <tr>
                                     <td scope="row">Units Produced</td>
                                     {% for trade in trades %}
-                                    <td>{{ trade|get_attribute:'unit_amount' }}</td>
+                                        <td>{{ trade|get_attribute:'unit_amount' }}</td>
                                     {% endfor %}
                                 </tr>
                                 <tr>
@@ -108,6 +123,9 @@
                                     {% for round_stat in round_stats %}
                                     <td>{{ round_stat.avg_price | floatformat:0 }}</td>
                                     {% endfor %}
+                                    {% if wait %}
+                                        <td scope="col"> ---- </td>
+                                    {% endif %}
                                 </tr>
                                 <tr>
                                     <td scope="row">Profit</td>
@@ -130,6 +148,7 @@
 </div>
 {% endif %}
 
+{% if not wait %}
 <!-- Next Trade -->
 <div class="row mb-5">
     <div class="col">
@@ -140,7 +159,7 @@
             <div class="card-body">
                 {% if market.round > 0 %}
                 <p class="text-secondary mb-4">
-                    {% if not trades.last.was_forced %}
+                    {% if show_last_round_data %}
                     
                     Last round you produced {{ trades.last.unit_amount }} unit and sold {{ trades.last.units_sold }} units.<br>
                     Your unit price last round was: {{ trades.last.unit_price }}.<br>
@@ -167,11 +186,13 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 {% endblock %}
 
 {% block javascript %}
 
+{%if not wait %}
 <script>
     
     var labels = document.getElementsByTagName('label');    
@@ -252,6 +273,10 @@
         set_potential_net_gain();
     }
     
+</script>
+{% endif %}
+
+<script>
     round_num = parseInt("{{ market.round }}");
     market_id = "{{ market.market_id }}";
     function check_for_next_round() {
@@ -270,7 +295,7 @@
             }
         });
     }
-    
+
     window.setInterval(check_for_next_round, 1000);
 </script>
 

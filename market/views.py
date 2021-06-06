@@ -121,54 +121,49 @@ def play(request):
         return redirect(reverse('market:join'))
     else:
         market = trader.market
-        context = {'market': trader.market, 'trader': trader}
-        
-        last_round_data_available = False
-        if market.round > 0:
-            traders_last_trade = Trade.objects.get(trader=trader, round=market.round - 1)
-            if not traders_last_trade.was_forced:
-                last_round_data_available = True
 
         if request.method == 'POST':
             form = TradeForm(data=request.POST)
-            if form.is_valid():
+            assert(form.is_valid), 'TradeForm invalid - This should not be possible' 
+            if form.is_valid(): 
                 new_trade = form.save(commit=False)
                 new_trade.trader = trader
                 new_trade.round = market.round
                 new_trade.save()
-                return redirect(reverse('market:play'))
-            
-        elif request.method == 'GET':
-            context = {'market': trader.market, 'trader': trader}
-            has_traded_this_round = Trade.objects.filter(trader=trader, round=market.round).exists()
-            if has_traded_this_round:
-                return render(request, 'market/wait.html', context )
-            
-            if not last_round_data_available:
-                form = TradeForm(trader)
-            else:            
-                last_price = traders_last_trade.unit_price
-                last_amount = traders_last_trade.unit_amount
-                form = TradeForm(trader,
-                    initial={'unit_price': last_price, 'unit_amount': last_amount})
+            return redirect(reverse('market:play'))
 
-        context['last_round_data_available'] = last_round_data_available         
-        context['form'] = form
-        context['rounds'] = range(market.round)
-        context['initial_balance'] = Trader.initial_balance
-        context['round_stats'] = RoundStat.objects.filter(market=market)
+        # Get requests only :     
+        form = TradeForm(trader)
         trades = Trade.objects.filter(trader=trader)
-        context['trades'] = trades
+
+        context = {
+            'market': market,
+            'trader':trader,
+            'form':form,
+            'rounds':range(market.round),
+            'initial_balance': Trader.initial_balance,
+            'round_stats':RoundStat.objects.filter(market=market),
+            'trades':trades
+        }
+
         if trader.balance >= Trader.initial_balance:
             context['total_gain_color'] = "blue"
         else:
             context['total_gain_color'] = "red"
 
-        if last_round_data_available:
-            if trades.last().profit >= 0:
-                context['last_round_gain_color'] = "blue"
-            else:
-                context['last_round_gain_color'] = "red"
+        if trades.filter(round=market.round).exists():
+            context['wait'] = True
+        
+        elif market.round > 0:
+            print("round>0")
+            last_trade = trades.get(round=market.round -1)
+            print("last_trade:", last_trade.profit)            
+            if type(last_trade.profit) is int:
+                context['show_last_round_data'] = True
+                if trades.last().profit >= 0:
+                    context['last_round_gain_color'] = "blue"
+                else:
+                    context['last_round_gain_color'] = "red"
 
         return render(request, 'market/play.html', context)
            
