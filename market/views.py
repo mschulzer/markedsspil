@@ -160,7 +160,7 @@ def play(request):
             print("last_trade:", last_trade.profit)            
             if type(last_trade.profit) is int:
                 context['show_last_round_data'] = True
-                if trades.last().profit >= 0:
+                if last_trade.profit >= 0:
                     context['last_round_gain_color'] = "blue"
                 else:
                     context['last_round_gain_color'] = "red"

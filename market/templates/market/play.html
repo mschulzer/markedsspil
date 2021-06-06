@@ -66,7 +66,7 @@
                         {{ round_stats.all.last.avg_price | floatformat:1 }}</li>
                     <li>You produced {{ trades.last.unit_amount}} units</li>
                     <li>You sold produced {{ trades.last.units_sold }} units</li>
-                    <li>Your profit last round was: <span style="color:{{last_round_gain_color}}red">
+                    <li>Your profit last round was: <span style="color:{{last_round_gain_color}}">
                             {{ trades.last.profit }}</span></li>
                 </ul>
             </div>
@@ -290,7 +290,7 @@
             success: function (data) {
                 console.log(data, data.round, round_num);
                 if (data.round > round_num) {
-                        window.location.href = "{% url 'market:play' %}"
+                    window.location.href = "{% url 'market:play' %}"
                 }
             }
         });
