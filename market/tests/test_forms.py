@@ -117,3 +117,31 @@ class TradeFormTest(TestCase):
         self.assertIsInstance(new_trade, Trade)
         self.assertEqual(Trade.objects.all().count(), 1)
 
+    def test_init_with_trader_as_argument(self):
+        """ trade form is created when trader is argument, and max_amount is calculated properly """
+        market = Market.objects.create()
+        trader = Trader.objects.create(market=market, name="Hans Lange", prod_cost=10, balance=201)
+        data = {'unit_price': 18, 'unit_amount': 140}
+        form = TradeForm(trader, data=data)
+        market = Market.objects.create()
+        trader = Trader.objects.create(market=market, name="joe")
+        new_trade = form.save(commit=False)
+        new_trade.trader = trader
+        new_trade.round = market.round
+        new_trade.save()
+        self.assertEqual(Trade.objects.all().count(), 1)
+        self.assertIn('max="20"',str(form)) # balance/prod_price=20,5 
+
+    def test_form_init__doesnt_crash_when_prod_cost_is_zero(self):
+        """ trade form is created when trader is argument, and max_amount is calculated properly """
+        market = Market.objects.create()
+        trader = Trader.objects.create(market=market, name="Hans Lange", prod_cost=0, balance=201)
+        data = {'unit_price': 18, 'unit_amount': 140}
+        form = TradeForm(trader, data=data)
+        market = Market.objects.create()
+        trader = Trader.objects.create(market=market, name="joe")
+        new_trade = form.save(commit=False)
+        new_trade.trader = trader
+        new_trade.round = market.round
+        new_trade.save()
+        self.assertEqual(Trade.objects.all().count(), 1)

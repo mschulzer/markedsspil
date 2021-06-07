@@ -1,13 +1,12 @@
 from unicodedata import decimal
 from django.test import TestCase
 from ..models import Market, Trader, Trade
-from ..helpers import create_forced_trade, get_trades
+from ..helpers import create_forced_trade, filter_trades
 from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade
 from ..forms import TraderForm
-from ..views import validate_market_and_trader
-from ..helpers import get_trades
+from ..helpers import filter_trades
 
 class TwoPlayerGame(TestCase):
      
@@ -121,5 +120,14 @@ class TwoPlayerGame(TestCase):
         url = reverse('market:monitor', args=(market.market_id,))
         self.client.post(url)
 
+        # Klaus' balance is now set to 5000
         self.assertTrue(klaus.balance==5000)
-      
+
+        # a forced trade has been made for Klaus
+        klaus_trade = Trade.objects.get(
+            trader=klaus, round=1)   # we are now in round 1
+        self.assertTrue(klaus_trade.was_forced)
+
+        # we are now in round 2
+        market.refresh_from_db()
+        self.assertEqual(market.round, 2)

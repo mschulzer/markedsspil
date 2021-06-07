@@ -1,5 +1,5 @@
 {% extends "market/base.html" %}
-{% block title %}Market monitor{% endblock %}
+{% block title %}Monitor{% endblock %}
 {% block content %}
 {% load custom_tags %}
 
@@ -51,14 +51,14 @@
         </thead>
         <tbody>
             {% for i in max_num_players %}
-            <tr style="display:none"  id="table_row{{i}}">
-                <th scope="row">{{i|add:1}}</th>  
-                <td id="name{{i}}">name{{i}}</td>
-                <td id="ready{{i}}">ready{{i}}</td>
-                <td id="prod_cost{{i}}">prod_cost{{i}}</td>
-                <td id="balance{{ i }}">balance{{i}}</td>
-            </tr>
-        {% endfor %}
+                <tr style="display:none"  id="table_row{{i}}">
+                    <th scope="row">{{i|add:1}}</th>  
+                    <td id="name{{i}}">name{{i}}</td>
+                    <td id="ready{{i}}">ready{{i}}</td>
+                    <td id="prod_cost{{i}}">prod_cost{{i}}</td>
+                    <td id="balance{{ i }}">balance{{i}}</td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
     <p>Traders in market: <span id="num_traders">0</span> (<span id="num_ready_traders">0</span> ready for next round)</p>
@@ -87,6 +87,9 @@
 {% if market.round > 0 %}
     {% for field in show_stats_fields %}
         <h3>{{ field|field_name_to_label }}</h3>
+        {% if field == 'balance_after' %}
+            <p>Initial balance: {{ initial_balance }}</p>
+        {% endif %}
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -106,6 +109,7 @@
                             {% endfor %}
                         </tr>
                     {% endfor %}
+                </tbody>
             </table>
         </div>
         <br><br>

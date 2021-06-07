@@ -4,12 +4,12 @@ from . import views
 
 app_name = 'market'
 urlpatterns = [
+    
     # Pages
     path('', views.home, name='home'),
     path('join/', views.join, name='join'),
     path('create/', views.create, name='create'),
-    path('<market_id>/play/', views.play, name='play'),
-    path('<market_id>/wait/', views.wait, name='wait'),
+    path('play/', views.play, name='play'),
     path('<market_id>/monitor/', views.monitor, name='monitor'),
 
     # APIs

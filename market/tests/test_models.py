@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..models import Market, Trader, Trade
+from ..models import Market, Trader, Trade, RoundStat
 
 class MarketModelTest(TestCase):
 
@@ -71,15 +71,72 @@ class TraderModelTest(TestCase):
         self.market.round += 1
         self.assertFalse(self.trader.is_ready())      
 
-
 class TradeModelTest(TestCase):
     
     def test_object_name(self):
         market = Market.objects.create(round=5)
         trader = Trader.objects.create(market=market, name='Joe Salesman')
         trade = Trade.objects.create(
-        trader= trader, round=market.round, unit_price=13.45, unit_amount=34)
+        trader= trader, round=market.round, unit_price=13.45, unit_amount=34, profit=-4, balance_after=-400, was_forced=False)
 
         expected_object_name = f"Joe Salesman $13.45 x 34 [{market.market_id}][5]"
         self.assertEqual(str(trade), expected_object_name)
     
+    def test_constraint_trade_and_round_unique_together(self):
+        market = Market.objects.create(round=5)
+        trader = Trader.objects.create(market=market, name='Joe Salesman')
+
+        # we try to make a trade with same trader and same round - this should cast an integrety error in the database
+    
+        Trade.objects.create(
+            trader=trader, round=market.round, unit_price=4, unit_amount=434)
+        try:
+            trade = Trade.objects.create(
+                trader=trader, round=market.round, unit_price=4, unit_amount=434)
+        except:
+            trade = "not really a trade"
+        finally:
+            self.assertEqual(trade, "not really a trade")
+      
+      
+
+class TestRoundStatModel(TestCase):
+
+    def test_object_creation_and_name(self):
+        market = Market.objects.create(round=5)
+        roundstat = RoundStat.objects.create(market=market, round=3, avg_price=34.343) 
+        r1 = RoundStat.objects.first()
+        self.assertIsInstance(r1, RoundStat)
+        self.assertEqual(r1.market, market)
+        self.assertEqual(r1.round, 3)
+        self.assertEqual(float(r1.avg_price), 34.343)
+        self.assertEqual(str(r1), f"{market.market_id}[3]")
+
+
+    def test_market_and_round_uinque_together(self):
+        market1 = Market.objects.create(round=5)
+        market2 = Market.objects.create(round=5)
+        RoundStat.objects.create(
+            market=market1, round=3, avg_price=34.343)
+
+        # it should be possible to create another object with same market, but different round
+        s1 = RoundStat.objects.create(market=market1, round=4, avg_price=34.343)
+        self.assertIsInstance(s1, RoundStat)
+
+        # it should be possible to create another object with same same round, but different market
+        s1 = RoundStat.objects.create(
+            market=market2, round=3, avg_price=34.343)
+        self.assertIsInstance(s1, RoundStat)
+
+        # it should not be possible to possible to create another object with same round and market
+        try: 
+            rs=RoundStat.objects.create(
+                market=market1, round=3, avg_price=100)
+        except:
+            rs = "this should execute"
+        finally:
+            self.assertEqual(rs, "this should execute")
+
+
+
+           

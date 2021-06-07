@@ -1,13 +1,10 @@
 from django.test import TestCase
 from ..models import Market, Trader, Trade
-from ..helpers import create_forced_trade, get_trades
+from ..helpers import create_forced_trade, filter_trades
 
 
 class TestCreateForcedTrade(TestCase):
 
-    def setUp(self):
-        """ Setup this test data before each test method in clas """
-        pass
     
     def test_create_forced_trade_NOT_new_trader(self):
 
@@ -56,25 +53,25 @@ class TestGetTrades(TestCase):
         self.trade3 = Trade.objects.create(trader=self.trader21, round=0)
         self.trade4 = Trade.objects.create(trader=self.trader22, round=1)
 
-    def test_get_trades_of_market_two_trades(self):
-        trades1 = get_trades(market=self.market1)
+    def test_filter_trades_of_market_two_trades(self):
+        trades1 = filter_trades(market=self.market1)
         self.assertEqual(trades1.count(),2)
         self.assertEqual(trades1[0], self.trade1)
         self.assertEqual(trades1[1], self.trade2)
 
-        trades2 = get_trades(market=self.market2)
+        trades2 = filter_trades(market=self.market2)
         self.assertEqual(trades2.count(), 2)
         self.assertEqual(trades2[0], self.trade3)
         self.assertEqual(trades2[1], self.trade4)
     
-    def test_get_trades_of_market_and_round(self):
-        trades1 = get_trades(market=self.market1, round=0)
+    def test_filter_trades_of_market_and_round(self):
+        trades1 = filter_trades(market=self.market1, round=0)
         self.assertEqual(trades1.count(),1)
         self.assertEqual(trades1[0], self.trade1)
 
-        trades1 = get_trades(market=self.market1, round=1)
+        trades1 = filter_trades(market=self.market1, round=1)
         self.assertEqual(trades1.count(), 1)
         self.assertEqual(trades1[0], self.trade2)
 
-        trades1 = get_trades(market=self.market1, round=3)
+        trades1 = filter_trades(market=self.market1, round=3)
         self.assertEqual(trades1.count(), 0)

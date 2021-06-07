@@ -1,6 +1,7 @@
 from django import forms
 from .models import Market, Trade, Trader
 from django.core.exceptions import ValidationError
+from math import floor
 
 class MarketForm(forms.ModelForm):
     class Meta:
@@ -15,7 +16,7 @@ class MarketForm(forms.ModelForm):
         }
 
     def clean(self):
-        """ Additional validation of form data """
+        """ Additional validation of input data """
         cleaned_data = super().clean()
         min_cost = cleaned_data.get("min_cost")
         max_cost = cleaned_data.get("max_cost")
@@ -31,12 +32,11 @@ class TraderForm(forms.ModelForm):
         model = Trader
         fields = ['name']
         labels = {
-            'name': ('Username'),
+            'name': ('Name'),
         }
         help_texts = {
-            'name': ('The name you choose here will be visible in the scoreboard for this market'),
+            'name': ('The name you choose here will be visible in the scoreboard for the participant in this market'),
         }
-
 
     def clean_market_id(self):
         """ Additional validation of the form's market_id field """
@@ -58,7 +58,7 @@ class TraderForm(forms.ModelForm):
             market = Market.objects.get(market_id = cleaned_market_id)
             if Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
-                    'There is already a trader with this name on the market. Please select another name')
+                    'There is already a trader with this name on the requested market. Please select another name')
         return cleaned_data
         
 
@@ -67,15 +67,27 @@ class TradeForm(forms.ModelForm):
         model = Trade
         fields = ['unit_price', 'unit_amount']
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'value':10, 'class':'slider', 'step':1}),
-            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'max': 400, 'value': 20, 'class': 'slider'}),
+            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'class':'slider', 'step':1}),
+            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class':'slider', 'step':1}),
         }
         labels = {
-            'unit_price': ('Price: 10'),
-            'unit_amount': ('Amount: 0')
+            'unit_price': ('Price: '),
+            'unit_amount': ('Amount: ')
         }
         help_texts = {
             'unit_price': ('Select a price for one unit of your product'),
             'unit_amount': ('How many units do you want to produce?'),
         }
+
+    def __init__(self, trader=None, *args, **kwargs):
+        super(TradeForm, self).__init__(*args, **kwargs)
+
+        if trader:
+            if trader.prod_cost > 0:  
+                max_unit_amount = floor((trader.balance/trader.prod_cost))
+            else:  # should this even be allowed to happen?
+                max_unit_amount = 100  # this number is arbitrary at this point
+
+            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount #test this
+
 
