@@ -22,24 +22,25 @@ def create(request):
     elif request.method == 'GET':
         form = MarketForm()
     return render(request, 'market/create.html', {'form': form})
-
+            
 def join(request):
     if request.method == 'POST':
         form = TraderForm(request.POST)
         if form.is_valid():
             market = Market.objects.get(market_id=form.cleaned_data['market_id'])
-            new_trader = Trader.objects.create(
-                market = market,
-                name = form.cleaned_data['username'],
-                prod_cost = randint(market.min_cost, market.max_cost),
-                balance = Trader.initial_balance
-            )
+
+            new_trader = form.save(commit=False)
+            new_trader.market = market
+            new_trader.prod_cost = randint(market.min_cost, market.max_cost)
+            new_trader.balance = Trader.initial_balance
+            new_trader.save()
+            
             request.session['trader_id'] = new_trader.pk
             
             # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1 
             if market.round > 0:
                 for round_num in range(market.round):
-                    create_forced_trade(trader=new_trader, round_num=round_num)
+                    create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
 
             return HttpResponseRedirect(reverse('market:play', args=(market.market_id,)))
     elif request.method == 'GET':
@@ -89,7 +90,7 @@ def monitor(request, market_id):
         for trader in traders:
             traders_number_of_real_trades_this_round = get_trades(market=market, round=market.round).filter(trader=trader).count()
             if traders_number_of_real_trades_this_round == 0:
-                create_forced_trade(trader=trader, round_num=market.round)
+                create_forced_trade(trader=trader, round_num=market.round, is_new_trader=False)
                 
         all_trades_this_round = get_trades(market=market, round=market.round)        
         assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round does not equal num traders ."

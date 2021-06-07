@@ -50,11 +50,11 @@ class CreateMarketViewTests(TestCase):
 
         # test post requests
         
-        def test_market_is_created_when_data_is_valid(self):
-            self.assertEqual(Market.objects.all().count(), 0)
-            self.client.post(
-                reverse('market:create'), self.valid_data)
-            self.assertEqual(Market.objects.all().count(), 1)
+    def test_market_is_created_when_data_is_valid(self):
+        self.assertEqual(Market.objects.all().count(), 0)
+        self.client.post(
+            reverse('market:create'), self.valid_data)
+        self.assertEqual(Market.objects.all().count(), 1)
 
     def test_redirect_to_corrent_url_after_market_creation(self):
         response = self.client.post(
@@ -77,7 +77,9 @@ class CreateMarketViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Market.objects.all().count(), 0)
         html = response.content.decode('utf8')
-        self.assertIn("This field is required.", html)
+        error_english = "This field is required." in html
+        error_danish = "Dette felt er påkrævet." in html
+        self.assertTrue(error_english or error_danish, html)
         # other errors that could be tested: alpha has too many digits, min_cost not integer....
 
 
@@ -117,7 +119,10 @@ class JoinViewTest(TestCase):
         self.assertFalse('trader_id' in self.client.session)
 
         html = response.content.decode('utf8')
-        self.assertIn('This field is required', html)
+        error_english = "This field is required." in html
+        error_danish = "Dette felt er påkrævet." in html
+        self.assertTrue(error_english or error_danish, html)
+
         self.assertEqual(Trader.objects.all().count(), 0)
 
     def test_proper_behavior_when_no_username_in_form(self):
@@ -127,7 +132,9 @@ class JoinViewTest(TestCase):
         self.assertFalse('trader_id' in self.client.session)
 
         html = response.content.decode('utf8')
-        self.assertIn('<strong>This field is required.</strong>', html)
+        error_english = "This field is required." in html
+        error_danish = "Dette felt er påkrævet." in html
+        self.assertTrue(error_english or error_danish, html)
         self.assertEqual(Trader.objects.all().count(), 0)
 
     def test_proper_behavior_when_no_market_with_posted_market_id(self):
@@ -143,7 +150,7 @@ class JoinViewTest(TestCase):
     def test_new_trader_created_when_form_is_valid(self):
         market = Market.objects.create()
         response = self.client.post(reverse('market:join'), {
-                                    'username': 'Hanne', 'market_id': market.market_id})
+                                    'name': 'Hanne', 'market_id': market.market_id})
         self.assertEqual(Trader.objects.all().count(), 1)
         new_trader = Trader.objects.first()
         self.assertEqual(new_trader.market, market)
@@ -157,7 +164,7 @@ class JoinViewTest(TestCase):
 
         # a players named Hanne tries to join the market (she is late)
         response = self.client.post(reverse('market:join'), {
-                                    'username': 'Hanne', 'market_id': market.market_id})
+                                    'name': 'Hanne', 'market_id': market.market_id})
         
         # the trader hanne was created
         hanne = Trader.objects.get(name='Hanne')
@@ -451,10 +458,10 @@ class PlayViewTest(TestCase):
         session.save()
         self.assertEqual(Trade.objects.all().count(), 0)
         response = self.client.post(
-            reverse('market:play', args=(self.market.market_id,)), {'unit_price': '10.9', 'unit_amount': '45'})
+            reverse('market:play', args=(self.market.market_id,)), {'unit_price': '11', 'unit_amount': '45'})
         self.assertEqual(Trade.objects.all().count(), 1)
         trade = Trade.objects.first()
-        self.assertEqual(float(trade.unit_price), 10.9)
+        self.assertEqual(float(trade.unit_price), 11)
         self.assertEqual(trade.unit_amount, 45)
         self.assertEqual(trade.trader.market, self.market)
         self.assertEqual(trade.trader, self.trader_on_market)
