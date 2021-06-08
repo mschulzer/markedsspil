@@ -40,7 +40,7 @@ class TraderForm(forms.ModelForm):
 
     def clean_market_id(self):
         """ Additional validation of the form's market_id field """
-        market_id = self.cleaned_data['market_id']
+        market_id = self.cleaned_data['market_id'].upper()
 
         if not Market.objects.filter(pk=market_id).exists():
             raise forms.ValidationError('There is no market with this ID')
