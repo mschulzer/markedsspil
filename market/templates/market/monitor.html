@@ -81,8 +81,12 @@
     {% csrf_token %}
 </form>
 
-
 <br><br><br>
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+<br><br>
+
 
 {% if market.round > 0 %}
     {% for field in show_stats_fields %}
@@ -105,7 +109,7 @@
                         <tr>
                             <th scope="row"> {{trader.name }}</th>
                             {% for trade in trader.trade_set.all %}
-                                <td>{{ trade|get_attribute:field }}</td>
+                              <td>{{ trade|get_attribute:field }}</td>
                             {% endfor %}
                         </tr>
                     {% endfor %}
@@ -113,7 +117,6 @@
             </table>
         </div>
         <br><br>
-
     {% endfor %}
 
     <button type="button" class="btn btn-primary" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
@@ -150,8 +153,31 @@
 </div>
 
 {% endblock %}
-         
+
 {% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  var roundnums = []
+  var balancedata = []
+</script>
+
+  {% if market.round > 0 %}
+    {% for round in rounds %}
+    <script>
+   	  roundnums.push("{{round}}")
+    </script>
+    {% endfor %}
+    {% for trader in traders %}
+	  <script>
+		balancedata.push({ data:[]})
+	  </script>
+	  {% for trade in trader.trade_set.all %}
+        <script>
+   	      balancedata[balancedata.length-1].data.push(parseInt("{{trade.balance_after}}"));
+        </script>
+	  {% endfor %}
+    {% endfor %}
+  {% endif %}
 
 <script>
 
@@ -217,6 +243,20 @@
         document.getElementById("finish_round_form").submit();
     }   
 
+  console.log(roundnums, balancedata);
+  const data = {
+	  labels: roundnums,
+	  datasets: balancedata
+  };
+  const config = {
+	  type: 'line',
+	  data,
+	  options: {}
+  };
+  var myChart = new Chart(
+	  document.getElementById('myChart'),
+	  config
+  );
 </script>
 
 
