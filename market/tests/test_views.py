@@ -1,7 +1,12 @@
+"""
+To run all tests: $ manage.py test
+To run only one test in a specific class in test_views:
+$ manage.py test market.tests.test_views.MyTestClass.my_test_function 
+"""
 # Create your tests here.
 from django.test import TestCase
 from django.urls import reverse
-from ..models import Market, Trader, Trade
+from ..models import Market, Trader, Trade, RoundStat
 from ..forms import TraderForm
 from ..helpers import filter_trades
 
@@ -55,7 +60,7 @@ class CreateMarketViewTests(TestCase):
             reverse('market:create'), self.valid_data)
         self.assertEqual(Market.objects.all().count(), 1)
 
-    def test_redirect_to_corrent_url_after_market_creation(self):
+    def test_redirect_to_current_url_after_market_creation(self):
         response = self.client.post(
             reverse('market:create'), self.valid_data)
         self.assertEqual(response.status_code, 302)
@@ -71,6 +76,7 @@ class CreateMarketViewTests(TestCase):
         self.assertIn("Min cost can&#x27;t be bigger than max cost", html)
 
     def test_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(self):
+
         response = self.client.post(
             reverse('market:create'), self.invalid_data2)
         self.assertEqual(response.status_code, 200)
@@ -79,6 +85,40 @@ class CreateMarketViewTests(TestCase):
         error_english = "This field is required." in html
         error_danish = "Dette felt er påkrævet." in html
         self.assertTrue(error_english or error_danish, html)
+
+    
+    def test_error_mgs_shown_to_user_when_alpha_bigger_than_999999(self):
+        """ 
+        In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 999999.9999
+        Choosing alpha = 1000000 in the create form should should create an understandable message to the user,
+        not a database-error. 
+        """   
+        data = {'alpha': 1000000, 'beta': 44.2,
+                          'theta': 2.0105, 'min_cost': 11, 'max_cost': 144}
+
+        response = self.client.post(
+            reverse('market:create'), data)
+
+        self.assertEqual(response.status_code, 200) 
+        html = response.content.decode('utf8')
+        self.assertIn("Der må maksimalt være 6 cifre før kommaet.", html)
+
+    def test_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(self):
+        """ 
+        In the model, min_cost and max_cost are set as positive integers. 
+        If the users chooses beta negative, this should not cast a database error, but a nice feedback message
+        """
+        data = {'alpha': 10000, 'beta': 3434.4332,
+                'theta': 2.0105, 'min_cost': -11, 'max_cost': 144}
+
+        response = self.client.post(
+            reverse('market:create'), data)
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode('utf8')
+        self.assertIn(
+            "Denne værdi skal være større end eller lig 0.", html)
+
 
 class JoinViewTest(TestCase):
 
@@ -108,6 +148,22 @@ class JoinViewTest(TestCase):
         html = response.content.decode('utf8')
         self.assertIn('name="market_id" value="KXZCVCZL"', html)
 
+    def test_notify_users_who_have_already_joined_a_market(self):
+        market=Market.objects.create()
+        session = self.client.session
+        session['trader_id'] = 3
+        session['market_id'] = 'ABCDEF'
+        session['username'] = 'Alberte'
+        session.save()
+ 
+        response = self.client.get(
+            reverse('market:join'))
+
+        html = response.content.decode('utf8')
+        self.assertIn("ABCDEF", html) # user should somehow be informed, that he has already joined the market with this id
+        self.assertIn("Alberte", html)
+
+
     # test post requests
 
     def test_proper_behavior_when_no_market_id_in_form(self):
@@ -124,7 +180,7 @@ class JoinViewTest(TestCase):
 
     def test_proper_behavior_when_no_username_in_form(self):
         response = self.client.post(reverse('market:join'), {
-                                    'username': '', 'market_id': 'SOME_MARKET_ID'})
+                                    'name': '', 'market_id': 'SOME_MARKET_ID'})
         self.assertEqual(response.status_code, 200)
         self.assertFalse('trader_id' in self.client.session)
 
@@ -137,12 +193,26 @@ class JoinViewTest(TestCase):
     def test_proper_behavior_when_no_market_with_posted_market_id(self):
         market_id_with_no_referent = 'BAD_MARKET_ID'
         response = self.client.post(reverse('market:join'), {
-                                    'username': 'Hanne', 'market_id': market_id_with_no_referent})
+                                    'name': 'Hanne', 'market_id': market_id_with_no_referent})
         self.assertEqual(response.status_code, 200)
         self.assertFalse('trader_id' in self.client.session)
         html = response.content.decode('utf8')
         self.assertIn('<strong>There is no market with this ID</strong>', html)
         self.assertEqual(Trader.objects.all().count(), 0)
+
+    def test_proper_behaviour_and_nice_feedback_message_when_username_not_available(self):
+        market = Market.objects.create()
+        Trader.objects.create(market=market, name="jonna")
+
+        response = self.client.post(reverse('market:join'), {
+                                    'name': 'jonna', 'market_id': market.market_id})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse('trader_id' in self.client.session)
+        html = response.content.decode('utf8')
+        self.assertIn(
+            'There is already a trader with this name on the requested market. Please select another name', html)
+        self.assertEqual(Trader.objects.all().count(), 1)
+
 
     def test_new_trader_created_when_form_is_valid(self):
         market = Market.objects.create()
@@ -327,6 +397,104 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
         market.refresh_from_db()
         self.assertEqual(market.round, 8)
 
+
+class MonitorViewPostRequestMultipleUserTest(TestCase):
+
+    def setUp(self):
+        """
+        Recreating of database state before server error when testing program the 7th June 2021...
+        """
+        self.market = Market.objects.create(round=1)
+        
+        # 3 player in the market
+        self.christian = Trader.objects.create(name="christian", market=self.market, prod_cost=8)
+        self.martin = Trader.objects.create(name="martin", market=self.market, prod_cost=8)
+        self.nadja = Trader.objects.create(name="nadja", market=self.market, prod_cost=8)
+        self.jens = Trader.objects.create(name="jens", market=self.market, prod_cost=8)
+        self.kristian = Trader.objects.create(name="kristian", market=self.market, prod_cost=8)
+    
+
+        # round 0 is over, and these trades in round 0 have been created properly
+        c0 = Trade.objects.create(trader=self.christian, round=0, was_forced=False, unit_price=9, unit_amount=125, profit=14, balance_after=5014, units_sold=34)
+        m0 = Trade.objects.create(trader=self.martin, round=0, was_forced=False, unit_price=10, unit_amount=19, profit=38, balance_after=5038, units_sold=2)
+        n0 = Trade.objects.create(trader=self.nadja, round=0, was_forced=False,
+                                  unit_price=10, unit_amount=29, profit=58, balance_after=5058, units_sold=3)
+        k0 = Trade.objects.create(trader=self.kristian, round=0, was_forced=False,
+                                  unit_price=10, unit_amount=29, profit=58, balance_after=5058, units_sold=3)
+
+
+        # The 3 traders have chosen amount and price for round 1 (profit and balance_after_not_calculated_yet)
+        self.c1 = Trade.objects.create(trader=self.christian, round=1, was_forced=False, unit_price=11, unit_amount=150)
+        self.m1 = Trade.objects.create(trader=self.martin, round=1, was_forced=False, unit_price=9, unit_amount=200)
+        self.n1 = Trade.objects.create(trader=self.nadja, round=1, was_forced=False,
+                                  unit_price=11, unit_amount=31)
+
+        self.k1 = Trade.objects.create(trader=self.kristian, round=1, was_forced=False,
+                                  unit_price=17, unit_amount=31)
+
+    def test_players_are_ready(self):
+        self.assertTrue(self.christian.is_ready())
+        self.assertTrue(self.martin.is_ready())
+        self.assertTrue(self.nadja.is_ready())
+        self.assertTrue(self.kristian.is_ready())
+
+        num_ready_traders = filter_trades(market=self.market, round=self.market.round).count() # this calculation is used in trader_api
+        self.assertEqual(num_ready_traders, 4)
+
+    def test_correct_response_code_and_location_after_post_request(self):
+        url = reverse('market:monitor', args=(self.market.market_id,))
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], url)
+    
+    def test_balance_and_profit_of_trades_updates(self):
+        self.assertEqual(self.c1.balance_after, None)
+        self.assertEqual(self.m1.balance_after, None)
+        self.assertEqual(self.n1.balance_after, None)
+        self.assertEqual(self.k1.balance_after, None)
+
+        self.assertEqual(self.c1.profit, None)
+        self.assertEqual(self.m1.profit, None)
+        self.assertEqual(self.n1.profit, None)
+        self.assertEqual(self.k1.profit, None)
+
+
+        url = reverse('market:monitor', args=(self.market.market_id,))
+    
+        response = self.client.post(url)
+        self.c1.refresh_from_db()
+        self.m1.refresh_from_db()
+        self.n1.refresh_from_db()
+        self.k1.refresh_from_db()
+        
+        self.assertIsInstance(self.c1.balance_after, int)
+        self.assertIsInstance(self.m1.balance_after, int)
+        self.assertIsInstance(self.n1.balance_after, int)
+        self.assertIsInstance(self.k1.balance_after, int)
+        
+        self.assertIsInstance(self.c1.profit, int)
+        self.assertIsInstance(self.m1.profit, int)
+        self.assertIsInstance(self.n1.profit, int)
+        self.assertIsInstance(self.k1.profit, int)
+
+    def test_market_avg_price_has_been_calculated_and_saved(self):
+        url = reverse('market:monitor', args=(self.market.market_id,))
+        response = self.client.post(url)
+        self.assertTrue(RoundStat.objects.filter(round=1, market=self.market).exists())
+        r1stat = RoundStat.objects.get(round=1, market=self.market)
+        self.assertEqual(r1stat.avg_price, (9+11+11+17)/4)
+
+    def test_market_is_in_round_2(self):
+        self.market.refresh_from_db()
+        self.assertEqual(self.market.round, 1)
+        url = reverse('market:monitor', args=(self.market.market_id,))
+        response = self.client.post(url)
+        self.market.refresh_from_db()
+        self.assertEqual(self.market.round, 2)
+
+    def test_correct_num_trades_in_db(self):
+        num_trades = Trade.objects.all().count()
+        self.assertEqual(num_trades, 8)
 
 class PlayViewGetRequestTest(TestCase):
 

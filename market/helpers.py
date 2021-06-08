@@ -3,6 +3,48 @@ Helper functions used by the views
 """
 
 from .models import Market, Trader, Trade
+from decimal import Decimal
+from math import floor
+
+
+def process_trade(market, trade, avg_price):
+    """
+    Calculates key values for a single trade and updates trade and trader accordingly.
+    Used by monitor-view on post-requests, when host finishes a round
+    """
+
+    alpha, beta, theta = float(market.alpha), float(market.beta), float(market.theta)  
+
+    # calculate values
+    expenses = trade.trader.prod_cost * trade.unit_amount  # non-negative integer
+    demand = alpha - beta * trade.unit_price + theta * \
+        avg_price   # decimal number ( NB: might be negative!)
+
+    # non-negative integer
+    units_sold = floor(max(0, min(demand, trade.unit_amount))) # non-negative integer
+    income = trade.unit_price * units_sold    # non-negative integer
+    trade_profit = income - expenses   # integer
+
+    # assert datatypes and values, and update trade and trader objects
+    assert(type(units_sold) is int)
+    assert(units_sold >= 0)
+    trade.units_sold = units_sold
+
+    assert(type(trade_profit) is int)
+    trade.profit = round(trade_profit)
+    trader = trade.trader
+    trader.balance += trade_profit
+    trade.balance_after = trader.balance
+
+    assert(trader.balance == trade.balance_after)
+
+    # save to database
+    trader.save()
+    trade.save()
+
+
+    return demand, expenses, units_sold, income, trade_profit
+
 
 
 def create_forced_trade(trader, round_num, is_new_trader):

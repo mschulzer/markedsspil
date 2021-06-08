@@ -15,11 +15,15 @@ def new_unique_market_id():
 
 
 class Market(models.Model):
+    """
+    Note: Setting max_digits=10 and decimal_places=4 means that the largest value of alpha, beta or theta we can save is
+    999999.9999. We will get constraint error if we try to set save a market with e.g. alpha = 1000000  
+    """
     market_id = models.CharField(max_length=16, primary_key=True)
-    alpha = models.DecimalField(max_digits=10, decimal_places=4, default=105)
+    alpha = models.DecimalField(max_digits=10, decimal_places=4, default=105)  
     beta = models.DecimalField(max_digits=10, decimal_places=4, default=17.5)
     theta = models.DecimalField(max_digits=10, decimal_places=4, default=14.58)
-    min_cost = models.PositiveIntegerField(default=8)
+    min_cost = models.PositiveIntegerField(default=8)  
     max_cost = models.PositiveIntegerField(default=8)
     round = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -62,7 +66,9 @@ class Trade(models.Model):
     unit_amount = models.PositiveIntegerField(default=0, null=True)
     round = models.PositiveIntegerField() # not always equal to trader.market.round
     was_forced = models.BooleanField(default=False) 
-    units_sold = models.PositiveBigIntegerField(null=True, blank=True)
+
+    # the following field values are not used in any calculations, but only for displaying statistics
+    units_sold = models.PositiveIntegerField(null=True, blank=True) 
     profit = models.IntegerField(null=True, blank=True)
     balance_after = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -70,7 +76,7 @@ class Trade(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['trader', 'round'], name='trader_and_round_unique_together'),
-        ]
+    ]
   
     def __str__(self):
         return f"{self.trader.name} ${self.unit_price} x {self.unit_amount} [{self.trader.market.market_id}][{self.round}]"
@@ -79,7 +85,9 @@ class Trade(models.Model):
 class RoundStat(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     round = models.PositiveIntegerField()  
-    avg_price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+    # Note: w/ below settings avg. can't be bigger than 999999.9999.  
+    # Therefore, there to be an upperbound on choice of unit_price set by players. 
+    avg_price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
