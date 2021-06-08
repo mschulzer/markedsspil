@@ -6,7 +6,7 @@
 <br>
 
 <h2>
-    Monitoring Market: {{ market.market_id }} 
+    Monitoring Market: {{ market.market_id }}
     <a href="{% url 'market:join' %}?market_id={{ market.market_id }}" target="_blank">JOIN</a>
 </h2>
 
@@ -52,7 +52,7 @@
         <tbody>
             {% for i in max_num_players %}
                 <tr style="display:none"  id="table_row{{i}}">
-                    <th scope="row">{{i|add:1}}</th>  
+                    <th scope="row">{{i|add:1}}</th>
                     <td id="name{{i}}">name{{i}}</td>
                     <td id="ready{{i}}">ready{{i}}</td>
                     <td id="prod_cost{{i}}">prod_cost{{i}}</td>
@@ -122,7 +122,7 @@
     <button type="button" class="btn btn-primary" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
         Download statistics
     </button>
-</div> 
+</div>
 {% endif %}
 <br>
 <!-- Pop-up confirmation -->
@@ -157,24 +157,35 @@
 {% block javascript %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  var roundnums = []
-  var balancedata = []
+  var roundnums = [];
+  var tradernames = [];
+  var balancedata = [];
+  var tradernum = 0;
 </script>
 
   {% if market.round > 0 %}
     {% for round in rounds %}
     <script>
-   	  roundnums.push("{{round}}")
+   	  roundnums.push("{{round}}");
     </script>
     {% endfor %}
     {% for trader in traders %}
-	  <script>
-		balancedata.push({ data:[]})
-	  </script>
+	<script>
+	  tradernum++;
+	  var red = (100 + tradernum*100) % 255;
+	  var green = (50 + Math.floor(tradernum/3)*100) % 255;
+	  var blue = (0 + Math.floor(tradernum/2)*100) % 255;
+	  tradernames.push("{{trader.name}}");
+	  balancedata.push({ label: "{{trader.name}}",
+						 backgroundColor: 'rgb('+red+','+green+','+blue+')',
+						 borderColor: 'rgb('+red+','+green+','+blue+')',
+						 data: [],
+					   });
+	</script>
 	  {% for trade in trader.trade_set.all %}
-        <script>
-   	      balancedata[balancedata.length-1].data.push(parseInt("{{trade.balance_after}}"));
-        </script>
+    <script>
+   	    balancedata[balancedata.length-1].data.push(parseInt("{{trade.balance_after}}"));
+      </script>
 	  {% endfor %}
     {% endfor %}
   {% endif %}
@@ -193,7 +204,7 @@
             }
             else{
                 document.getElementById('ready' + i).innerHTML = "No";
-                document.getElementById('ready' + i).style.color="red"; 
+                document.getElementById('ready' + i).style.color="red";
             }
             document.getElementById('balance' + i).innerHTML = data.traders[i].balance;
             document.getElementById('prod_cost' + i).innerHTML = data.traders[i].prod_cost;
@@ -204,12 +215,12 @@
         if (data.num_ready_traders > 0){
             if (data.num_ready_traders < data.num_traders){ document.getElementById("next_round_btn_warning").disabled=false;
                 document.getElementById("next_round_btn_warning").style.display="block" ;
-                document.getElementById("next_round_btn").style.display="none" ; } 
+                document.getElementById("next_round_btn").style.display="none" ; }
             else{
                 document.getElementById("next_round_btn_warning").style.display="none" ;
-                document.getElementById("next_round_btn").style.display="block" ; 
-            } 
-        } 
+                document.getElementById("next_round_btn").style.display="block" ;
+            }
+        }
         else {
             document.getElementById("next_round_btn_warning").style.display="block" ;
             document.getElementById("next_round_btn_warning").disabled=true;
@@ -233,15 +244,15 @@
                     update_next_round_btn(data)
                     document.getElementById("waiting_for_first_trader").style.display ="none";
                 }
-            }       
+            }
         });
-    }; 
-    
+    };
+
     window.setInterval(refresh_trader_status, 1000);
-  
+
     function next_round(){
         document.getElementById("finish_round_form").submit();
-    }   
+    }
 
   console.log(roundnums, balancedata);
   const data = {
