@@ -16,14 +16,13 @@ def process_trade(market, trade, avg_price):
     alpha, beta, theta = float(market.alpha), float(market.beta), float(market.theta)  
 
     # calculate values
-    expenses = trade.trader.prod_cost * trade.unit_amount  # non-negative integer
+    expenses = trade.trader.prod_cost * trade.unit_amount  
     demand = alpha - beta * trade.unit_price + theta * \
-        avg_price   # decimal number ( NB: might be negative!)
+        avg_price   
 
-    # non-negative integer
-    units_sold = floor(max(0, min(demand, trade.unit_amount))) # non-negative integer
-    income = trade.unit_price * units_sold    # non-negative integer
-    trade_profit = income - expenses   # integer
+    units_sold = floor(max(0, min(demand, trade.unit_amount))) 
+    income = trade.unit_price * units_sold  
+    trade_profit = income - expenses   
 
     # assert datatypes and values, and update trade and trader objects
     assert(type(units_sold) is int)
