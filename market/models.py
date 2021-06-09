@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.crypto import get_random_string
-
+from django.contrib.auth import get_user_model
 
 def new_unique_market_id():
     """
@@ -26,6 +26,7 @@ class Market(models.Model):
     max_cost = models.PositiveIntegerField(default=8)  
     round = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)
 
     def save(self, *args, **kwargs):
         """

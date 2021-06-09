@@ -8,16 +8,26 @@ from .models import Market, Trader, Trade, RoundStat
 from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
+from django.contrib.auth.decorators import login_required
 
 @require_GET
 def home(request):
     return render(request, 'market/home.html')
 
+@login_required
+@require_GET
+def my_markets(request):
+    markets = Market.objects.filter(created_by=request.user).order_by('-created_at')
+    return render(request, 'market/my_markets.html', { 'markets': markets})
+
+@login_required
 def create(request):
     if request.method == 'POST':
         form = MarketForm(request.POST)
         if form.is_valid():
-            new_market = form.save()
+            new_market = form.save(commit=False)
+            new_market.created_by = request.user  
+            new_market.save()
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
     elif request.method == 'GET':
         form = MarketForm()

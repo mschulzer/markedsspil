@@ -3,12 +3,13 @@ To run all tests: $ manage.py test
 To run only one test in a specific class in test_views:
 $ docker-compose exec web python manage.py test market.tests.test_views.MyTestClass.my_test_function 
 """
-# Create your tests here.
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade, RoundStat
 from ..forms import TraderForm
 from ..helpers import filter_trades
+
 
 class HomeViewTests(TestCase):
 
@@ -31,6 +32,14 @@ class CreateMarketViewTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        
+        # create user
+        User = get_user_model()
+        User.objects.create_user(
+            username='somename',
+            password='testpass123',
+        )
+        
         # Set up non-modified objects used by all test methods in class
         cls.valid_data = {'alpha': 21.402, 'beta': 44.2,
                     'theta': 2.0105, 'min_cost': 11, 'max_cost': 144}
@@ -43,24 +52,42 @@ class CreateMarketViewTests(TestCase):
 
     # test get requests
     def test_view_url_exists_at_proper_location_and_uses_proper_template(self):
+        self.client.login(username='somename', password='testpass123')
         response = self.client.get('/create/')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/create.html'),
 
     def test_view_url_exits_at_proper_name_and_uses_proper_template(self):
+        self.client.login(username='somename', password='testpass123')
         response = self.client.get(reverse('market:create'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/create.html'),
 
-        # test post requests
+
+    def test_login_required(self):
+        """ user not logged in will be redirected to login page """
+
+        response = self.client.get(reverse('market:create'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], '/accounts/login/?next=/create/')
+
+
+    # test post requests
         
     def test_market_is_created_when_data_is_valid(self):
+        """ a market is created when posting valid data & logged in user is set as market's creator """
+        self.client.login(username='somename', password='testpass123')
         self.assertEqual(Market.objects.all().count(), 0)
         self.client.post(
             reverse('market:create'), self.valid_data)
+
         self.assertEqual(Market.objects.all().count(), 1)
+        market = Market.objects.first()
+        self.assertEqual(market.created_by.username, 'somename')
 
     def test_redirect_to_current_url_after_market_creation(self):
+        self.client.login(username='somename', password='testpass123')
         response = self.client.post(
             reverse('market:create'), self.valid_data)
         self.assertEqual(response.status_code, 302)
@@ -68,6 +95,7 @@ class CreateMarketViewTests(TestCase):
         self.assertEqual(response['Location'], reverse('market:monitor', args=(market_id,)))
 
     def test_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(self):
+        self.client.login(username='somename', password='testpass123')
         response = self.client.post(
             reverse('market:create'), self.invalid_data)
         self.assertEqual(response.status_code, 200)
@@ -76,7 +104,7 @@ class CreateMarketViewTests(TestCase):
         self.assertIn("Min cost can&#x27;t be bigger than max cost", html)
 
     def test_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(self):
-
+        self.client.login(username='somename', password='testpass123')
         response = self.client.post(
             reverse('market:create'), self.invalid_data2)
         self.assertEqual(response.status_code, 200)
@@ -93,6 +121,8 @@ class CreateMarketViewTests(TestCase):
         Choosing alpha = 1000000 in the create form should should create an understandable message to the user,
         not a database-error. 
         """   
+        self.client.login(username='somename', password='testpass123')
+
         data = {'alpha': 1000000, 'beta': 44.2,
                           'theta': 2.0105, 'min_cost': 11, 'max_cost': 144}
 
@@ -108,6 +138,8 @@ class CreateMarketViewTests(TestCase):
         In the model, min_cost and max_cost are set as positive integers. 
         If the users chooses beta negative, this should not cast a database error, but a nice feedback message
         """
+        self.client.login(username='somename', password='testpass123')
+
         data = {'alpha': 10000, 'beta': 3434.4332,
                 'theta': 2.0105, 'min_cost': -11, 'max_cost': 144}
 
@@ -819,3 +851,56 @@ class CurrentRoundViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.json(), {"round": 11})
 
+
+class MyMarketTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):        
+        
+        User = get_user_model()
+        
+        User.objects.create_user(
+            username='somename',
+            password='testpass123',
+        )
+
+        cls.hanne=User.objects.create_user(
+            username='hanne',
+            password='testpass123',
+        )
+        
+
+    def test_login_required(self):
+        """ user not logged in will be redirected to login page """
+
+        response = self.client.get(reverse('market:my_markets'))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'],
+                         '/accounts/login/?next=/my_markets/')
+
+    def test_no_markets_empty_template(self):
+        """ logged in user will see correct template """
+        self.client.login(username='somename', password='testpass123')
+        response = self.client.get(reverse('market:my_markets'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'market/my_markets.html'),    
+
+
+    def test_no_markets_empty_template(self):
+        """ User should not see markets created by other user """
+        Market.objects.create(created_by = self.hanne)
+        self.client.login(username='somename', password='testpass123')
+        response = self.client.get(reverse('market:my_markets')) 
+        self.assertEqual(response.status_code, 200)       
+        self.assertNotContains(response,'hanne')
+        self.assertContains(response,'Your Markets')
+
+    def test_no_markets_empty_template(self):
+        """ User has created a market so reponse should contain info on this market """
+        Market.objects.create(created_by=self.hanne, max_cost=13)
+        self.client.login(username='hanne', password='testpass123')
+        response = self.client.get(reverse('market:my_markets'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'hanne')
+        self.assertContains(response, '13')

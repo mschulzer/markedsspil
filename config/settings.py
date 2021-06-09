@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
     # Local
     'market.apps.MarketConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 # django-crispy-forms
@@ -130,3 +131,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+LOGIN_REDIRECT_URL = 'market:home'
+LOGOUT_REDIRECT_URL = 'market:home'
