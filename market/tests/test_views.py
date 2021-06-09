@@ -1,7 +1,7 @@
 """
 To run all tests: $ manage.py test
 To run only one test in a specific class in test_views:
-$ manage.py test market.tests.test_views.MyTestClass.my_test_function 
+$ docker-compose exec web python manage.py test market.tests.test_views.MyTestClass.my_test_function 
 """
 # Create your tests here.
 from django.test import TestCase
@@ -507,7 +507,7 @@ class PlayViewGetRequestTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:join'))
 
-    def test_if_no_errors_and_time_to_wait_return_wait_template_and_code_200(self):
+    def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(self):
         # some market is in round 0
         market=Market.objects.create()
 
@@ -520,12 +520,13 @@ class PlayViewGetRequestTest(TestCase):
         # the user has made a trade in this round (and should now be waiting)
         Trade.objects.create(trader=trader, round=market.round, profit=345)
         self.assertEqual(Trade.objects.filter(trader=trader, round=0).count(),1)
-        
-        # user goes to play url and should get play-template shown
+
+        # user goes to play url and should get play-template shown with wait equal true in context
         response = self.client.get(
             reverse('market:play'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/play.html'),
+        self.assertTrue(response.context.get('wait'))
 
          # template should contain the word Waiting
         html = response.content.decode('utf8')
@@ -534,8 +535,9 @@ class PlayViewGetRequestTest(TestCase):
         # This is round 0, so no data from last round should be shown
         self.assertNotIn('last round', html)
         self.assertNotIn('Last round', html)
+        self.assertFalse(response.context.get('show_last_round_data'))
 
-        # --- no trade history should be shown either
+        # --- no trade history should not be shown either
         self.assertNotIn('Trade History', html)
         self.assertNotIn('Previous History', html)
         self.assertNotIn('Record', html)
@@ -564,10 +566,11 @@ class PlayViewGetRequestTest(TestCase):
         # user goes to play url
         response = self.client.get(reverse('market:play'))
 
-        # The user has not traded in this round so he should get back play temlpate
+        # The user has not traded in this round so he should get back play temlpate with wait=false in context
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/play.html'),
-        
+        self.assertFalse(response.context.get('wait'))
+
         # template should contain data from last round
         html = response.content.decode('utf8')
         self.assertIn("3432253", html)
@@ -580,6 +583,10 @@ class PlayViewGetRequestTest(TestCase):
         # template should contain a submit button
         html = response.content.decode('utf8')
         self.assertIn("submit", html)
+
+        # player did made a trade in the last round and hence show_last_round_data should be true
+        self.assertTrue(response.context.get('show_last_round_data'))
+
 
     def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(self):
         """
@@ -615,8 +622,8 @@ class PlayViewGetRequestTest(TestCase):
         self.assertNotIn("wait", html)
         self.assertNotIn("Wait", html)
 
-        # template should not contain the words last or Last
-        html = response.content.decode('utf8')
+        # player did not make a trade in the last round and hence show_last_round_data should be false
+        self.assertFalse(response.context.get('show_last_round_data'))
 
         # template should contain a submit button
         self.assertIn("submit", html)
@@ -624,6 +631,34 @@ class PlayViewGetRequestTest(TestCase):
         # template should contain profit from round 2
         self.assertIn("3432253", html)
         self.assertIn("----", html)
+        
+
+    def test_form_attributes_are_set_correctly(self):
+        """
+        The form fields should have their max values determined by the market and traders
+        """
+        market = Market.objects.create(round=4, min_cost=1, max_cost = 3)
+
+        # a user has joined properly
+        trader = Trader.objects.create(name='otto', market=market, balance=101, prod_cost=2)
+        session = self.client.session
+        session['trader_id'] = trader.pk
+        session.save()
+
+        # user made a real trade in round 3(last round)
+        Trade.objects.create(trader=trader, round=3, unit_price=4, unit_amount=12, was_forced=False)
+
+        # user goes to play url
+        response = self.client.get(reverse('market:play'))
+        
+        form = response.context['form']
+
+        # we expect the max input value of unit_price to be 5* market.max_cost = 15
+        self.assertIn('max="15"', str(form))
+        self.assertNotIn('max="16"', str(form))
+
+        # we expect the max input value of unit_amount to be floor(trader.balance/trader.prod_cost) = 50
+        self.assertIn('max="50"', str(form))
 
 
 class PlayViewPOSTRequestTest(TestCase):

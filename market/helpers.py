@@ -2,9 +2,7 @@
 Helper functions used by the views
 """
 
-from .models import Market, Trader, Trade
-from decimal import Decimal
-from math import floor
+from .models import Trader, Trade
 
 
 def process_trade(market, trade, avg_price):
@@ -15,34 +13,30 @@ def process_trade(market, trade, avg_price):
 
     alpha, beta, theta = float(market.alpha), float(market.beta), float(market.theta)  
 
-    # calculate values
+    # calculate values 
     expenses = trade.trader.prod_cost * trade.unit_amount  
-    demand = alpha - beta * trade.unit_price + theta * \
-        avg_price   
-
-    units_sold = floor(max(0, min(demand, trade.unit_amount))) 
+    raw_demand = alpha - beta * trade.unit_price + theta * avg_price
+    demand = max(0, round(raw_demand))
+    units_sold = min(demand, trade.unit_amount)
     income = trade.unit_price * units_sold  
     trade_profit = income - expenses   
 
-    # assert datatypes and values, and update trade and trader objects
-    assert(type(units_sold) is int)
-    assert(units_sold >= 0)
-    trade.units_sold = units_sold
-
+    assert(units_sold >=0)
     assert(type(trade_profit) is int)
-    trade.profit = round(trade_profit)
+    
+    # update trade and trader objects
+    trade.demand = demand
+    trade.units_sold = units_sold    
+    trade.profit = trade_profit
     trader = trade.trader
     trader.balance += trade_profit
     trade.balance_after = trader.balance
-
-    assert(trader.balance == trade.balance_after)
 
     # save to database
     trader.save()
     trade.save()
 
-
-    return demand, expenses, units_sold, income, trade_profit
+    return expenses, raw_demand, demand, units_sold, income, trade_profit
 
 
 

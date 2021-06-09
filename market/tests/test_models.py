@@ -154,34 +154,6 @@ class TradeModelTest(TestCase):
         trade.balance_after = 400
         trade.save()
 
-    def test_decimals_are_floored_to_integer_on_object_creation(self):
-        market = Market.objects.create()
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
-
-        trade = Trade.objects.create(
-            trader=trader,     
-            unit_price = 0,
-            unit_amount = 0,
-            round = 0,
-            was_forced = False,
-            units_sold = 3.9,
-            profit = 100,
-            balance_after = 10
-        )
-        trade.refresh_from_db()
-        self.assertEqual(trade.units_sold, 3)
-
-    def test_constraint_error_when_saving_object_with_negative_units_sold(self):
-        market = Market.objects.create()
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
-        try:
-            Trade.objects.create(trader=trader, round=5, units_sold=-34)
-            error_mgs = "there was no error"
-        except:
-            error_mgs = "error message"
-        finally:
-            self.assertEqual(error_mgs, "error message")
-
 
 class TestRoundStatModel(TestCase):
 

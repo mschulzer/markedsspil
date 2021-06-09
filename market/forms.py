@@ -16,7 +16,7 @@ class MarketForm(forms.ModelForm):
         }
 
     def clean(self):
-        """ Additional validation of input data """
+        """ Form is invalid if min cost > max cost """
         cleaned_data = super().clean()
         min_cost = cleaned_data.get("min_cost")
         max_cost = cleaned_data.get("max_cost")
@@ -24,7 +24,52 @@ class MarketForm(forms.ModelForm):
             if min_cost > max_cost:
                 raise ValidationError("Min cost can't be bigger than max cost")
         return cleaned_data
-    
+
+    def clean_alpha(self):
+        """ Form is invalid if alpha < 0 """
+        alpha = self.cleaned_data['alpha']
+
+        if alpha < 0:
+            raise forms.ValidationError('Alpha should be non-negative for market to make sense')
+        return alpha
+
+    def clean_beta(self):
+        """ Form is invalid if beta < 0 """
+        beta = self.cleaned_data['beta']
+
+        if beta < 0:
+            raise forms.ValidationError('Beta should be non-negative for market to make sense')
+        return beta
+
+    def clean_theta(self):
+        """ Form is invalid if beta < 0 """
+        theta = self.cleaned_data['theta']
+
+        if theta < 0:
+            raise forms.ValidationError(
+                'Theta should be non-negative for market to make sense')
+        return theta
+
+    def clean_min_cost(self):
+        """ Mininimal production cost should be greater than 0 """
+        min_cost = self.cleaned_data['min_cost']
+
+        if min_cost <= 0:
+            raise forms.ValidationError(
+                'Min cost should be greater than 0')
+        return min_cost
+
+
+    def clean_max_cost(self):
+        """ Maximal production cost should be greater than 0 """
+        max_cost = self.cleaned_data['max_cost']
+
+        if max_cost <= 0:
+            raise forms.ValidationError(
+                'Max cost should be greater than 0')
+        return max_cost
+
+
 class TraderForm(forms.ModelForm):
     market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market you want to join') 
 
@@ -67,8 +112,8 @@ class TradeForm(forms.ModelForm):
         model = Trade
         fields = ['unit_price', 'unit_amount']
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'max':30, 'class':'slider', 'step':1}),
-            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class':'slider', 'step':1}),
+            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':1}),
+            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':1}),
         }
         labels = {
             'unit_price': ('Price: '),
@@ -83,11 +128,14 @@ class TradeForm(forms.ModelForm):
         super(TradeForm, self).__init__(*args, **kwargs)
 
         if trader:
+            # traders can set the price of a product up to 5 times market's maximal prod cost
+            self.fields['unit_price'].widget.attrs['max'] = 5 * \
+                trader.market.max_cost  
+
+            # make sure, trader can't choose to produce an amount of units, he can't afford
             if trader.prod_cost > 0:  
                 max_unit_amount = floor((trader.balance/trader.prod_cost))
-            else:  # should this even be allowed to happen?
-                max_unit_amount = 100  # this number is arbitrary at this point
+            else:  # if prod_cost is 0 (this is currently not allowed to happen) 
+                max_unit_amount = 10000  # this number is arbitrary
 
-            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount #test this
-
-
+            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount 

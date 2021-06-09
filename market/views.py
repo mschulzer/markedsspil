@@ -64,7 +64,7 @@ def monitor(request, market_id):
         'traders': traders,
         'rounds': range(market.round),
         'max_num_players': range(70),
-        'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'units_sold', 'was_forced'],
+        'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
         'initial_balance':Trader.initial_balance
     }
 
@@ -130,7 +130,9 @@ def play(request):
             'rounds':range(market.round),
             'initial_balance': Trader.initial_balance,
             'round_stats':RoundStat.objects.filter(market=market),
-            'trades':trades
+            'trades':trades,
+            'wait':False,
+            'show_last_round_data':False
         }
 
         if trades.filter(round=market.round).exists():

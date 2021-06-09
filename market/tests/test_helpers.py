@@ -11,23 +11,24 @@ class TestProcessTrade(TestCase):
         market.refresh_from_db()
         alpha, beta, theta = market.alpha, market.beta, market.theta
 
-        trader = Trader.objects.create(market=market, balance=20)
-        prod_cost = trader.prod_cost
+        trader = Trader.objects.create(market=market, balance=20, prod_cost=70)
 
         avg_price = 14.5
         trade = Trade.objects.create(
             trader=trader, round=0, unit_price=12, unit_amount=100)
         
-        demand, expenses, units_sold, income, trade_profit = process_trade(
+        expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
             market, trade, avg_price)
 
         # test calculations
-        expected_expenses = trader.prod_cost * 100
-        expected_demand = 100.3 - 3.4*12 + 4.5*14.5 #demand = alpha - beta * trade.unit_price + theta*avg_price
-        expected_units_sold = floor(max(0, min(expected_demand, 100)))
-        expected_income = expected_units_sold * 12
-        expected_profit = expected_income - expected_expenses
+        expected_expenses = 7000 
+        expected_raw_demand = 124.75  
+        expected_demand = 125  
+        expected_units_sold = 100  
+        expected_income = 1200
+        expected_profit = - 5800
         self.assertEqual(expenses, expected_expenses)
+        self.assertEqual(expected_raw_demand, raw_demand)
         self.assertEqual(demand, expected_demand)
         self.assertEqual(units_sold, expected_units_sold)
         self.assertEqual(income, expected_income)
@@ -35,36 +36,38 @@ class TestProcessTrade(TestCase):
 
         # test object updates
         trader.refresh_from_db()
-        self.assertEqual(trader.balance, 20+expected_profit)
         trade.refresh_from_db()
-        self.assertEqual(trade.balance_after, 20+expected_profit)
-        self.assertEqual(trade.profit, expected_profit)
-        self.assertEqual(trade.balance_after, 20+expected_profit)
+
+        self.assertEqual(trader.balance, - 5780)
+        self.assertEqual(trade.profit, -5800)
+        self.assertEqual(trade.balance_after, -5780)
 
     def test_trade_fields_calculated_and_saved_properly_weird_values(self):
+        """
+        trade values are being calculated correctly in a case, where the raw demand is negative
+        """
         market = Market.objects.create(alpha=0, beta=23233.4, theta=999)
         market.refresh_from_db()
         alpha, beta, theta = market.alpha, market.beta, market.theta
 
-        trader = Trader.objects.create(market=market, balance=-120)
-        prod_cost = trader.prod_cost
+        trader = Trader.objects.create(market=market, balance=-120, prod_cost=5)
 
         avg_price = 143234.223
         trade = Trade.objects.create(
             trader=trader, round=0, unit_price=12234, unit_amount=22)
 
-        demand, expenses, units_sold, income, trade_profit = process_trade(
+        expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
             market, trade, avg_price)
 
         # test calculations
-        expected_expenses = trader.prod_cost * 22
-        expected_demand = 0 - 23233.4*12234 + 999*143234.223 #demand = alpha - beta * trade.unit_price + theta*avg_price
-        
-        self.assertTrue(expected_demand < 0 ) # this is one of those cases...
-        expected_units_sold = floor(max(0, min(expected_demand, 22)))
-        expected_income = expected_units_sold * 12234
-        expected_profit = expected_income - expected_expenses
+        expected_expenses = 110 
+        expected_raw_demand = -141146426.823  
+        expected_demand = 0  
+        expected_units_sold = 0 
+        expected_income = 0 
+        expected_profit = - 110 
         self.assertEqual(expenses, expected_expenses)
+        self.assertEqual(expected_raw_demand, raw_demand)
         self.assertEqual(demand, expected_demand)
         self.assertEqual(units_sold, expected_units_sold)
         self.assertEqual(income, expected_income)
@@ -72,11 +75,10 @@ class TestProcessTrade(TestCase):
 
         # test object updates
         trader.refresh_from_db()
-        self.assertEqual(trader.balance, -120+expected_profit)
         trade.refresh_from_db()
-        self.assertEqual(trade.balance_after, -120+expected_profit)
-        self.assertEqual(trade.profit, expected_profit)
-        self.assertEqual(trade.balance_after, -120+expected_profit)
+        self.assertEqual(trader.balance, -230)
+        self.assertEqual(trade.profit, -110)
+        self.assertEqual(trade.balance_after, -230)
 
 
 class TestCreateForcedTrade(TestCase):
