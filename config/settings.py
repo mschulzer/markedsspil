@@ -132,8 +132,14 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-
+# The model we want to use for user accounts
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
+# After login, redirect to home
 LOGIN_REDIRECT_URL = 'market:home'
+
+# After logout, redirect to home
 LOGOUT_REDIRECT_URL = 'market:home'
+
+# Email backend - corrently mails are being send to console (need to be changed in production)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

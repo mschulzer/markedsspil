@@ -20,7 +20,6 @@
                 <th>min prod.cost</th>
                 <th>max prod.cost</th>
                 <th>Revisit</th>
-                <th>Statistics</th>
             </tr>
         </thead>
         {% for market in markets %}
@@ -35,7 +34,6 @@
             <td>{{ market.min_cost }}</td>
             <td>{{ market.max_cost }}</td>
             <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>
-            <td><button class="btn btn-secondary" onclick="alert('Download feature not implemented yet!')">Download</button></td>
             </tr>
         </tbody>
         {% endfor %}
