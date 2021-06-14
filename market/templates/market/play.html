@@ -68,12 +68,13 @@
             </div>
             <div class="card-body">
                 <ul>
-                    <li>Your unit price last round was {{ trades.last.unit_price }}</li>
-                    <li>The market average unit price last round was
+                    <li>Your unit price was {{ trades.last.unit_price }}</li>
+                    <li>The market average unit price was
                         {{ round_stats.all.last.avg_price | floatformat:1 }}</li>
                     <li>You produced {{ trades.last.unit_amount}} units</li>
-                    <li>You sold produced {{ trades.last.units_sold }} units</li>
-                    <li>Your profit last round was:
+                    <li>You could have sold {{ trades.last.demand }} units </li>
+                    <li>You sold {{ trades.last.units_sold }} units</li>
+                    <li>Your profit was:
                         {% if trades.last.profit < 0 %}
                             <span style="color:red">
                         {% else %}
@@ -95,7 +96,7 @@
     <div class="col">
         <div class="card">
             <div class="card-header">
-                Trade History
+                Your Trade History
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -111,48 +112,55 @@
                                 {% endif %}
 
                             </tr>
-                            <thead>
-                            <tbody>
-                                <tr>
-                                    <td scope="row">Units Produced</td>
-                                    {% for trade in trades %}
-                                        <td>{{ trade|get_attribute:'unit_amount' }}</td>
-                                    {% endfor %}
-                                </tr>
-                                <tr>
-                                    <td scope="row">Units Sold</td>
-                                    {% for trade in trades %}
-                                    <td>{{ trade|get_attribute:'units_sold' }}</td>
-                                    {% endfor %}
-                                </tr>
-                                <tr>
-                                    <td scope="row">Unit Price</td>
-                                    {% for trade in trades %}
-                                    <td>{{ trade|get_attribute:'unit_price' }}</td>
-                                    {% endfor %}
-                                </tr>
-                                <tr>
-                                    <td scope="row">Market Avg. Price</td>
-                                    {% for round_stat in round_stats %}
-                                    <td>{{ round_stat.avg_price | floatformat:0 }}</td>
-                                    {% endfor %}
-                                    {% if wait %}
-                                        <td scope="col"> ---- </td>
-                                    {% endif %}
-                                </tr>
-                                <tr>
-                                    <td scope="row">Profit</td>
-                                    {% for trade in trades %}
-                                    <td>{{ trade|get_attribute:'profit' }}</td>
-                                    {% endfor %}
-                                </tr>
-                                <tr>
-                                    <td scope="row">Balance (Initial: {{ initial_balance }})</td>
-                                    {% for trade in trades %}
-                                    <td>{{ trade|get_attribute:'balance_after' }}</td>
-                                    {% endfor %}
-                                </tr>
-                            </tbody>
+                        <thead>
+                        <tbody>
+                            <tr>
+                                <td scope="row">Units Produced</td>
+                                {% for trade in trades %}
+                                    <td>{{ trade|get_attribute:'unit_amount' }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td scope="row">Demand</td>
+                                {% for trade in trades %}
+                                <td>{{ trade|get_attribute:'demand' }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td scope="row">Units Sold</td>
+                                {% for trade in trades %}
+                                <td>{{ trade|get_attribute:'units_sold' }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td scope="row">Your Price</td>
+                                {% for trade in trades %}
+                                <td>{{ trade|get_attribute:'unit_price' }}</td>
+                                {% endfor %}
+                            </tr>
+                          
+                            <tr>
+                                <td scope="row">Market Avg. Price</td>
+                                {% for round_stat in round_stats %}
+                                <td>{{ round_stat.avg_price | floatformat:0 }}</td>
+                                {% endfor %}
+                                {% if wait %}
+                                    <td scope="col"> ---- </td>
+                                {% endif %}
+                            </tr>
+                            <tr>
+                                <td scope="row">Profit</td>
+                                {% for trade in trades %}
+                                <td>{{ trade|get_attribute:'profit' }}</td>
+                                {% endfor %}
+                            </tr>
+                            <tr>
+                                <td scope="row">Balance (Initial: {{ initial_balance }})</td>
+                                {% for trade in trades %}
+                                <td>{{ trade|get_attribute:'balance_after' }}</td>
+                                {% endfor %}
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -174,10 +182,11 @@
                 <p class="text-secondary mb-4">
                     {% if show_last_round_data %}
                     
-                    Last round you produced {{ trades.last.unit_amount }} unit and sold {{ trades.last.units_sold }} units.<br>
-                    Your unit price last round was: {{ trades.last.unit_price }}.<br>
+                    Last round you produced {{ trades.last.unit_amount }} units.<br> 
+                    The demand was {{ trades.last.units_sold }} units.<br>
+                    Your price last was: {{ trades.last.unit_price }}.<br>
                     {% endif %}
-                    Market average unit price last round: {{ round_stats.all.last.avg_price | floatformat:1 }}.
+                    The market average price was: {{ round_stats.all.last.avg_price | floatformat:1 }}.
                 </p>
                 {% endif %}
                 <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>{% csrf_token %}
@@ -206,14 +215,18 @@
 {% block javascript %}
 
 {%if not wait %}
-<script>
-    
+<script>    
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
     var amount_label = labels[1]
     
     var amount_slider = document.getElementById("id_unit_amount");
     var price_slider = document.getElementById("id_unit_price");
+
+    {% if show_last_round_data %}
+        amount_slider.value = "{{ trades.last.unit_amount }}"
+        price_slider.value = "{{ trades.last.unit_price }}"
+    {% endif %}
 
     var unit_prod_cost = parseInt("{{ trader.prod_cost }}")
     var total_cost = document.getElementById('total_cost');

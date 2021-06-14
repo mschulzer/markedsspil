@@ -7,7 +7,7 @@ from random import randint
 from .models import Market, Trader, Trade, RoundStat
 from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
-from .helpers import create_forced_trade, filter_trades
+from .helpers import create_forced_trade, filter_trades, process_trade
 
 @require_GET
 def home(request):
@@ -54,6 +54,7 @@ def join(request):
     return render(request, 'market/join.html', {'form':form})
 
 
+
 def monitor(request, market_id):
 
     market = get_object_or_404(Market, market_id=market_id)
@@ -63,7 +64,7 @@ def monitor(request, market_id):
         'traders': traders,
         'rounds': range(market.round),
         'max_num_players': range(70),
-        'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'was_forced'],
+        'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
         'initial_balance':Trader.initial_balance
     }
 
@@ -73,42 +74,28 @@ def monitor(request, market_id):
     if request.method == "POST":
 
         real_trades = filter_trades(market=market, round=market.round)
+        
         for trade in real_trades:
             assert(trade.was_forced is False), "Forced trade in 'real trades'"
         assert(len(real_trades) > 0), "No trades in market this round. Can't calculate avg. price."
 
         avg_price = sum([trade.unit_price for trade in real_trades]) / len(real_trades)
-
-        alpha, beta, theta = market.alpha, market.beta, market.theta
-        for trade in real_trades: 
-            # calculate values 
-            demand = alpha - beta * Decimal(trade.unit_price) + theta * Decimal(avg_price)
-            expenses = trade.trader.prod_cost * trade.unit_amount
-            units_sold = min(demand, trade.unit_amount)
-            income = trade.unit_price * units_sold
-            trade_profit = income - expenses
-            # store values
-            trade.units_sold = units_sold
-            trade.profit = trade_profit
-            trader = trade.trader
-            trader.balance += trade_profit 
-            trade.balance_after = trader.balance
-            trader.save()
-            trade.save()
       
+        for trade in real_trades: 
+            process_trade(market, trade, avg_price)
+
         for trader in traders:
             traders_number_of_real_trades_this_round = filter_trades(market=market, round=market.round).filter(trader=trader).count()
             if traders_number_of_real_trades_this_round == 0:
-                create_forced_trade(trader=trader, round_num=market.round, is_new_trader=False)
-                
+                create_forced_trade(trader=trader, round_num=market.round, is_new_trader=False)       
         all_trades_this_round = filter_trades(market=market, round=market.round)        
         assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round does not equal num traders ."
         
-        market.round += 1
-        market.save()
-
         RoundStat.objects.create(
             market=market, round=market.round, avg_price=avg_price)
+
+        market.round += 1
+        market.save()
 
         return redirect(reverse('market:monitor', args=(market.market_id,)))
   
@@ -143,7 +130,9 @@ def play(request):
             'rounds':range(market.round),
             'initial_balance': Trader.initial_balance,
             'round_stats':RoundStat.objects.filter(market=market),
-            'trades':trades
+            'trades':trades,
+            'wait':False,
+            'show_last_round_data':False
         }
 
         if trades.filter(round=market.round).exists():
