@@ -11,3 +11,10 @@ class SignupPageView(generic.CreateView):
     success_url = reverse_lazy('login')
     template_name = 'registration/signup.html'
 
+    def form_valid(self, form):
+        """ Override. If the form is valid do these extra things before default behavior """
+        messages.success(
+            self.request, f'Your account was created!')
+        
+        return super().form_valid(form)
+    
