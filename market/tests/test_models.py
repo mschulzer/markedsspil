@@ -1,14 +1,21 @@
 from django.test import TestCase
 from ..models import Market, Trader, Trade, RoundStat
+from django.test import Client
+from django.contrib.auth import get_user_model
 
 class MarketModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods in class
-        cls.market = Market.objects.create(
-            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20
+        User = get_user_model()
+        cls.test_user = User.objects.create_user(
+            username='kris',
+            password='testpass123',
         )
+        cls.market = Market.objects.create(
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, created_by=cls.test_user)
+
     
     def test_saving_markets(self):
         saved_markets = Market.objects.all()
@@ -20,6 +27,7 @@ class MarketModelTest(TestCase):
         self.assertEqual(self.market.min_cost, 6)
         self.assertEqual(self.market.max_cost, 20)
         self.assertEqual(self.market.round, 0)
+        self.assertEqual(self.market.created_by, self.test_user)
 
     def test_market_id_is_good(self):
         self.assertEqual(len(self.market.market_id), 8)
