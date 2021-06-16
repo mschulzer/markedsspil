@@ -2,7 +2,42 @@
 Helper functions used by the views
 """
 
-from .models import Market, Trader, Trade
+from .models import Trader, Trade
+
+
+def process_trade(market, trade, avg_price):
+    """
+    Calculates key values for a single trade and updates trade and trader accordingly.
+    Used by monitor-view on post-requests, when host finishes a round
+    """
+
+    alpha, beta, theta = float(market.alpha), float(market.beta), float(market.theta)  
+
+    # calculate values 
+    expenses = trade.trader.prod_cost * trade.unit_amount  
+    raw_demand = alpha - beta * trade.unit_price + theta * avg_price
+    demand = max(0, round(raw_demand))
+    units_sold = min(demand, trade.unit_amount)
+    income = trade.unit_price * units_sold  
+    trade_profit = income - expenses   
+
+    assert(units_sold >=0)
+    assert(type(trade_profit) is int)
+    
+    # update trade and trader objects
+    trade.demand = demand
+    trade.units_sold = units_sold    
+    trade.profit = trade_profit
+    trader = trade.trader
+    trader.balance += trade_profit
+    trade.balance_after = trader.balance
+
+    # save to database
+    trader.save()
+    trade.save()
+
+    return expenses, raw_demand, demand, units_sold, income, trade_profit
+
 
 
 def create_forced_trade(trader, round_num, is_new_trader):

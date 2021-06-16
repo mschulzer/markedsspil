@@ -1,11 +1,88 @@
 from django.test import TestCase
 from ..models import Market, Trader, Trade
-from ..helpers import create_forced_trade, filter_trades
+from ..helpers import create_forced_trade, filter_trades, process_trade
+from decimal import Decimal
+from math import floor
+
+class TestProcessTrade(TestCase):
+
+    def test_trade_fields_calculated_and_saved_properly(self):
+        market = Market.objects.create(alpha=100.3, beta=3.4, theta=4.5)
+        market.refresh_from_db()
+        alpha, beta, theta = market.alpha, market.beta, market.theta
+
+        trader = Trader.objects.create(market=market, balance=20, prod_cost=70)
+
+        avg_price = 14.5
+        trade = Trade.objects.create(
+            trader=trader, round=0, unit_price=12, unit_amount=100)
+        
+        expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
+            market, trade, avg_price)
+
+        # test calculations
+        expected_expenses = 7000 
+        expected_raw_demand = 124.75  
+        expected_demand = 125  
+        expected_units_sold = 100  
+        expected_income = 1200
+        expected_profit = - 5800
+        self.assertEqual(expenses, expected_expenses)
+        self.assertEqual(expected_raw_demand, raw_demand)
+        self.assertEqual(demand, expected_demand)
+        self.assertEqual(units_sold, expected_units_sold)
+        self.assertEqual(income, expected_income)
+        self.assertEqual(trade_profit, expected_profit)
+
+        # test object updates
+        trader.refresh_from_db()
+        trade.refresh_from_db()
+
+        self.assertEqual(trader.balance, - 5780)
+        self.assertEqual(trade.profit, -5800)
+        self.assertEqual(trade.balance_after, -5780)
+
+    def test_trade_fields_calculated_and_saved_properly_weird_values(self):
+        """
+        trade values are being calculated correctly in a case, where the raw demand is negative
+        """
+        market = Market.objects.create(alpha=0, beta=23233.4, theta=999)
+        market.refresh_from_db()
+        alpha, beta, theta = market.alpha, market.beta, market.theta
+
+        trader = Trader.objects.create(market=market, balance=-120, prod_cost=5)
+
+        avg_price = 143234.223
+        trade = Trade.objects.create(
+            trader=trader, round=0, unit_price=12234, unit_amount=22)
+
+        expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
+            market, trade, avg_price)
+
+        # test calculations
+        expected_expenses = 110 
+        expected_raw_demand = -141146426.823  
+        expected_demand = 0  
+        expected_units_sold = 0 
+        expected_income = 0 
+        expected_profit = - 110 
+        self.assertEqual(expenses, expected_expenses)
+        self.assertEqual(expected_raw_demand, raw_demand)
+        self.assertEqual(demand, expected_demand)
+        self.assertEqual(units_sold, expected_units_sold)
+        self.assertEqual(income, expected_income)
+        self.assertEqual(trade_profit, expected_profit)
+
+        # test object updates
+        trader.refresh_from_db()
+        trade.refresh_from_db()
+        self.assertEqual(trader.balance, -230)
+        self.assertEqual(trade.profit, -110)
+        self.assertEqual(trade.balance_after, -230)
 
 
 class TestCreateForcedTrade(TestCase):
 
-    
     def test_create_forced_trade_NOT_new_trader(self):
 
         market = Market.objects.create(round=5)
@@ -31,8 +108,6 @@ class TestCreateForcedTrade(TestCase):
         self.assertEqual(forced_trade.profit, None)
         self.assertEqual(forced_trade.unit_price, None)
         self.assertEqual(forced_trade.unit_amount, None)
-
-
 
 
 class TestGetTrades(TestCase):

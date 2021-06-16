@@ -1,0 +1,45 @@
+{% extends "market/base.html" %}
+{% block title %}My Markets{% endblock %}
+{% block content %}
+
+<br>
+
+<h2>
+    Your Markets
+</h2>
+{% if markets %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Created by</th>
+                <th>Created at</th>
+                <th>ID</th>
+                <th>alpha</th>
+                <th>beta</th>
+                <th>theta</th>
+                <th>min prod.cost</th>
+                <th>max prod.cost</th>
+                <th>Revisit</th>
+            </tr>
+        </thead>
+        {% for market in markets %}
+
+        <tbody>
+            <td>{{ market.created_by }}</td>
+            <td>{{ market.created_at }}</td>
+            <td>{{ market.market_id }}</td>
+            <td>{{ market.alpha }}</td>
+            <td>{{ market.beta }}</td>
+            <td>{{ market.theta }}</td>
+            <td>{{ market.min_cost }}</td>
+            <td>{{ market.max_cost }}</td>
+            <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>
+            </tr>
+        </tbody>
+        {% endfor %}
+    </table>
+
+{% else %}
+    <p>You have not created any markets yet</p>
+{% endif %}
+{% endblock %}

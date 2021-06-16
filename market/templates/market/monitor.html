@@ -7,9 +7,11 @@
 
 <h2>
     Monitoring Market: {{ market.market_id }}
-    <a href="{% url 'market:join' %}?market_id={{ market.market_id }}" target="_blank">JOIN</a>
 </h2>
-
+<br>
+<p>Players can join using this link:</p>
+<input type="text" value="{{request.get_host}}{% url 'market:join' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
+<button onclick="copy_join_link()">Copy</button>
 <br>
 
 <table class="table table-striped">
@@ -191,68 +193,78 @@
   {% endif %}
 
 <script>
+  function copy_join_link() {
+	  // From w3schools
+	  var link_text = document.getElementById("join_link");
 
-    function render_table(data){
-        document.getElementById("info_on_joined_traders").style.display = "block"
-        document.getElementById("trader_status_thead").style.display = "";
-        for (var i = 0; i < data.num_traders; i++){
-            document.getElementById('table_row' + i).style.display = "";
-            document.getElementById('name' + i).innerHTML = data.traders[i].name;
-            if(data.traders[i].ready){
-                document.getElementById('ready' + i).innerHTML = "✓";
-                document.getElementById('ready' + i).style.color="green";
-            }
-            else{
-                document.getElementById('ready' + i).innerHTML = "No";
-                document.getElementById('ready' + i).style.color="red";
-            }
-            document.getElementById('balance' + i).innerHTML = data.traders[i].balance;
-            document.getElementById('prod_cost' + i).innerHTML = data.traders[i].prod_cost;
-        }
-    }
+	  link_text.select();
+	  link_text.setSelectionRange(0, link_text.value.length);
 
-    function update_next_round_btn(data){
-        if (data.num_ready_traders > 0){
-            if (data.num_ready_traders < data.num_traders){ document.getElementById("next_round_btn_warning").disabled=false;
-                document.getElementById("next_round_btn_warning").style.display="block" ;
-                document.getElementById("next_round_btn").style.display="none" ; }
-            else{
-                document.getElementById("next_round_btn_warning").style.display="none" ;
-                document.getElementById("next_round_btn").style.display="block" ;
-            }
-        }
-        else {
-            document.getElementById("next_round_btn_warning").style.display="block" ;
-            document.getElementById("next_round_btn_warning").disabled=true;
-            document.getElementById("next_round_btn").style.display="none";
-        }
-    }
+	  document.execCommand("copy");
+  }
 
-    function refresh_trader_status(){
-        console.log("refresh")
-        $.ajax({
-            type: 'GET',
-            url:"{% url 'market:trader_api' market.market_id %}",
-            data: {},
-            dataType: 'json',
-            success: function (data) {
-                console.log(data)
-                if (data.num_traders > 0){
-                    document.getElementById("num_traders").innerHTML = data.num_traders;
-                    document.getElementById("num_ready_traders").innerHTML = data.num_ready_traders;
-                    render_table(data);
-                    update_next_round_btn(data)
-                    document.getElementById("waiting_for_first_trader").style.display ="none";
-                }
-            }
-        });
-    };
+  function render_table(data){
+      document.getElementById("info_on_joined_traders").style.display = "block"
+      document.getElementById("trader_status_thead").style.display = "";
+      for (var i = 0; i < data.num_traders; i++){
+          document.getElementById('table_row' + i).style.display = "";
+          document.getElementById('name' + i).innerHTML = data.traders[i].name;
+          if(data.traders[i].ready){
+              document.getElementById('ready' + i).innerHTML = "✓";
+              document.getElementById('ready' + i).style.color="green";
+          }
+          else{
+              document.getElementById('ready' + i).innerHTML = "No";
+              document.getElementById('ready' + i).style.color="red";
+          }
+          document.getElementById('balance' + i).innerHTML = data.traders[i].balance;
+          document.getElementById('prod_cost' + i).innerHTML = data.traders[i].prod_cost;
+      }
+  }
 
-    window.setInterval(refresh_trader_status, 1000);
+  function update_next_round_btn(data){
+      if (data.num_ready_traders > 0){
+          if (data.num_ready_traders < data.num_traders){
+			  document.getElementById("next_round_btn_warning").disabled=false;
+			  document.getElementById("next_round_btn_warning").style.display="block" ;
+			  document.getElementById("next_round_btn").style.display="none" ; }
+          else{
+              document.getElementById("next_round_btn_warning").style.display="none" ;
+              document.getElementById("next_round_btn").style.display="block" ;
+          }
+      }
+      else {
+          document.getElementById("next_round_btn_warning").style.display="block" ;
+          document.getElementById("next_round_btn_warning").disabled=true;
+          document.getElementById("next_round_btn").style.display="none";
+      }
+  }
 
-    function next_round(){
-        document.getElementById("finish_round_form").submit();
-    }
+  function refresh_trader_status(){
+      console.log("refresh")
+      $.ajax({
+          type: 'GET',
+          url:"{% url 'market:trader_api' market.market_id %}",
+          data: {},
+          dataType: 'json',
+          success: function (data) {
+              console.log(data)
+              if (data.num_traders > 0){
+                  document.getElementById("num_traders").innerHTML = data.num_traders;
+                  document.getElementById("num_ready_traders").innerHTML = data.num_ready_traders;
+                  render_table(data);
+                  update_next_round_btn(data)
+                  document.getElementById("waiting_for_first_trader").style.display ="none";
+              }
+          }
+      });
+  };
+
+  window.setInterval(refresh_trader_status, 1000);
+
+  function next_round(){
+      document.getElementById("finish_round_form").submit();
+  }
 
   console.log(roundnums, balancedata);
   const data = {

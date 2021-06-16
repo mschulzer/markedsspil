@@ -6,26 +6,39 @@
 {% block content %}
 
 <h2>Welcome to Market Simulator</h2>
+
 <br><br>
+{% if request.session.trader_id %}
+<p style="border: 2px solid black; padding:2em">You are currently participating in the market
+    <b>{{ request.session.market_id }}</b>
+    with the trader name
+    <b>{{ request.session.username }}</b>. 
+    <br>
+    Return to this market?
+    <a href="{% url 'market:play' %}">
+        Keep playing
+    </a>
+</p>
+
+</span>
+
+{% endif %}
+
+<br><br>
+<p>Join an existing market as new trader:</p>
 <form action="{% url 'market:join' %}" method="GET">
     <input type="submit" value="Join Market" class="btn btn-primary">
 </form>
 <br>
+<p>Create a new market:</p>
 <form action="{% url 'market:create' %}" method="GET">
     <input type="submit" value="Create Market" class="btn btn-secondary">
 </form>
+<br>
+<p>Revisit the markets you have hosted:</p>
+<form action="{% url 'market:my_markets' %}" method="GET">
+    <input type="submit" value="My Markets" class="btn btn-warning">
+</form>
 
-<br><br>
-{% if request.session.trader_id %}
-<p>You've already joined the market
-    <b>{{ request.session.market_id }}</b>
-    with the username
-    <b>{{ request.session.username }}</b>.
 
-<p>Play on this market?
-    <a href="{% url 'market:play' %}">
-        Play
-    </a>
-</p>
-{% endif %}
 {% endblock %}

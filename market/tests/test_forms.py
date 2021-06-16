@@ -1,5 +1,9 @@
+"""
+To only run tests in this file:
+$ docker-compose exec web python manage.py test market.tests.test_forms
+"""
 # Create your tests here.
-from django.test import SimpleTestCase, TestCase
+from django.test import TestCase
 from ..models import Market, Trader, Trade
 from ..forms import MarketForm, TraderForm, TradeForm
 from django.core.exceptions import ValidationError
@@ -7,77 +11,242 @@ from django.core.exceptions import ValidationError
 
 class MarketFormTest(TestCase):
 
-    def setUp(self):
-        # Do this setup before running all test methods in class
-        self.valid_data = {'alpha': 2, 'beta': 5.0334,
+    def test_market_created(self):
+        """ Submitting the market form creates a market."""
+        data = {'alpha': 12.1234, 'beta': 5.0334,
+                           'theta': 3.4432, 'min_cost': 3, 'max_cost': 6}
+        form = MarketForm(data=data)
+        
+        form.is_valid()
+        form.save()
+
+        self.assertEqual(Market.objects.filter(min_cost=3).count(), 1)
+
+
+    def test_alpha_with_5_decimalplaces_is_invalid(self):
+        """ alpha, beta and theta can have at most 4 decimalplaces """
+        data = {'alpha': 2.12345, 'beta': 5.0334,
                                  'theta': 3.4432, 'min_cost': 3, 'max_cost': 6}
-        self.valid_form = MarketForm(data=self.valid_data)
+        form = MarketForm(data=data)
 
-    def test_valid_data_gives_valid_form(self):
-        self.assertTrue(self.valid_form.is_valid())
+        is_valid = form.is_valid()
 
-    def test_valid_form_can_be_saved(self):
-        self.assertEqual(Market.objects.all().count(), 0)
-        self.valid_form.save()
-        self.assertEqual(Market.objects.all().count(), 1)
-        market = Market.objects.first()
-        self.assertEqual(market.alpha, 2.0000)
-        self.assertEqual(float(market.beta), 5.0334)
-        self.assertEqual(float(market.theta), 3.4432)
-        self.assertEqual(market.min_cost, 3)
-        self.assertEqual(market.max_cost, 6)
+        self.assertFalse(is_valid)
 
-    def test_5_decimalplaces_gives_invalid_form_that_cant_be_saved(self):
-        invalid_data = self.valid_data
-        invalid_data['alpha'] = 2.12345
-        form = MarketForm(data=invalid_data)
-        self.assertFalse(form.is_valid())
-        self.assertRaises(ValueError, form.save)
+        self.assertTrue('alpha' in form.errors)
+        self.assertTrue('Der må maksimalt være 4 decimaler' in str(form.errors))
+        self.assertFalse('beta' in form.errors)
 
-    def test_non_integer_min_cost_gives_invalid_form_that_cant_be_saved(self):
-        invalid_data = self.valid_data
-        invalid_data['min_cost'] = 2.1
-        form = MarketForm(data=invalid_data)
-        self.assertFalse(form.is_valid())
-        self.assertRaises(ValueError, form.save)
 
-    def test_min_cost_bigger_than_max_cost_gives_invalid_form(self):
-        invalid_data = self.valid_data
-        invalid_data['min_cost'] = self.valid_data['max_cost'] + 1
-        form = MarketForm(data=invalid_data)
-        self.assertFalse(form.is_valid())
+    def test_alpha_with_bigger_than_999999_is_invalid(self):
+        """ alpha, beta and theta can't be bigger than 999999.9999 """
+        data = {'alpha': 1000000, 'beta': 5.0334,
+                                 'theta': 3.4432, 'min_cost': 3, 'max_cost': 6}
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('alpha' in form.errors)
+        self.assertTrue('Der må maksimalt være 6 cifre før kommaet.' in str(form.errors))
+
+
+    def test_non_integer_min_cost_is_invalid(self):
+        """ min_cost and max_cost have to be integer values """
+        data = {'alpha': 3231.200, 'beta': 5.0334,
+                'theta': 3.4432, 'min_cost': 3.4, 'max_cost': 6}
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('min_cost' in form.errors)
+        self.assertTrue('Indtast et heltal.' in str(form.errors))
+
+    def test_negative_min_cost_is_invalid(self):
+        """ minimal production cost has to be non-negative """
+        data = {'alpha': 3231.200, 'beta': 5.0334,
+                'theta': 3.4432, 'min_cost': -3, 'max_cost': 6}
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('min_cost' in form.errors)
+        self.assertTrue(
+            'Denne værdi skal være større end eller lig 0.' in form.errors['min_cost'])
+
+    def test_zero_min_cost_is_invalid(self):
+        """ min cost can't be zero """
+        data = {'alpha': 3, 'beta': 3, 'theta': 1234,
+                'min_cost': 0, 'max_cost': 13}
+
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('min_cost' in form.errors)
+
+    def test_zero_max_cost_is_invalid(self):
+        """ max  cost cant be zero """
+        data = {'alpha': 3, 'beta': 3, 'theta': 1234,
+                'min_cost': 2, 'max_cost': 0}
+
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('max_cost' in form.errors)
+
+    def test_zero_max_cost_and_zero_min_cost_is_invalid(self):
+        """ min cost and max cost both zero is also invalid """
+        data = {'alpha': 3, 'beta': 3, 'theta': 1234,
+                'min_cost': 0, 'max_cost': 0}
+
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('min_cost' in form.errors)
+        self.assertTrue('max_cost' in form.errors)
+
+
+    def test_min_cost_bigger_than_max_cost_is_invalid(self):
+        """ min_cost can't be bigger than max_cost """
+        data = {'alpha': 3231.200, 'beta': 5.0334,
+                'theta': 3.4432, 'min_cost': 3, 'max_cost': 2}
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+
+        self.assertTrue("Min cost can&#x27;t be bigger than max cost" in str(form))
         self.assertRaises(ValidationError, form.clean)
         self.assertRaises(ValueError, form.save)
 
 
+    def test_blank_field_is_invalid(self):
+        """ host has too fill in all values when creating a market """
+        data = {}
+
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('alpha' in form.errors)
+        self.assertTrue('beta' in form.errors)
+        self.assertTrue('theta' in form.errors)
+        self.assertTrue('min_cost' in form.errors)
+        self.assertTrue('max_cost' in form.errors)
+
+    def test_alpha_negative_is_invalid(self):
+        """ alpha can't be negative """
+        data = {'alpha': -3, 'beta': 0, 'theta': 3.2,
+                'min_cost': 3, 'max_cost': 13}
+
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('alpha' in form.errors)
+        self.assertTrue('beta' not in form.errors)
+      
+    def test_beta_negative_is_invalid(self):
+        """ alpha can't be negative """
+        data = {'alpha': 3, 'beta': -0.13, 'theta': 3.21, 'min_cost':3, 'max_cost':13}
+
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('beta' in form.errors)
+
+
+    def test_theta_negative_is_invalid(self):
+        """ alpha can't be negative """
+        data = {'alpha': 0, 'beta': 3, 'theta': -1234,
+                'min_cost': 3, 'max_cost': 13}
+
+        form = MarketForm(data=data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('theta' in form.errors)
+
+
+
 class TraderFormTest(TestCase):
 
-    def test_form_is_valid_if_market_exists_and_username_not_taken(self):
+    def test_trader_created(self):
+        """ Submitting the trader form and adding a market creates a trader."""
         market = Market.objects.create()
-        data = {'name': 'TestUser', 'market_id': market.market_id}
+        data = {'name': 'Tommy Junior', 'market_id': market.market_id}
+
         form = TraderForm(data=data)
-        self.assertTrue(form.is_valid())
-       
-    def test_form_invalid_if_username_available_but_no_market_with_given_id(self):
+        trader = form.save(commit=False)
+        trader.market = market
+        form.save()
+
+        self.assertEqual(Trader.objects.filter(name="Tommy Junior", market=market).count(), 1)
+
+    def test_user_has_to_fill_in_name_and_market_id_when_joining_market(self):
+        """ leaving a field blank will make form invalid """
+        data = {}
+
+        form = TraderForm(data=data)
+
+        is_valid = form.is_valid()
+        
+        self.assertFalse(is_valid)
+        self.assertTrue('name' in form.errors)
+        self.assertTrue('market_id' in form.errors)
+
+    def test_market_does_not_exist_is_invalid(self):
+        """ Form is invalid if market does not exist """
+
         data = {'name': 'TestUser', 'market_id': 'VESJYPEF'}
         form = TraderForm(data=data)
-        self.assertFalse(form.is_valid())
 
-    def test_form_invalid_if_market_exits_but_username_is_taken_by_a_trader_on_this_marker(self):
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue(
+            "There is no market with this ID" in str(form))
+
+
+    def test_username_is_taken_is_invalid(self):
+        """ Form is invalid if there is already a trader in the market with the requested name """
         market = Market.objects.create()
         Trader.objects.create(name="grethen", market=market)
         data = {'name': 'grethen', 'market_id': market.market_id}
         form = TraderForm(data=data)
-        self.assertFalse(form.is_valid())
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue(
+            "There is already a trader with this name on the requested market. Please select another name" in str(form))
     
-    def test_form_valid_if_market_exists_and__username_is_taken_by_a_trader_on_ANOTHER_market(self):
+    
+    def test_username_taken_on_another_name_is_no_problem(self):
+        """ Form should not be invalid just because there is a user with the wanted name on another market """
         market1 = Market.objects.create()
         market2 = Market.objects.create()
         Trader.objects.create(name="grethen", market=market2)
-        market1.refresh_from_db()
         data = {'name': 'grethen', 'market_id': market1.market_id}
         form = TraderForm(data=data)
-        self.assertTrue(form.is_valid())
+
+        is_valid = form.is_valid()
+
+        self.assertTrue(is_valid)
 
 
 class TradeFormTest(TestCase):
