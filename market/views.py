@@ -32,7 +32,7 @@ def create(request):
     elif request.method == 'GET':
         form = MarketForm()
     return render(request, 'market/create.html', {'form': form})
-            
+
 def join(request):
     if request.method == 'POST':
         form = TraderForm(request.POST)
@@ -44,12 +44,12 @@ def join(request):
             new_trader.prod_cost = randint(market.min_cost, market.max_cost)
             new_trader.balance = Trader.initial_balance
             new_trader.save()
-            
+
             request.session['trader_id'] = new_trader.pk
             request.session['username'] = form.cleaned_data['name']
             request.session['market_id'] = form.cleaned_data['market_id']
 
-            # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1 
+            # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1
             if market.round > 0:
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
@@ -70,7 +70,7 @@ def monitor(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     traders = Trader.objects.filter(market=market)
     context = {
-        'market': market,    
+        'market': market,
         'traders': traders,
         'rounds': range(market.round),
         'max_num_players': range(70),
@@ -108,7 +108,7 @@ def monitor(request, market_id):
         market.save()
 
         return redirect(reverse('market:monitor', args=(market.market_id,)))
-  
+
 
 def play(request):
 
@@ -121,15 +121,15 @@ def play(request):
 
         if request.method == 'POST':
             form = TradeForm(data=request.POST)
-            assert(form.is_valid), 'TradeForm invalid - This should not be possible' 
-            if form.is_valid(): 
+            assert(form.is_valid), 'TradeForm invalid - This should not be possible'
+            if form.is_valid():
                 new_trade = form.save(commit=False)
                 new_trade.trader = trader
                 new_trade.round = market.round
                 new_trade.save()
             return redirect(reverse('market:play'))
 
-        # Get requests only :     
+        # Get requests only :
         form = TradeForm(trader)
         trades = Trade.objects.filter(trader=trader)
 
@@ -147,14 +147,14 @@ def play(request):
 
         if trades.filter(round=market.round).exists():
             context['wait'] = True
-        
+
         elif market.round > 0:
             last_trade = trades.get(round=market.round -1)
             if type(last_trade.profit) is int:
                 context['show_last_round_data'] = True
 
         return render(request, 'market/play.html', context)
-           
+
 
 @require_GET
 def traders_this_round(request, market_id):
@@ -168,7 +168,7 @@ def traders_this_round(request, market_id):
 
 @require_GET
 def trader_api(request, market_id):
-    
+
     market = get_object_or_404(Market, market_id=market_id)
 
     traders = [
@@ -180,7 +180,7 @@ def trader_api(request, market_id):
         }
         for trader in Trader.objects.filter(market=market)
     ]
-    
+
     num_ready_traders = filter_trades(market=market, round=market.round).count()
 
     data = {
@@ -204,8 +204,8 @@ def current_round(request, market_id):
 """
 def download(request, market_id):
     # not properly tested yet
-    # known issues: 
-    # if trader_stats does not exist for all traders in all rounds script will crash. 
+    # known issues:
+    # if trader_stats does not exist for all traders in all rounds script will crash.
     market = get_object_or_404(Market, market_id=market_id)
     market_traders = Trader.objects.filter(market=market)
     total_rounds = market.round
