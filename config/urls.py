@@ -18,6 +18,13 @@ from django.urls import include, path
 from django.conf import settings
 
 urlpatterns = [
-    path('', include('market.urls')),
+    # Django admin
     path('admin/', admin.site.urls),
+
+    # User management
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('accounts.urls')),
+
+    # Local apps
+    path('', include('market.urls')),
 ]
