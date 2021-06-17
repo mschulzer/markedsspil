@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from django.urls import reverse
@@ -10,6 +11,8 @@ from .forms import MarketForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+import json
+
 
 @require_GET
 def home(request):
@@ -135,17 +138,34 @@ def play(request):
         # Get requests only :
         form = TradeForm(trader)
         trades = Trade.objects.filter(trader=trader)
-
+        round_stats = RoundStat.objects.filter(market=market)
         context = {
             'market': market,
             'trader':trader,
             'form':form,
             'rounds':range(market.round),
             'initial_balance': Trader.initial_balance,
-            'round_stats':RoundStat.objects.filter(market=market),
+            'round_stats': round_stats,
             'trades':trades,
             'wait':False,
-            'show_last_round_data':False
+            'show_last_round_data':False,
+
+            # labels for unit and price charts
+            'rounds_json': json.dumps(list(range(market.round))),
+
+            # context for units graph
+            'data_demand_json': json.dumps([trade.demand for trade in trades]),
+            'data_sold_json': json.dumps([trade.units_sold for trade in trades]),
+            'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
+
+            # context for price graph
+            'data_price_json': json.dumps([trade.unit_price for trade in trades]),
+            'data_prod_cost_json': json.dumps([trader.prod_cost for _ in trades]),
+            'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
+ 
+            #context for balance graph
+            'balance_labels' : json.dumps(list(range(-1, market.round))),
+            'data_balance_json': json.dumps([trader.initial_balance] + [trade.balance_after for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():
@@ -155,6 +175,13 @@ def play(request):
             last_trade = trades.get(round=market.round -1)
             if type(last_trade.profit) is int:
                 context['show_last_round_data'] = True
+
+
+        if context['wait']:
+            messages.success(
+            request, f"You made a trade! We are now waiting for market host to finish round {market.round}...   ")
+        elif market.round > 0:
+            messages.success(request, f"You are now ready for round {market.round}!")   
 
         return render(request, 'market/play.html', context)
 
