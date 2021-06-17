@@ -662,10 +662,6 @@ class PlayViewGetRequestTest(TestCase):
 
         # template should contain a submit button
         self.assertIn("submit", html)
-
-        # template should contain profit from round 2
-        self.assertIn("3432253", html)
-        self.assertIn("----", html)
         
 
     def test_form_attributes_are_set_correctly(self):

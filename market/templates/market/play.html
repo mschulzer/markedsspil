@@ -66,32 +66,6 @@
 
     <div class="accordion mb-5" id="accordionCharts">
 
-        <!-- Trader Info -->
-        <!--
-        <div class="card">
-            <div class="card-header" id="headingTwo">
-                <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
-                        data-target="#collapseTraderInfo" aria-expanded="true" aria-controls="collapseTwo">
-                        Trader Info
-                    </button>
-                </h2>
-            </div>
-            <div id="collapseTraderInfo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionTop">
-                <div class="card-body m-0 pb-0 pt-1">
-                    <div class="card-body m-0 p-0">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">Name: <b>{{ trader.name }}</b></li>
-                            <li class="list-group-item">Market: <b>{{ market.market_id }}</b></li>
-                            <li class="list-group-item">Fixed production costs per unit: <b>{{ trader.prod_cost }}</b></li>
-                            <li class="list-group-item">Initial balance: <b>{{ initial_balance }}</b></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        -->
-
         <!-- Units chart-->
         <div class="card">
             <div class="card-header" id="headingTwo">
@@ -128,52 +102,7 @@
             </div>
         </div>
 
-        <!-- Potential Last Round Details -->
-        <!--
-        {% if show_last_round_data %}
-            <div class="card">
-                <div class="card-header" id="headingTwo">
-                    <h2 class="mb-0">
-                        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
-                            data-target="#collapseLastRoundDetails" aria-expanded="true" aria-controls="collapseTwo">
-                            Last Round Details
-                        </button>
-                    </h2>
-                </div>
-                <div id="collapseLastRoundDetails" class="collapse" aria-labelledby="headingTwo"
-                    data-parent="#accordionTop">
-                    <div class="card-body m-0 pb-0 pt-1">
-                        <div class="card-body m-0 p-0">
-                            <div class="row">                 
-                                <div class="col-12 col-sm-6">
-                                    <ul class="list-group list-group-flush no-border-small">
-                                        <li class="list-group-item">Units produced: {{ trades.last.unit_amount}}</li>
-                                        <li class="list-group-item">Demand (units): {{ trades.last.demand }}</li>
-                                        <li class="list-group-item">Units sold: {{ trades.last.demand }}</li>
-                                    </ul>
-                                </div>
-                                <div class="col-12 col-sm-6">
-                                    <ul class="list-group list-group-flush">
-                                        <li class="list-group-item">Your price: {{ trades.last.unit_price }}</li>
-                                        <li class="list-group-item">Avg. price:
-                                            {{ round_stats.all.last.avg_price | floatformat:1 }}</li>
-                                        <li class="list-group-item">Profit:
-                                            {% if trades.last.profit < 0 %}
-                                            <span style="color:red">{{ trades.last.profit }}</span>
-                                            {% else %}
-                                            <span style="color:green">{{ trades.last.profit }}</span>
-                                            {% endif %}
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
-        -->
-        <!-- Price chart-->
+        <!-- Balance chart-->
         <div class="card">
             <div class="card-header" id="headingOne">
                 <h2 class="mb-0">
@@ -194,31 +123,33 @@
     </div>
 {% endif %}
 
+{% endblock content %}
+
+{% block javascript %}
+
 <!-- Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!--Units chart--> 
+<!--Units chart-->
 <script>
     unitsCanvas = document.getElementById('unitsCanvas')
 
     var dataDemand = {
         label: "Demand",
-        data: JSON.parse("{{data_demand_json}}"), //[0, 59, 75, 20, 20, 55, 40],
+        data: JSON.parse("{{data_demand_json}}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataSold = {
         label: "Sold",
-        data: JSON.parse("{{data_sold_json}}"), //[0, 59, 75, 20, 20, 55, 40],
-        //data: [20, 15, 60, 60, 65, 30, 70],
+        data: JSON.parse("{{data_sold_json}}"),
         borderColor: 'rgb(0, 153, 255)',
     };
 
     var dataProduced = {
         label: "Produced",
-        data: JSON.parse("{{data_produced_json}}"), //[0, 59, 75, 20, 20, 55, 40],
-        //data: [20, 13, 30, 40, 45, 30, 0],
+        data: JSON.parse("{{data_produced_json}}"),
         borderColor: 'rgb(255, 153, 0)',
     };
 
@@ -253,20 +184,20 @@
 
     var dataYourPrice = {
         label: "Your price",
-        data: JSON.parse("{{ data_price_json }}"), //[0, 59, 75, 20, 20, 55, 40],
+        data: JSON.parse("{{ data_price_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataMarketAvgPrice = {
         label: "Market avg. price",
-        data: JSON.parse("{{ data_market_avg_price_json }}"), //[0, 59, 75, 20, 20, 55, 40],
+        data: JSON.parse("{{ data_market_avg_price_json }}"),
         borderColor: 'rgb(0, 153, 255)',
     };
-    
+
     var dataProdCost = {
         label: "Your costs pr unit (fixed)",
-        data: JSON.parse("{{ data_prod_cost_json }}"), //[0, 59, 75, 20, 20, 55, 40],
+        data: JSON.parse("{{ data_prod_cost_json }}"),
         borderColor: 'rgb(255, 153, 0)',
     };
 
@@ -301,7 +232,7 @@
 
     var dataBalance = {
         label: "Your balanceprice",
-        data: JSON.parse("{{ data_balance_json }}"), 
+        data: JSON.parse("{{ data_balance_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
@@ -330,92 +261,6 @@
         }
     );
 </script>
-
-{% if market.round > 0 %}
-
-<!-- Trade history 
-<div class="row mb-5">
-    <div class="col">
-        <div class="card">
-            <div class="card-header">
-                Your Trade History
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                {% for round in rounds %}
-                                    <th scope="col">Round {{ round }}</th>
-                                {% endfor %}
-                                {% if wait %}
-                                    <th scope="col">Round {{ market.round }}</th>
-                                {% endif %}
-
-                            </tr>
-                        <thead>
-                        <tbody>
-                            <tr>
-                                <td scope="row">Units Produced</td>
-                                {% for trade in trades %}
-                                    <td>{{ trade|get_attribute:'unit_amount' }}</td>
-                                {% endfor %}
-                            </tr>
-                            <tr>
-                                <td scope="row">Demand</td>
-                                {% for trade in trades %}
-                                <td>{{ trade|get_attribute:'demand' }}</td>
-                                {% endfor %}
-                            </tr>
-                            <tr>
-                                <td scope="row">Units Sold</td>
-                                {% for trade in trades %}
-                                <td>{{ trade|get_attribute:'units_sold' }}</td>
-                                {% endfor %}
-                            </tr>
-                            <tr>
-                                <td scope="row">Your Price</td>
-                                {% for trade in trades %}
-                                <td>{{ trade|get_attribute:'unit_price' }}</td>
-                                {% endfor %}
-                            </tr>
-                          
-                            <tr>
-                                <td scope="row">Market Avg. Price</td>
-                                {% for round_stat in round_stats %}
-                                <td>{{ round_stat.avg_price | floatformat:0 }}</td>
-                                {% endfor %}
-                                {% if wait %}
-                                    <td scope="col"> ---- </td>
-                                {% endif %}
-                            </tr>
-                            <tr>
-                                <td scope="row">Profit</td>
-                                {% for trade in trades %}
-                                <td>{{ trade|get_attribute:'profit' }}</td>
-                                {% endfor %}
-                            </tr>
-                            <tr>
-                                <td scope="row">Balance (Initial: {{ initial_balance }})</td>
-                                {% for trade in trades %}
-                                <td>{{ trade|get_attribute:'balance_after' }}</td>
-                                {% endfor %}
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
--->
-{% endif %}
-
-
-{% endblock content %}
-
-{% block javascript %}
 
 {% if not wait %}
 <script>    
@@ -540,4 +385,4 @@
     window.setInterval(check_for_next_round, 1000);
 </script>
 
-{% endblock %}
+{% endblock javascript%}
