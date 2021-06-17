@@ -5,93 +5,315 @@
 {% block title %}Play{% endblock %}
 
 {% block content %}
-
+    <style>
+        @media screen and (max-width: 575px) {
+            .no-border-small {
+                border-bottom: 1px solid lightgrey;
+            }
+        }
+    </style>
 {% if wait %}
 <div style="border:1px solid red" class="p-5 mb-5">
-    
-    <p> Thanks for making a trade!</p>
+    <p> Thank you for making a trade!</p>
     <h3>Waiting for market host to finish round #{{ market.round }} ...</h3>
     </p>
     <p></p>
-
 </div>
 {% endif %}
 
-<!-- Info on trader and current status -->
-<div class="row mb-5">
-    <div class="col-12 col-md-6">    
-        <div class="card">
-            <div class="card-header">
-                Trader
-            </div>
+
+<h4>Your Status - Round #{{ market.round }}</h4>
+
+<div class="accordion pb-5" id="accordionTop">
+
+    <!-- Financial Status -->
+    <div class="card">
+        <div class="card-header" id="headingTwo">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                    data-target="#collapseStatus" aria-expanded="true" aria-controls="collapseTwo">
+                    Finances
+                </button>
+            </h2>
+        </div>
+        <div id="collapseStatus" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionTop">
             <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Name: <b>{{ trader.name }}</b></li>
-                    <li class="list-group-item">Market: <b>{{ market.market_id }}</b></li> 
-                    <li class="list-group-item">Production costs per unit: <b>{{ trader.prod_cost }}</b></li>
-                </ul>
+                <div class="card-body m-0 p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Your Current Balance: 
+                            <big><b
+                                    style="color:green">{{ trader.balance }}
+                            </b></big>
+                        </li>
+                        {% if show_last_round_data %}
+                            <li class="list-group-item">Profit Last Round:
+                                {% if trades.last.profit < 0 %}
+                                    <big><b style="color:red"> {{ trades.last.profit }} </b></big>
+                                {% else %}
+                                    </big><b style="color:green"> {{ trades.last.profit }} </b></big>
+                                {% endif %}                                
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-6">
-        <div class="card">
-            <div class="card-header">
-                Financial Status (Round #{{ market.round }})
-            </div>
-            <div class="card-body">
-            
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">Initial balance: <b>{{ initial_balance }}</b></li>
-                    <li class="list-group-item">Current balance: <b>{{ trader.balance }}</b></li>
-                    <li class="list-group-item">Net gain (all rounds): 
-                    <b 
-                        {% if initial_balance > trader.balance %}
-                            style="color:red"
-                        {% else %}
-                            style="color:blue"
-                        {% endif %}
-                    >
-                    {{ trader.balance|subtract:initial_balance}}</b></li>
-                </ul>
+    <!-- Trader Info -->
+    <div class="card">
+        <div class="card-header" id="headingTwo">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                    data-target="#collapseTraderInfo" aria-expanded="true" aria-controls="collapseTwo">
+                    Trader Info
+                </button>
+            </h2>
+        </div>
+        <div id="collapseTraderInfo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionTop">
+            <div class="card-body m-0 pb-0 pt-1">
+                <!-- Content is hidden by default. To change this, add .show to the collapse div above -->
+                <div class="card-body m-0 p-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Name: <b>{{ trader.name }}</b></li>
+                        <li class="list-group-item">Market: <b>{{ market.market_id }}</b></li>
+                        <li class="list-group-item">Fixed production costs per unit: <b>{{ trader.prod_cost }}</b></li>
+                        <li class="list-group-item">Initial balance: <b>{{ initial_balance }}</b></li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>    
+    </div>
+
+    <!-- Units chart-->
+    <div class="card">
+        <div class="card-header" id="headingTwo">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                    data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                    Production History
+                </button>
+            </h2>
+        </div>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionTop">
+            <div class="card-body">
+                <!-- to make canvas shown by default add .show to the dive above -->
+                <canvas id="unitsCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price chart-->
+    <div class="card">
+        <div class="card-header" id="headingOne">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
+                    data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    Price History
+                </button>
+            </h2>
+        </div>
+
+        <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionTop">
+            <div class="card-body">
+                <canvas id="priceCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Potential Last Round Details -->
+    {% if show_last_round_data %}
+        <div class="card">
+            <div class="card-header" id="headingTwo">
+                <h2 class="mb-0">
+                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                        data-target="#collapseLastRoundDetails" aria-expanded="true" aria-controls="collapseTwo">
+                        Last Round Details
+                    </button>
+                </h2>
+            </div>
+            <div id="collapseLastRoundDetails" class="collapse" aria-labelledby="headingTwo"
+                data-parent="#accordionTop">
+                <div class="card-body m-0 pb-0 pt-1">
+                    <!-- Content is hidden by default. To change this, add .show to the collapse div above -->
+                    <div class="card-body m-0 p-0">
+                        <div class="row">                 
+                            <div class="col-12 col-sm-6">
+                                <ul class="list-group list-group-flush no-border-small">
+                                    <li class="list-group-item">Units produced: {{ trades.last.unit_amount}}</li>
+                                    <li class="list-group-item">Demand (units): {{ trades.last.demand }}</li>
+                                    <li class="list-group-item">Units sold: {{ trades.last.demand }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Your price: {{ trades.last.unit_price }}</li>
+                                    <li class="list-group-item">Avg. price:
+                                        {{ round_stats.all.last.avg_price | floatformat:1 }}</li>
+                                    <li class="list-group-item">Profit:
+                                        {% if trades.last.profit < 0 %}
+                                        <span style="color:red">{{ trades.last.profit }}</span>
+                                        {% else %}
+                                        <span style="color:green">{{ trades.last.profit }}</span>
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
-{% if show_last_round_data %}
-<!-- Results from last round -->
-<div class="row mb-5">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                Data from last round (Round #{{ market.round | subtract:1 }})
-            </div>
-            <div class="card-body">
-                <ul>
-                    <li>Your unit price was {{ trades.last.unit_price }}</li>
-                    <li>The market average unit price was
-                        {{ round_stats.all.last.avg_price | floatformat:1 }}</li>
-                    <li>You produced {{ trades.last.unit_amount}} units</li>
-                    <li>You could have sold {{ trades.last.demand }} units </li>
-                    <li>You sold {{ trades.last.units_sold }} units</li>
-                    <li>Your profit was:
-                        {% if trades.last.profit < 0 %}
-                            <span style="color:red">
-                        {% else %}
-                            <span style="color:blue">
-                        {% endif %}
-                        {{ trades.last.profit }}</span>
-                    </li>
-                </ul>
+
+{% if not wait %}
+    <h4>Your Next Trade</h4>
+
+    <div class="card">
+       
+        <div class="card-body">
+
+            <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>
+                {% csrf_token %}
+                {{ form|crispy }}
+            </form>
+
+            <ul class="text-secondary">
+                <li>
+                    Total production costs: <span id="total_prod_cost"></span>
+                </li>
+                <li>
+                    Balance after production: <span id="balance_after_production"></span></li>
+                <li>
+                    Income (all units sold): <span id="income_best_case"></span>
+                </li>
+                <li>
+                    Income (no units sold): <span id="income_worst_case"></span>
+                </li>
+                <li>
+                    Net gain (all units sold): <b><span id="net_gain_best_case"></span></b>
+                </li>
+                <li>Net gain (no units sold): 
+                    <b><span id="net_gain_worst_case"></span></b>
+                </li>
+            </ul>
+
+            <div class="d-flex justify-content-center">
+                <input type="submit" value="Make Trade!" class="btn btn-outline-primary"
+                    form="trade_form">
             </div>
         </div>
     </div>
-</div>
 {% endif %}
+
+<br>
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!--Units chart--> 
+<script>
+    unitsCanvas = document.getElementById('unitsCanvas')
+
+    var dataDemand = {
+        label: "Demand",
+        data: [0, 59, 75, 20, 20, 55, 40],
+        lineTension: 0,
+        borderColor: 'rgb(75, 192, 192)',
+    };
+
+    var dataSold = {
+        label: "Sold",
+        data: [20, 15, 60, 60, 65, 30, 70],
+        borderColor: 'rgb(0, 153, 255)',
+    };
+
+    var dataProduced = {
+        label: "Produced",
+        data: [20, 13, 30, 40, 45, 30, 0],
+        borderColor: 'rgb(255, 153, 0)',
+    };
+
+    var unitsData = {
+        labels: [0, 1, 2 , 3,4,5,6,7,8,9],  // labels on x-axis
+        datasets: [dataDemand, dataSold, dataProduced]
+    };
+
+    var lineChart = new Chart(
+        unitsCanvas, {
+            type: 'line',
+            data: unitsData,
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Units History',
+                        padding: {
+                            top: 5,
+                            bottom: 10
+                        }
+                    }
+                },
+            }
+        }
+    );
+</script>
+
+<!--Price chart-->
+<script>
+    priceCanvas = document.getElementById('priceCanvas')
+
+    var dataYourPrice = {
+        label: "Your price",
+        data: [20, 15, 60, 60, 65, 32, 73],
+        lineTension: 0,
+        borderColor: 'rgb(75, 192, 192)',
+    };
+
+    var dataMarketAvgPrice = {
+        label: "Market avg. price",
+        data: [22, 13, 64, 64, 64, 33, 30],
+        borderColor: 'rgb(0, 153, 255)',
+    };
+    
+    var dataProdCost = {
+        label: "Your costs pr unit (fixed)",
+        data: [8, 8, 8, 8, 8, 8, 8],
+        borderColor: 'rgb(255, 153, 0)',
+    };
+
+    var priceData = {
+        labels: [0, 1, 2, 3], // labels on x-axis
+        datasets: [dataYourPrice, dataMarketAvgPrice, dataProdCost]
+    };
+
+    var lineChart = new Chart(
+        priceCanvas, {
+            type: 'line',
+            data: priceData,
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Price History',
+                        padding: {
+                            top: 5,
+                            bottom: 10
+                        }
+                    }
+                }
+            }
+        }
+    );
+</script>
+
+
+<br><br>
 
 
 {% if market.round > 0 %}
-<!-- Trade history  -->
+<!-- Trade history 
+
 <div class="row mb-5">
     <div class="col">
         <div class="card">
@@ -167,54 +389,16 @@
         </div>
     </div>
 </div>
+-->
+
 {% endif %}
 
-{% if not wait %}
-<!-- Next Trade -->
-<div class="row mb-5">
-    <div class="col">
-        <div class="card">
-            <div class="card-header mb-2">
-                Make Your Next Trade
-            </div>
-            <div class="card-body">
-                {% if market.round > 0 %}
-                <p class="text-secondary mb-4">
-                    {% if show_last_round_data %}
-                    
-                    Last round you produced {{ trades.last.unit_amount }} units.<br> 
-                    The demand was {{ trades.last.units_sold }} units.<br>
-                    Your price last was: {{ trades.last.unit_price }}.<br>
-                    {% endif %}
-                    The market average price was: {{ round_stats.all.last.avg_price | floatformat:1 }}.
-                </p>
-                {% endif %}
-                <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>{% csrf_token %}
-                    {{ form|crispy }}
-                </form>
-                <ul class="text-secondary">
-                    <li>Total production cost: <span id="total_prod_cost"></span> (can't exceed you current balance of
-                        {{ trader.balance }}) </li>
-                    <li>Potential income (best case - all units sold): <span id="potential_income"></span></li>
-                    <li>Net gain (best case - all units sold): <span style="color:blue" id="net_gain_best_case"></span>
-                    </li>
-                    <li>Net gain (worst case - no units sold): <span style="color:blue" id="net_gain_worst_case"></span>
-                    </li>
-                </ul>
-                <div class="d-flex justify-content-center">
-                    <input type="submit" value="Make Trade!" class="btn btn-outline-primary" form="trade_form">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
 
-{% endblock %}
+{% endblock content %}
 
 {% block javascript %}
 
-{%if not wait %}
+{% if not wait %}
 <script>    
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
@@ -228,9 +412,11 @@
         price_slider.value = "{{ trades.last.unit_price }}"
     {% endif %}
 
+    var balance = parseInt("{{ trader.balance }}")
     var unit_prod_cost = parseInt("{{ trader.prod_cost }}")
     var total_cost = document.getElementById('total_cost');
-    var potential_income = document.getElementById('potential_income');
+    var income_best_case = document.getElementById('income_best_case');
+    var balance_after_production = document.getElementById('balance_after_production');
     var net_gain_best_case = document.getElementById('net_gain_best_case')
     var net_gain_worst_case = document.getElementById('net_gain_worst_case')
     
@@ -244,15 +430,24 @@
 
     function set_total_cost(){
         amount = amount_slider.value;
-        total_prod_cost.innerHTML = `${amount}*${unit_prod_cost} = ${amount * unit_prod_cost}`;
+        //total_prod_cost.innerHTML = `${amount}*${unit_prod_cost} = ${amount * unit_prod_cost}`;
+        total_prod_cost.innerHTML = amount * unit_prod_cost;
     }
 
+    
     function set_potential_income(){
         amount = amount_slider.value;
         price = price_slider.value;
-        potential_income.innerHTML = `${amount}*${price} = ${amount * price}`;
+        income_best_case.innerHTML = amount*price;
+        income_worst_case.innerHTML = 0;
     }
     
+
+    function set_balance_after_production(){
+        amount = amount_slider.value;
+        balance_after_production.innerHTML = balance - amount * unit_prod_cost  ;
+    }
+
  
     function set_potential_net_gain(){
         amount = amount_slider.value;
@@ -265,15 +460,15 @@
         if (best_case < 0){
             net_gain_best_case.style.color = 'red'
         } else{
-            net_gain_best_case.style.color = 'blue'
+            net_gain_best_case.style.color = 'green'
         }
 
         if (worst_case < 0){
             net_gain_worst_case.style.color='red'
         } else{
-        net_gain_worst_case.style.color = 'blue'
+        net_gain_worst_case.style.color = 'green'
         }
-
+            
         net_gain_best_case.innerHTML = best_case;
         net_gain_worst_case.innerHTML = worst_case;
     }
@@ -282,13 +477,13 @@
     set_amount_label();
     set_total_cost(); 
     set_potential_income()
+    set_balance_after_production()
     set_potential_net_gain()
-
-    //slider max 
 
     price_slider.oninput = function () {
         set_price_label();
         set_potential_income();
+        set_balance_after_production()
         set_potential_net_gain();
     }
 
@@ -296,11 +491,13 @@
         set_amount_label();
         set_total_cost();
         set_potential_income();
+        set_balance_after_production()
         set_potential_net_gain();
     }
     
 </script>
 {% endif %}
+
 
 <script>
     round_num = parseInt("{{ market.round }}");

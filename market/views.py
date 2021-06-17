@@ -9,6 +9,7 @@ from decimal import Decimal
 from .forms import MarketForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 @require_GET
 def home(request):
@@ -53,6 +54,8 @@ def join(request):
             if market.round > 0:
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
+            messages.success(
+                request, f"Hi {form.cleaned_data['name']}! You're now ready to trade on the market {form.cleaned_data['market_id']}")
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
