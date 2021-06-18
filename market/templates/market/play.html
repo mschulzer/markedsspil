@@ -7,8 +7,8 @@
 {% block content %}
     <style>
         @media screen and (max-width: 575px) {
-            .no-border-small {
-                border-bottom: 1px solid lightgrey;
+            .hide-when-small {
+                display:none;
             }
         }
     </style>
@@ -17,7 +17,7 @@
         {% if show_last_round_data %}
             Last round you produced <b>{{ trades.last.unit_amount }}</b> units and sold <b>{{ trades.last.units_sold }}</b>
             units. Your price was <b>{{ trades.last.unit_price}}</b>, whereas the market
-            average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b><br>
+            average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b>.<br class="hide-when-small">
             Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b>. 
         {% endif %}
             Your current balance is <b style="color:green">{{ trader.balance }}</b>.
@@ -42,19 +42,18 @@
             <div class="d-flex justify-content-center">
                 <ul class="text-secondary">
                     <li>
-                        Total production costs: <b><span id="total_prod_cost"></span></b>
+                        Total production costs: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
                     </li>
                     <li>
-                        Balance after production: <b><span id="balance_after_production"></span></b></li>
-                    
-                    <li>
-                        Income (all units sold): <b><span id="income_best_case"></span></b>
+                        Balance after production: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
                     </li>
                     <li>
-                        Profit (all units sold): <b><span id="profit_best_case"></span></b>
+                        Income (all units sold): <span id="income_best_case_formula"></span><b id="income_best_case"></b>
                     </li>
-                    <li>Profit (no units sold):
-                        <b><span id="profit_worst_case"></span></b>
+                    <li>
+                        Profit (all units sold): <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
+                    </li>
+                    <li>Profit (no units sold): <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
                     </li>
                 </ul>
             </div>
@@ -283,7 +282,10 @@
     var balance_after_production = document.getElementById('balance_after_production');
     var profit_best_case = document.getElementById('profit_best_case')
     var profit_worst_case = document.getElementById('profit_worst_case')
-    
+
+    // only show calculations when screen width is bigger than this number
+    const show_formula_breakpoint = 490;
+
     function set_price_label(){
         price_label.innerHTML = "Unit Price: " + price_slider.value; 
     }
@@ -291,11 +293,14 @@
     function set_amount_label(){
         amount_label.innerHTML = "Amount: " + amount_slider.value;
     }
-
+    
     function set_total_cost(){
-        amount = amount_slider.value;
-        //total_prod_cost.innerHTML = `${amount}*${unit_prod_cost} = ${amount * unit_prod_cost}`;
+        amount = amount_slider.value; 
         total_prod_cost.innerHTML = amount * unit_prod_cost;
+        if ($(window).width() > show_formula_breakpoint) {
+            formula = document.getElementById('total_prod_cost_formula')
+            formula.innerHTML = `${amount} * ${unit_prod_cost} = `;
+        } 
     }
 
     
@@ -303,37 +308,51 @@
         amount = amount_slider.value;
         price = price_slider.value;
         income_best_case.innerHTML = amount*price;
+        
+        if ($(window).width() > show_formula_breakpoint) { 
+            formula = document.getElementById('income_best_case_formula')
+            formula.innerHTML = `${amount} * ${price} = `; 
+        }
     }
-    
 
     function set_balance_after_production(){
         amount = amount_slider.value;
-        balance_after_production.innerHTML = balance - amount * unit_prod_cost  ;
+        costs = amount * unit_prod_cost;
+        balance_after_production.innerHTML = balance - costs;
+
+        if ($(window).width() > show_formula_breakpoint) { 
+            formula = document.getElementById('balance_after_production_formula')
+            formula.innerHTML = `${balance} - ${costs} = `;
+        } 
     }
 
  
-    function set_potential_net_gain(){
+    function set_potential_profit(){
         amount = amount_slider.value;
         price = price_slider.value;
-        
         expences = amount*unit_prod_cost;
-        best_case = amount*price - expences
-        worst_case = - expences
+        best_case_income = amount*price;
+        best_case_profit = best_case_income - expences
+        worst_case_profit = - expences
 
-        if (best_case < 0){
+        if (best_case_profit < 0){
             profit_best_case.style.color = 'red'
         } else{
             profit_best_case.style.color = 'green'
         }
-
-        if (worst_case < 0){
+        
+        if (worst_case_profit < 0){
             profit_worst_case.style.color='red'
         } else{
-        profit_worst_case.style.color = 'green'
+            profit_worst_case.style.color = 'green'
         }
-            
-        profit_best_case.innerHTML = best_case;
-        profit_worst_case.innerHTML = worst_case;
+        profit_best_case.innerHTML = best_case_profit;
+        profit_worst_case.innerHTML = - expences;
+
+        if ($(window).width() > show_formula_breakpoint) { 
+            document.getElementById('profit_best_case_formula').innerHTML = `${best_case_income} - ${expences} = `;
+            document.getElementById('profit_worst_case_formula').innerHTML = `0 - ${expences} = `;
+        }     
     }
 
     set_price_label();
@@ -341,13 +360,13 @@
     set_total_cost(); 
     set_potential_income()
     set_balance_after_production()
-    set_potential_net_gain()
+    set_potential_profit()
 
     price_slider.oninput = function () {
         set_price_label();
         set_potential_income();
         set_balance_after_production()
-        set_potential_net_gain();
+        set_potential_profit();
     }
 
     amount_slider.oninput = function () {
@@ -355,7 +374,7 @@
         set_total_cost();
         set_potential_income();
         set_balance_after_production()
-        set_potential_net_gain();
+        set_potential_profit();
     }
     
 </script>
