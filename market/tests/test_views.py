@@ -560,9 +560,12 @@ class PlayViewGetRequestTest(TestCase):
         self.assertTemplateUsed(response, 'market/play.html'),
         self.assertTrue(response.context.get('wait'))
 
-         # template should contain the word Waiting
+         # there should now be a message saying that the user i waiting
         html = response.content.decode('utf8')
-        self.assertIn("Waiting", html)
+        message = list(response.context.get('messages'))[0]
+        self.assertEqual(message.tags, "success")
+        self.assertTrue(
+            "waiting" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn('last round', html)
@@ -659,10 +662,6 @@ class PlayViewGetRequestTest(TestCase):
 
         # template should contain a submit button
         self.assertIn("submit", html)
-
-        # template should contain profit from round 2
-        self.assertIn("3432253", html)
-        self.assertIn("----", html)
         
 
     def test_form_attributes_are_set_correctly(self):
