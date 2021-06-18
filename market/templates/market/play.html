@@ -13,16 +13,16 @@
         }
     </style>
 
-{% if show_last_round_data %}
     <p class="pt-3 p-2" >    
-        Last round you produced <b>{{ trades.last.unit_amount }}</b> units and sold <b>{{ trades.last.units_sold }}</b>
-        units. Your price was <b>{{ trades.last.unit_price}}</b>, whereas the market
-        average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b>.
-        Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b>. 
-        Your current balance is {% if trades.balance < 0 %}<b style="color:red">{% else %}<b style="color:green">{% endif %}{{ trader.balance }}</b>.
+        {% if show_last_round_data %}
+            Last round you produced <b>{{ trades.last.unit_amount }}</b> units and sold <b>{{ trades.last.units_sold }}</b>
+            units. Your price was <b>{{ trades.last.unit_price}}</b>, whereas the market
+            average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b><br>
+            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b>. 
+        {% endif %}
+            Your current balance is <b style="color:green">{{ trader.balance }}</b>.
         <br>
     </p>
-{% endif %}
 
 {% if not wait %}
     <div class="card mb-4">
@@ -40,23 +40,23 @@
             </div>
 
             <div class="d-flex justify-content-center">
-                    <ul class="text-secondary">
-                        <li>
-                            Total production costs: <b><span id="total_prod_cost"></span></b>
-                        </li>
-                        <li>
-                            Balance after production: <b><span id="balance_after_production"></span></b></li>
-                        
-                        <li>
-                            Income (all units sold): <b><span id="income_best_case"></span></b>
-                        </li>
-                        <li>
-                            Profit (all units sold): <b><span id="profit_best_case"></span></b>
-                        </li>
-                        <li>Profit (no units sold):
-                            <b><span id="profit_worst_case"></span></b>
-                        </li>
-                    </ul>
+                <ul class="text-secondary">
+                    <li>
+                        Total production costs: <b><span id="total_prod_cost"></span></b>
+                    </li>
+                    <li>
+                        Balance after production: <b><span id="balance_after_production"></span></b></li>
+                    
+                    <li>
+                        Income (all units sold): <b><span id="income_best_case"></span></b>
+                    </li>
+                    <li>
+                        Profit (all units sold): <b><span id="profit_best_case"></span></b>
+                    </li>
+                    <li>Profit (no units sold):
+                        <b><span id="profit_worst_case"></span></b>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>

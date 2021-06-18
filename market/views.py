@@ -144,7 +144,6 @@ def play(request):
             'trader':trader,
             'form':form,
             'rounds':range(market.round),
-            'initial_balance': Trader.initial_balance,
             'round_stats': round_stats,
             'trades':trades,
             'wait':False,
