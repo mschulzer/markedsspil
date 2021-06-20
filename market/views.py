@@ -15,6 +15,20 @@ import json
 
 
 @require_GET
+def trader_table(request, market_id):
+    print("trader table")
+    market = get_object_or_404(Market, market_id=market_id)
+    traders = Trader.objects.filter(market=market)
+    num_ready_traders = filter_trades(
+        market=market, round=market.round).count()
+    context = {
+        'market':market,
+        'traders': traders,
+        'num_ready_traders': num_ready_traders,
+    }
+    return render(request, 'market/trader-table.html', context)
+
+@require_GET
 def home(request):
     return render(request, 'market/home.html')
 
@@ -78,8 +92,8 @@ def monitor(request, market_id):
     context = {
         'market': market,
         'traders': traders,
+        'num_ready_traders':filter_trades(market=market, round=market.round).count(),
         'rounds': range(market.round),
-        'max_num_players': range(70),
         'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
         'initial_balance':Trader.initial_balance
     }

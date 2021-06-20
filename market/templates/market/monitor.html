@@ -3,18 +3,15 @@
 {% block content %}
 {% load custom_tags %}
 
-<br>
-
-<h2>
+<h2 class="mb-4">
     Monitoring Market: {{ market.market_id }}
 </h2>
-<br>
-<p>Players can join using this link:</p>
-<input type="text" value="{{request.get_host}}{% url 'market:join' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
-<button onclick="copy_join_link()">Copy</button>
-<br>
 
-<table class="table table-striped">
+<p>Players can join using this link:</p>
+<input type="text" value="{{ request.get_host }}{% url 'market:join' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
+<button class="btn btn-primary" onclick="copy_join_link()">Copy</button>
+
+<table class="table table-striped mt-4 mb-5">
     <thead>
         <tr>
             <th>alpha</th>
@@ -34,60 +31,23 @@
     </tbody>
 </table>
 
-<br><br>
 
-<h3>Trader Status Round #{{ market.round }}</h1></h3>
+<h3>Trader Status Round #{{ market.round }}</h3>
 
-<i id="waiting_for_first_trader"> Waiting for the first player to join the market ... </i>
+<div 
+    hx-get="{% url 'market:trader_table' market.market_id %}"
+    hx-trigger="every 2s"
+    hx-target="#trader_table">
+ </div>
 
-<div id="info_on_joined_traders" style="display:none">
-    <table class="table table-sm table-striped">
-        <thead style="display:none" id="trader_status_thead">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Name</th>
-                <th scope="col">Ready</th>
-                <th scope="col">Prod Cost</th>
-                <th scope="col">Current Balance</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for i in max_num_players %}
-                <tr style="display:none"  id="table_row{{i}}">
-                    <th scope="row">{{i|add:1}}</th>
-                    <td id="name{{i}}">name{{i}}</td>
-                    <td id="ready{{i}}">ready{{i}}</td>
-                    <td id="prod_cost{{i}}">prod_cost{{i}}</td>
-                    <td id="balance{{ i }}">balance{{i}}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <p>Traders in market: <span id="num_traders">0</span> (<span id="num_ready_traders">0</span> ready for next round)</p>
-
+<div id="trader_table" class="mb-5">
+    {% include 'market/trader-table.html' %}
 </div>
 
-<!-- Next round button - confirmation required-->
-<button type="button" class="btn btn-primary" data-toggle="modal" style="display:none" data-target="#confirmationPopUp"
-    id="next_round_btn_warning" disabled>
-    Next round
-</button>
 
-<!-- Next round button - no confirmation required-->
-<button type="button" class="btn btn-success" id="next_round_btn" style="display:none" onclick="next_round()">
-    Next round
-</button>
-
-
-<form action="" method="POST" id="finish_round_form">
-    {% csrf_token %}
-</form>
-
-<br><br><br>
-<div>
+<div class="mb-5">
   <canvas id="myChart"></canvas>
 </div>
-<br><br>
 
 
 {% if market.round > 0 %}
@@ -96,7 +56,7 @@
         {% if field == 'balance_after' %}
             <p>Initial balance: {{ initial_balance }}</p>
         {% endif %}
-        <div class="table-responsive">
+        <div class="table-responsive mb-5">
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -118,46 +78,18 @@
                 </tbody>
             </table>
         </div>
-        <br><br>
     {% endfor %}
 
     <button type="button" class="btn btn-primary" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
         Download statistics
     </button>
-</div>
 {% endif %}
-<br>
-<!-- Pop-up confirmation -->
-<div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Confirm Next Round</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Not all traders in your market are ready for next round.
-                <br><br>
-                If you choose to proceed now, these players will enter next round with unchanged balance.
-                <br><br>
-                Proceed to next round?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal"
-                    onclick="next_round()">Proceed</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 {% endblock %}
 
 {% block javascript %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
   var roundnums = [];
   var tradernames = [];
@@ -201,72 +133,9 @@
 	  link_text.setSelectionRange(0, link_text.value.length);
 
 	  document.execCommand("copy");
+
   }
 
-  function render_table(data){
-      document.getElementById("info_on_joined_traders").style.display = "block"
-      document.getElementById("trader_status_thead").style.display = "";
-      for (var i = 0; i < data.num_traders; i++){
-          document.getElementById('table_row' + i).style.display = "";
-          document.getElementById('name' + i).innerHTML = data.traders[i].name;
-          if(data.traders[i].ready){
-              document.getElementById('ready' + i).innerHTML = "✓";
-              document.getElementById('ready' + i).style.color="green";
-          }
-          else{
-              document.getElementById('ready' + i).innerHTML = "No";
-              document.getElementById('ready' + i).style.color="red";
-          }
-          document.getElementById('balance' + i).innerHTML = data.traders[i].balance;
-          document.getElementById('prod_cost' + i).innerHTML = data.traders[i].prod_cost;
-      }
-  }
-
-  function update_next_round_btn(data){
-      if (data.num_ready_traders > 0){
-          if (data.num_ready_traders < data.num_traders){
-			  document.getElementById("next_round_btn_warning").disabled=false;
-			  document.getElementById("next_round_btn_warning").style.display="block" ;
-			  document.getElementById("next_round_btn").style.display="none" ; }
-          else{
-              document.getElementById("next_round_btn_warning").style.display="none" ;
-              document.getElementById("next_round_btn").style.display="block" ;
-          }
-      }
-      else {
-          document.getElementById("next_round_btn_warning").style.display="block" ;
-          document.getElementById("next_round_btn_warning").disabled=true;
-          document.getElementById("next_round_btn").style.display="none";
-      }
-  }
-
-  function refresh_trader_status(){
-      console.log("refresh")
-      $.ajax({
-          type: 'GET',
-          url:"{% url 'market:trader_api' market.market_id %}",
-          data: {},
-          dataType: 'json',
-          success: function (data) {
-              console.log(data)
-              if (data.num_traders > 0){
-                  document.getElementById("num_traders").innerHTML = data.num_traders;
-                  document.getElementById("num_ready_traders").innerHTML = data.num_ready_traders;
-                  render_table(data);
-                  update_next_round_btn(data)
-                  document.getElementById("waiting_for_first_trader").style.display ="none";
-              }
-          }
-      });
-  };
-
-  window.setInterval(refresh_trader_status, 1000);
-
-  function next_round(){
-      document.getElementById("finish_round_form").submit();
-  }
-
-  console.log(roundnums, balancedata);
   const data = {
 	  labels: roundnums,
 	  datasets: balancedata

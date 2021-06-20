@@ -11,6 +11,8 @@ urlpatterns = [
     path('create/', views.create, name='create'),
     path('play/', views.play, name='play'),
     path('<market_id>/monitor/', views.monitor, name='monitor'),
+    path('<market_id>/trader-table/', views.trader_table, name='trader_table'),
+
     path('my_markets/', views.my_markets, name='my_markets'),
 
     # APIs
