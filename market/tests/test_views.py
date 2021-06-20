@@ -470,7 +470,7 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         self.assertTrue(self.nadja.is_ready())
         self.assertTrue(self.kristian.is_ready())
 
-        num_ready_traders = filter_trades(market=self.market, round=self.market.round).count() # this calculation is used in trader_api
+        num_ready_traders = filter_trades(market=self.market, round=self.market.round).count() 
         self.assertEqual(num_ready_traders, 4)
 
     def test_correct_response_code_and_location_after_post_request(self):
@@ -735,101 +735,6 @@ class PlayViewPOSTRequestTest(TestCase):
         self.assertEqual(response.status_code, 302)
         expected_redirect_url = reverse('market:play')
         self.assertEqual(response['Location'], expected_redirect_url)
-
-class TraderAPITest(TestCase):
-
-    def test_response_status_code_404_when_market_does_not_exists(self):
-        url = reverse('market:trader_api', args=('BARMARKETID',))
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_response_status_code_200_when_market_exists(self):
-        market = Market.objects.create()
-        response = self.client.get(
-            reverse('market:trader_api', args=(market.market_id,))
-        )
-        self.assertEqual(response.status_code, 200)
-
-    def test_empty_json_when_no_trader_in_market(self):
-        market = Market.objects.create()
-        response = self.client.get(
-            reverse('market:trader_api', args=(
-                market.market_id,))
-        )
-        json = response.json()
-        self.assertEqual(json['traders'],[])
-        self.assertEqual(json['num_traders'],0)
-        self.assertEqual(json['num_ready_traders'], 0)
-
-
-    def test_one_trader_in_market_with_no_trade_not_included_in_ready_players(self):
-        market = Market.objects.create(round=5)
-        Trader.objects.create(market=market, name="joe")
-        response = self.client.get(
-            reverse('market:trader_api', args=(market.market_id,))
-        )
-        json = response.json()
-        self.assertEqual(json['traders'][0]['name'], "joe")
-        self.assertEqual(json['num_traders'], 1)
-        self.assertEqual(json['num_ready_traders'], 0)
-
-
-    def test_one_trade_in_previous_round_not_ready(self):
-        # there is a market in round 3 & a trader in this market
-        market = Market.objects.create(round=3)
-        trader = Trader.objects.create(market=market, name="joe")
-
-        # the trader has made a trade in a previous round (round 2)
-        Trade.objects.create(trader=trader, round=2)
-
-        # the api is called to check on trader status
-        response = self.client.get(
-            reverse('market:trader_api', args=(market.market_id,))
-        )
-        # as the trade is not made in this round, there should be zero ready traders
-        self.assertEqual(response.json()['num_ready_traders'],0)
-        self.assertEqual(response.json()['num_traders'], 1)
-
-    def test_one_trade_in_this_round_ready(self):
-        # there is a market in round 3 & a trader in this market
-        market = Market.objects.create(round=3)
-        trader = Trader.objects.create(market=market, name="joe")
-
-        # the trader has made a trade in this round (round 3)
-        Trade.objects.create(trader=trader, round=3)
-
-        # the api is called to check on trader status
-        response = self.client.get(
-            reverse('market:trader_api', args=(market.market_id,))
-        )
-        # as the trade is not made in this round, there should be zero ready traders
-        self.assertEqual(response.json()['num_ready_traders'], 1)
-        self.assertEqual(response.json()['num_traders'], 1)
-    
-    def test_trader_in_different_market_same_round_not_included(self):
-        market = Market.objects.create(round=3)
-        other_market = Market.objects.create(round=3)
-        trader = Trader.objects.create(market=other_market, name="joe")
-        Trade.objects.create(trader=trader, round=3)
-        response = self.client.get(
-            reverse('market:trader_api', args=(market.market_id,))
-        )
-        self.assertEqual(response.json()['num_traders'],0)
-
-    def test_two_traders_included(self):
-        market = Market.objects.create(round=3)
-        trader1 = Trader.objects.create(market=market, name="joe")
-        trader2 = Trader.objects.create(market=market, name="hansi")
-        trader3 = Trader.objects.create(market=market, name="morten")
-
-        Trade.objects.create(trader=trader1, round=3)
-        Trade.objects.create(trader=trader2, round=3)
-
-        response = self.client.get(
-            reverse('market:trader_api', args=(market.market_id,))
-        )
-        self.assertEqual(response.json()["num_traders"],3)
-        self.assertEqual(response.json()["num_ready_traders"],2)
 
 class CurrentRoundViewTest(TestCase):
 

@@ -200,43 +200,6 @@ def play(request):
 
 
 @require_GET
-def traders_this_round(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    traders = [trade.trader.name for trade in filter_trades(market=market, round=market.round)]
-    data = {
-        'traders':traders
-    }
-    return JsonResponse(data)
-
-
-@require_GET
-def trader_api(request, market_id):
-
-    market = get_object_or_404(Market, market_id=market_id)
-
-    traders = [
-        {
-            'name': trader.name,
-            'prod_cost': trader.prod_cost,
-            'balance': trader.balance,
-            'ready': trader.is_ready()
-        }
-        for trader in Trader.objects.filter(market=market)
-    ]
-
-    num_ready_traders = filter_trades(market=market, round=market.round).count()
-
-    data = {
-        'traders': traders,
-        'num_traders':len(traders),
-        'num_ready_traders': num_ready_traders,
-
-    }
-
-    return JsonResponse(data)
-
-
-@require_GET
 def current_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     data = {
