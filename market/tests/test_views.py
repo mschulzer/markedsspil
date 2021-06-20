@@ -547,6 +547,7 @@ class PlayViewGetRequestTest(TestCase):
         trader = Trader.objects.create(name='otto', market=market)
         session = self.client.session
         session['trader_id'] = trader.pk
+        session['username'] = 'Hans'
         session.save()
         
         # the user has made a trade in this round (and should now be waiting)
@@ -593,6 +594,7 @@ class PlayViewGetRequestTest(TestCase):
         trader = Trader.objects.create(name='otto', market=market)
         session = self.client.session
         session['trader_id'] = trader.pk
+        session['username'] = 'Hans'
         session.save()
 
         # the user has made a trade in_last_round
@@ -634,6 +636,7 @@ class PlayViewGetRequestTest(TestCase):
         trader = Trader.objects.create(name='otto', market=market)
         session = self.client.session
         session['trader_id'] = trader.pk
+        session['username'] = 'Hans'
         session.save()
 
         # the user has made a trade in round 2
@@ -674,6 +677,7 @@ class PlayViewGetRequestTest(TestCase):
         trader = Trader.objects.create(name='otto', market=market, balance=101, prod_cost=2)
         session = self.client.session
         session['trader_id'] = trader.pk
+        session['username'] = 'Hans'
         session.save()
 
         # user made a real trade in round 3(last round)

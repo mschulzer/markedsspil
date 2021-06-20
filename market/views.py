@@ -14,9 +14,9 @@ from django.contrib import messages
 import json
 
 
+@login_required
 @require_GET
 def trader_table(request, market_id):
-    print("trader table")
     market = get_object_or_404(Market, market_id=market_id)
     traders = Trader.objects.filter(market=market)
     num_ready_traders = filter_trades(
@@ -192,9 +192,10 @@ def play(request):
 
         if context['wait']:
             messages.success(
-            request, f"You made a trade! We are now waiting for market host to finish round {market.round}...   ")
+            request, f"{request.session['username']}, you made a trade! We are now waiting for market host to finish round {market.round}...   ")
         elif market.round > 0:
-            messages.success(request, f"You are now ready for round {market.round}!")   
+            messages.success(
+                request, f"{request.session['username']}, you are now ready for round {market.round}!")
 
         return render(request, 'market/play.html', context)
 
