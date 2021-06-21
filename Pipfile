@@ -9,7 +9,12 @@ gunicorn = "*"
 django = "~=3.2"
 
 [dev-packages]
+black = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.9"
+# This is to allow black to be installed, as it only exists as a prerelease
 
+[pipenv]
+allow_prereleases = true
