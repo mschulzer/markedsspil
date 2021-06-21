@@ -141,5 +141,15 @@ LOGIN_REDIRECT_URL = 'market:home'
 # After logout, redirect to home
 LOGOUT_REDIRECT_URL = 'market:home'
 
-# Email backend - corrently mails are being send to console (need to be changed in production)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email settings
+# In development, send emails to console. In production use settings specified in .env
+smtp_host = os.environ.get("EMAIL_HOST")
+if smtp_host is None or smtp_host == "":
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_HOST = smtp_host
+    EMAIL_PORT = os.environ.get("EMAIL_PORT")
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+    EMAIL_USE_TLS = True
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
