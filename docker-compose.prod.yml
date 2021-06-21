@@ -18,7 +18,7 @@ services:
   nginx:
     restart: always
     image: nginx:latest
-    hostname: market.dataekspeditioner.dk
+    hostname: markedsspillet.dataekspeditioner.dk
     volumes:
       - static_volume:/code/static
       - type: bind
@@ -29,11 +29,11 @@ services:
     depends_on:
       - web
     environment:
-      - VIRTUAL_HOST=market.dataekspeditioner.dk
+      - VIRTUAL_HOST=markedsspillet.dataekspeditioner.dk
       - VIRTUAL_PORT=1337
-      - LETSENCRYPT_HOST=market.dataekspeditioner.dk
+      - LETSENCRYPT_HOST=markedsspillet.dataekspeditioner.dk
       - LETSENCRYPT_EMAIL=dybber@di.ku.dk
-      - url=https://market.dataekspeditioner.dk
+      - url=https://markedsspillet.dataekspeditioner.dk
     networks:
       - nginx_nginx-proxynet
 
