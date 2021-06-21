@@ -142,6 +142,8 @@ LOGIN_REDIRECT_URL = 'market:home'
 LOGOUT_REDIRECT_URL = 'market:home'
 
 # Email settings
+DEFAULT_FROM_EMAIL = 'markedsspillet@dataekspeditioner.dk'
+
 # In development, send emails to console. In production use settings specified in .env
 smtp_host = os.environ.get("EMAIL_HOST")
 if smtp_host is None or smtp_host == "":
