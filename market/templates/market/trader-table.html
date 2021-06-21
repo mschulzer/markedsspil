@@ -42,14 +42,14 @@
             </button>
          
         {% else %}
-        <!-- all traders area ready so show a submit button with no confirmation required -->
+            <!-- all traders area ready so show a submit button with no confirmation required -->
             <button type="button" class="btn btn-success" onclick="next_round()">
                 Next round
             </button>
         {% endif %}
     {% endif %}
 
-    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
+    <form action="{% url 'market:monitor' market.market_id %}">Monitor</a></td>
         {% csrf_token %}
     </form>
 
