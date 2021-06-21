@@ -14,6 +14,20 @@ from django.contrib import messages
 import json
 
 
+@login_required
+@require_GET
+def trader_table(request, market_id):
+    market = get_object_or_404(Market, market_id=market_id)
+    traders = Trader.objects.filter(market=market)
+    num_ready_traders = filter_trades(
+        market=market, round=market.round).count()
+    context = {
+        'market':market,
+        'traders': traders,
+        'num_ready_traders': num_ready_traders,
+    }
+    return render(request, 'market/trader-table.html', context)
+
 @require_GET
 def home(request):
     return render(request, 'market/home.html')
@@ -78,8 +92,8 @@ def monitor(request, market_id):
     context = {
         'market': market,
         'traders': traders,
+        'num_ready_traders':filter_trades(market=market, round=market.round).count(),
         'rounds': range(market.round),
-        'max_num_players': range(70),
         'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
         'initial_balance':Trader.initial_balance
     }
@@ -180,46 +194,10 @@ def play(request):
             messages.success(
             request, f"You made a trade! We are now waiting for market host to finish round {market.round}...   ")
         elif market.round > 0:
-            messages.success(request, f"You are now ready for round {market.round}!")   
+            messages.success(
+                request, f"You are now ready for round {market.round}!")
 
         return render(request, 'market/play.html', context)
-
-
-@require_GET
-def traders_this_round(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    traders = [trade.trader.name for trade in filter_trades(market=market, round=market.round)]
-    data = {
-        'traders':traders
-    }
-    return JsonResponse(data)
-
-
-@require_GET
-def trader_api(request, market_id):
-
-    market = get_object_or_404(Market, market_id=market_id)
-
-    traders = [
-        {
-            'name': trader.name,
-            'prod_cost': trader.prod_cost,
-            'balance': trader.balance,
-            'ready': trader.is_ready()
-        }
-        for trader in Trader.objects.filter(market=market)
-    ]
-
-    num_ready_traders = filter_trades(market=market, round=market.round).count()
-
-    data = {
-        'traders': traders,
-        'num_traders':len(traders),
-        'num_ready_traders': num_ready_traders,
-
-    }
-
-    return JsonResponse(data)
 
 
 @require_GET

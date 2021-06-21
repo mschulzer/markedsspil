@@ -62,12 +62,22 @@
           {% block content %} {% endblock %}
         
         </main>          
+        
         <!-- Bootstrap core JS-->
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+        
         <!-- Core theme JS-->
         <!-- <script src="js/scripts.js"></script> -->
+
+        <!-- HTMX -->
+        <script src="https://unpkg.com/htmx.org@1.4.1"></script>
+        <script>
+            document.body.addEventListener('htmx:configRequest', (event) => {
+                event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+            })
+        </script>
 
         {% block javascript %}
         {% endblock javascript %}
