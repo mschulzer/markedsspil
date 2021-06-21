@@ -49,12 +49,13 @@
         {% endif %}
     {% endif %}
 
-    <form action="{% url 'market:monitor' market.market_id %}">Monitor</a></td>
+    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
         {% csrf_token %}
     </form>
 
     <script>
         function next_round() {
+            console.log("next round")
             document.getElementById("finish_round_form").submit();
         }
     </script>

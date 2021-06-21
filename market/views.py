@@ -192,10 +192,10 @@ def play(request):
 
         if context['wait']:
             messages.success(
-            request, f"{request.session['username']}, you made a trade! We are now waiting for market host to finish round {market.round}...   ")
+            request, f"You made a trade! We are now waiting for market host to finish round {market.round}...   ")
         elif market.round > 0:
             messages.success(
-                request, f"{request.session['username']}, you are now ready for round {market.round}!")
+                request, f"You are now ready for round {market.round}!")
 
         return render(request, 'market/play.html', context)
 
