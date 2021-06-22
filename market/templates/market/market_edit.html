@@ -1,0 +1,18 @@
+{% extends "market/base.html" %}
+{% block title %}Edit Market{% endblock %}
+
+{% block content %}
+{% load custom_tags %}
+
+<h2>
+    Update Market: {{ market.market_id }}
+</h2>
+
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Update</button>
+</form>
+
+
+{% endblock content %}

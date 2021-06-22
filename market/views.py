@@ -12,7 +12,15 @@ from .helpers import create_forced_trade, filter_trades, process_trade
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import UpdateView
 
+
+class MarketUpdateView(LoginRequiredMixin, UpdateView):
+    model = Market
+    context_object_name = 'market'
+    fields = ('alpha', 'beta', 'theta',)
+    template_name = 'market/market_edit.html'
 
 @login_required
 @require_GET
@@ -40,6 +48,7 @@ def my_markets(request):
 
 @login_required
 def create(request):
+   
     if request.method == 'POST':
         form = MarketForm(request.POST)
         if form.is_valid():
@@ -49,7 +58,12 @@ def create(request):
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
     elif request.method == 'GET':
         form = MarketForm()
-    return render(request, 'market/create.html', {'form': form})
+    
+    # code smell: path to should probably not be hard coded
+    with open('/code/market/default_markets.json') as file:  
+        data = json.load(file)
+    
+    return render(request, 'market/create.html', {'form': form, 'default_markets': json.dumps(data)})
 
 def join(request):
     if request.method == 'POST':

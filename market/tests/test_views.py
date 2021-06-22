@@ -41,13 +41,13 @@ class CreateMarketViewTests(TestCase):
         )
         
         # Set up non-modified objects used by all test methods in class
-        cls.valid_data = {'alpha': 21.402, 'beta': 44.2,
+        cls.valid_data = {'product_name': 'baguettes', 'alpha': 21.402, 'beta': 44.2,
                     'theta': 2.0105, 'min_cost': 11, 'max_cost': 144}
 
-        cls.invalid_data = {'alpha': 21.402, 'beta': 44.2,
+        cls.invalid_data = {'product_name': 'baguettes', 'alpha': 21.402, 'beta': 44.2,
                           'theta': 2.0105, 'min_cost': 11, 'max_cost': 10}
 
-        cls.invalid_data2 = {'alpha': '', 'beta': 44.2,
+        cls.invalid_data2 = {'product_name': 'baguettes', 'alpha': '', 'beta': 44.2,
                                 'theta': 2.0105, 'min_cost': 11, 'max_cost': 10}
 
     # test get requests
@@ -812,3 +812,31 @@ class MyMarketTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'hanne')
         self.assertContains(response, '13')
+
+
+class TraderTableTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):        
+        
+        User = get_user_model()
+        
+        User.objects.create_user(
+            username='somename',
+            password='testpass123',
+        )
+        cls.market = Market.objects.create(round=4, min_cost=1, max_cost=3)
+
+
+    def test_page_exists_for_logged_in_client(self):
+        """ a logged in client should user not logged in will be redirected to login page """
+        self.client.login(username='somename', password='testpass123')
+        response = self.client.get(reverse('market:trader_table', args=(self.market.market_id,)))
+        self.assertEqual(response.status_code, 200)
+ 
+
+    def test_page_exists_for_logged_in_user(self):
+        """ a client not logged in should be redirected to login page """
+        response = self.client.get(reverse('market:trader_table', args=(self.market.market_id,)))
+        self.assertEqual(response.status_code, 302)
+ 

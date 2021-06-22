@@ -1,4 +1,3 @@
-<!-- new file -->
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
 
@@ -6,11 +5,94 @@
 
 {% block content %}
 
-<h3>Create a market</h3>
-<form action="" method="post">{% csrf_token %}
-	{{ form|crispy }}
-	<input type="submit" value="Create" class="btn btn-primary">
-</form>
-<br>
-<br>
-{% endblock %}
+<h3 class="mb-3">Create a market</h3>
+<div class="row">
+
+	<div class="col-12 col-lg-5 mb-4">
+		<div class="card">
+			<div class="card-header">
+				Default Markets 	
+			</div>
+			<div class="card-body">
+				<form id='market_radio_form'>
+					<h5 class="card-title">Select product</h5>
+					<div class="pl-3 mb-2">
+						<input type="radio" id="baguettes" name="product" value="baguettes" checked>
+						<label for="baguettes">Baguettes</label><br>
+						<input type="radio" id="cake" name="product" value="wedding-cake">
+						<label for="cake">Wedding Cake</label><br>
+						<input type="radio" id="custom" name="product" value="custom">
+						<label for="custom">Custom</label><br>
+					</div>
+					<div id="select_terms">
+						<h5 class="card-title">Select terms of competition</h5>
+						<div class="pl-3">
+							<input type="radio" id="equal" name="terms" value="equal-costs" checked>
+							<label for="equal">Equal production costs for all</label><br>
+							<input type="radio" id="different" name="terms" value="different-costs">
+							<label for="different">Different production costs</label><br>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="col-12 col-lg-7 mb-4">
+		<div class="card">
+			<div class="card-header">
+				Market Details
+			</div>
+		<div class="card-body">
+			<form class="mb-5" action="" id="create-market-form" method="post">{% csrf_token %}
+				{{ form|crispy }}
+			</form>
+		</div>
+	</div>
+	<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
+</div>
+
+{% endblock content %}
+{% block javascript %}
+<script>
+
+	default_markets = {{ default_markets|safe }}
+
+	//default_markets =JSON.parse("{{ default_markets|escapejs }}") // is this unsafe? 
+
+	function fill_form(product){
+		document.getElementById('id_product_name').value=product.product_name
+		document.getElementById('id_initial_balance').value=product.initial_balance
+		document.getElementById('id_alpha').value=product.alpha
+		document.getElementById('id_beta').value=product.beta
+		document.getElementById('id_theta').value=product.theta
+		document.getElementById('id_min_cost').value=product.min_cost
+		document.getElementById('id_max_cost').value=product.max_cost
+	}
+	function clear_form(){
+		document.getElementById('id_product_name').value=""
+		document.getElementById('id_initial_balance').value=""
+		document.getElementById('id_alpha').value=""
+		document.getElementById('id_beta').value=""
+		document.getElementById('id_theta').value=""
+		document.getElementById('id_min_cost').value=""
+		document.getElementById('id_max_cost').value=""
+	}
+	
+	fill_form(default_markets["baguettes-equal-costs"])
+	
+	document.getElementById('market_radio_form').addEventListener('change', function() {
+
+		product = document.querySelector('input[name="product"]:checked').value
+		if (product=="custom"){
+			clear_form()
+			document.getElementById("select_terms").style.display="none";
+		}
+		else{
+			document.getElementById("select_terms").style.display="block";
+			terms = document.querySelector('input[name="terms"]:checked').value
+			fill_form(default_markets[product + "-" + terms]);
+		}
+	}); 
+
+</script>
+{% endblock javascript %}

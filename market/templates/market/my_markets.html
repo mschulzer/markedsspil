@@ -33,7 +33,7 @@
             <td>{{ market.theta }}</td>
             <td>{{ market.min_cost }}</td>
             <td>{{ market.max_cost }}</td>
-            <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>
+            <td><a href="{% url 'market:market_edit' market.market_id %}">Monitor</a></td>
             </tr>
         </tbody>
         {% endfor %}
