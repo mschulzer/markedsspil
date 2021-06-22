@@ -11,7 +11,7 @@
 <input type="text" value="{{ request.get_host }}{% url 'market:join' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
 <button class="btn btn-primary" onclick="copy_join_link()">Copy</button>
 
-<table class="table table-striped table-responsive mt-4 mb-5">
+<table class="table table-striped table-responsive mt-4">
     <thead>
         <tr>
             <th>Product name</th>
@@ -21,7 +21,6 @@
             <th>Theta</th>
             <th>Min prod.cost</th>
             <th>Max prod.cost</th>
-            <th>Change parameters</th>
         </tr>
     </thead>
     <tbody>
@@ -33,10 +32,11 @@
             <td>{{ market.theta }}</td>
             <td>{{ market.min_cost }}</td>
             <td>{{ market.max_cost }}</td>
-            <td><a href="{% url 'market:market_edit' market.market_id %}">Edit</a></td>
         </tr>
     </tbody>
 </table>
+<a class="btn btn-primary mb-5" href="{% url 'market:market_edit' market.market_id %}">Edit Market</a>
+
 
 
 <h3>Trader Status Round #{{ market.round }}</h3>
