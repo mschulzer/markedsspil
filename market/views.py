@@ -16,6 +16,10 @@ import json
 def market_edit(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
+    # only the user how created the market have permission to edit it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+
     if request.method == 'POST':
         form = MarketUpdateForm(request.POST, instance=market)
         if form.is_valid():
