@@ -47,7 +47,7 @@ class Trader(models.Model):
     name = models.CharField(max_length=16,)
     prod_cost = models.IntegerField(default=1)
     # balance field is not strictly necessary, as it should always be possible to find this value in a stored Trade object
-    balance = models.IntegerField(default=initial_balance, blank=True) 
+    balance = models.IntegerField(blank=True) 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:

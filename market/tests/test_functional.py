@@ -14,6 +14,8 @@ class TwoPlayerGame(TestCase):
 
         # A teacher creates a market
         post_data = {
+            'product_name':'baguettes',
+            'initial_balance':4000,
             'alpha': 21.402, 
             'beta': 44.2,
             'theta': 2.0105, 
@@ -98,10 +100,10 @@ class TwoPlayerGame(TestCase):
 
     
     def test_round_1_one_forced_moce(self):
-
-        market = Market.objects.create(round=1)
-        marianne = Trader.objects.create(market=market, name="Marianne")
-        klaus = Trader.objects.create(market=market, name="Klaus")
+        market = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=1)
+        marianne = Trader.objects.create(market=market, name="Marianne", balance=234)
+        klaus = Trader.objects.create(market=market, name="Klaus", balance=324)
 
         # round zero trades
         m0 = Trade.objects.create(trader=marianne, round=0, unit_price=2, unit_amount=4, profit=30,balance_after=5030, was_forced=False)
@@ -120,8 +122,8 @@ class TwoPlayerGame(TestCase):
         url = reverse('market:monitor', args=(market.market_id,))
         self.client.post(url)
 
-        # Klaus' balance is now set to 5000
-        self.assertTrue(klaus.balance==5000)
+        # Klaus' balance has not changed
+        self.assertEqual(klaus.balance,324)
 
         # a forced trade has been made for Klaus
         klaus_trade = Trade.objects.get(

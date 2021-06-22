@@ -74,7 +74,7 @@ def join(request):
             new_trader = form.save(commit=False)
             new_trader.market = market
             new_trader.prod_cost = randint(market.min_cost, market.max_cost)
-            new_trader.balance = Trader.initial_balance
+            new_trader.balance = market.initial_balance
             new_trader.save()
 
             request.session['trader_id'] = new_trader.pk
@@ -109,7 +109,7 @@ def monitor(request, market_id):
         'num_ready_traders':filter_trades(market=market, round=market.round).count(),
         'rounds': range(market.round),
         'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
-        'initial_balance':Trader.initial_balance
+        'initial_balance':market.initial_balance
     }
 
     if request.method == "GET":
@@ -192,7 +192,7 @@ def play(request):
  
             #context for balance graph
             'balance_labels' : json.dumps(list(range(-1, market.round))),
-            'data_balance_json': json.dumps([trader.initial_balance] + [trade.balance_after for trade in trades]),
+            'data_balance_json': json.dumps([trader.market.initial_balance] + [trade.balance_after for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():

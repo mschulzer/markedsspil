@@ -13,7 +13,7 @@ class MarketFormTest(TestCase):
 
     def test_market_created(self):
         """ Submitting the market form creates a market."""
-        data = {'product_name': 'Baguettes', 'alpha': 12.1234, 'beta': 5.0334,
+        data = {'product_name': 'Baguettes', 'initial_balance':3000, 'alpha': 12.1234, 'beta': 5.0334,
                            'theta': 3.4432, 'min_cost': 3, 'max_cost': 6}
         form = MarketForm(data=data)
         
@@ -25,7 +25,7 @@ class MarketFormTest(TestCase):
 
     def test_alpha_with_5_decimalplaces_is_invalid(self):
         """ alpha, beta and theta can have at most 4 decimalplaces """
-        data = {'producet_name': 'Baguettes','alpha': 2.12345, 'beta': 5.0334,
+        data = {'producet_name': 'Baguettes', 'initial_balance': 3000, 'alpha': 2.12345, 'beta': 5.0334,
                                  'theta': 3.4432, 'min_cost': 3, 'max_cost': 6}
         form = MarketForm(data=data)
 
@@ -40,7 +40,7 @@ class MarketFormTest(TestCase):
 
     def test_alpha_with_bigger_than_999999_is_invalid(self):
         """ alpha, beta and theta can't be bigger than 999999.9999 """
-        data = {'producet_name': 'Baguettes', 'alpha': 1000000, 'beta': 5.0334,
+        data = {'producet_name': 'Baguettes', 'initial_balance': 3000, 'alpha': 1000000, 'beta': 5.0334,
                                  'theta': 3.4432, 'min_cost': 3, 'max_cost': 6}
         form = MarketForm(data=data)
 
@@ -53,7 +53,7 @@ class MarketFormTest(TestCase):
 
     def test_non_integer_min_cost_is_invalid(self):
         """ min_cost and max_cost have to be integer values """
-        data = {'producet_name': 'Baguettes','alpha': 3231.200, 'beta': 5.0334,
+        data = {'producet_name': 'Baguettes', 'initial_balance': 3000, 'alpha': 3231.200, 'beta': 5.0334,
                 'theta': 3.4432, 'min_cost': 3.4, 'max_cost': 6}
         form = MarketForm(data=data)
 
@@ -188,12 +188,15 @@ class TraderFormTest(TestCase):
 
     def test_trader_created(self):
         """ Submitting the trader form and adding a market creates a trader."""
-        market = Market.objects.create()
+        market = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=3)
         data = {'name': 'Tommy Junior', 'market_id': market.market_id}
 
         form = TraderForm(data=data)
         trader = form.save(commit=False)
         trader.market = market
+        trader.balance = market.initial_balance
+
         form.save()
 
         self.assertEqual(Trader.objects.filter(name="Tommy Junior", market=market).count(), 1)
@@ -225,8 +228,9 @@ class TraderFormTest(TestCase):
 
     def test_username_is_taken_is_invalid(self):
         """ Form is invalid if there is already a trader in the market with the requested name """
-        market = Market.objects.create()
-        Trader.objects.create(name="grethen", market=market)
+        market = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=3)
+        Trader.objects.create(name="grethen", market=market, balance=market.initial_balance)
         data = {'name': 'grethen', 'market_id': market.market_id}
         form = TraderForm(data=data)
 
@@ -239,9 +243,11 @@ class TraderFormTest(TestCase):
     
     def test_username_taken_on_another_name_is_no_problem(self):
         """ Form should not be invalid just because there is a user with the wanted name on another market """
-        market1 = Market.objects.create()
-        market2 = Market.objects.create()
-        Trader.objects.create(name="grethen", market=market2)
+        market1 = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                                 theta=2.0105, min_cost=11, max_cost=144)
+        market2 = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                                 theta=2.0105, min_cost=11, max_cost=144, round=3)
+        Trader.objects.create(name="grethen", market=market2, balance=market2.initial_balance)
         data = {'name': 'grethen', 'market_id': market1.market_id}
         form = TraderForm(data=data)
 
@@ -278,8 +284,9 @@ class TradeFormTest(TestCase):
     def test_valid_form_with_all_data_can_be_saved_to_db(self):
         data = {'unit_price': 18, 'unit_amount': 140}
         form = TradeForm(data=data)
-        market = Market.objects.create()
-        trader = Trader.objects.create(market=market, name="joe")
+        market = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=3)
+        trader = Trader.objects.create(market=market, name="joe", balance=400)
         new_trade = form.save(commit=False)
         new_trade.trader = trader
         new_trade.round = market.round
@@ -289,12 +296,11 @@ class TradeFormTest(TestCase):
 
     def test_init_with_trader_as_argument(self):
         """ trade form is created when trader is argument, and max_amount is calculated properly """
-        market = Market.objects.create()
+        market = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=0)
         trader = Trader.objects.create(market=market, name="Hans Lange", prod_cost=10, balance=201)
         data = {'unit_price': 18, 'unit_amount': 140}
         form = TradeForm(trader, data=data)
-        market = Market.objects.create()
-        trader = Trader.objects.create(market=market, name="joe")
         new_trade = form.save(commit=False)
         new_trade.trader = trader
         new_trade.round = market.round
@@ -303,13 +309,11 @@ class TradeFormTest(TestCase):
         self.assertIn('max="20"',str(form)) # balance/prod_price=20,5 
 
     def test_form_init__doesnt_crash_when_prod_cost_is_zero(self):
-        """ trade form is created when trader is argument, and max_amount is calculated properly """
-        market = Market.objects.create()
+        market = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=0)
         trader = Trader.objects.create(market=market, name="Hans Lange", prod_cost=0, balance=201)
         data = {'unit_price': 18, 'unit_amount': 140}
         form = TradeForm(trader, data=data)
-        market = Market.objects.create()
-        trader = Trader.objects.create(market=market, name="joe")
         new_trade = form.save(commit=False)
         new_trade.trader = trader
         new_trade.round = market.round

@@ -14,6 +14,8 @@ class MarketModelTest(TestCase):
             password='testpass123',
         )
         cls.market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, created_by=cls.test_user)
 
     
@@ -46,20 +48,29 @@ class MarketModelTest(TestCase):
 
     def test_alpha_will_be_saved_with_max_4_decimals(self):
         """ alpha is defined in the model have 4 decimal places """
-        market = Market.objects.create(alpha=0.11112222)
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=0.11112222, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
         self.assertEqual(float(market.alpha), 0.1111)
 
     def test_alpha_will_be_saved_with_max_4_decimals_test_2(self):
         """ alpha is defined in the model have 4 decimal places """
-        market = Market.objects.create(alpha=0.11118)
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=0.11118, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
         self.assertEqual(float(market.alpha), 0.1112)
 
 
     def test_alpha_will_be_saved_with_max_4_decimals_test_3(self):
         """ alpha is defined in the model have 4 decimal places """
-        market = Market.objects.create(alpha=23.1111111)
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=23.1111111, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
         self.assertEqual(float(market.alpha), 23.1111)
 
@@ -68,7 +79,10 @@ class MarketModelTest(TestCase):
         Max_num_digits is set to 10 & decimalplaces to 4. 
         This means that 999999.9999 is the largest value of alpha, we can save
         """
-        market = Market.objects.create(alpha=999999.999912)
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=999999.999912, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
         self.assertEqual(float(market.alpha), 999999.9999)
 
@@ -92,9 +106,13 @@ class TraderModelTest(TestCase):
 
     @classmethod
     def setUp(self):
-        self.market = Market.objects.create()
+        self.market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20)
+
         self.trader = Trader.objects.create(
-            market=self.market, name='Stefan', prod_cost=2)
+            market=self.market, name='Stefan', prod_cost=2, balance=4000)
 
     def test_saving_traders(self):
         saved_traders = Trader.objects.all()
@@ -103,11 +121,11 @@ class TraderModelTest(TestCase):
         self.assertEqual(self.trader.market, self.market)
         self.assertEqual(self.trader.name, 'Stefan')
         self.assertEqual(self.trader.prod_cost, 2)
-        self.assertEqual(self.trader.balance, Trader.initial_balance)
+        self.assertEqual(self.trader.balance, 4000)
 
                
     def test_object_name(self):  
-        expected_object_name = f"Stefan [{self.market.market_id}] - ${Trader.initial_balance}"
+        expected_object_name = f"Stefan [{self.market.market_id}] - ${self.market.initial_balance}"
         self.assertEqual(str(self.trader), expected_object_name)
     
     def test_is_ready_is_false(self):
@@ -125,8 +143,11 @@ class TraderModelTest(TestCase):
 class TradeModelTest(TestCase):
     
     def test_object_name(self):
-        market = Market.objects.create(round=5)
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
+        trader = Trader.objects.create(market=market, name='Joe Salesman', balance=400)
         trade = Trade.objects.create(
         trader= trader, round=market.round, unit_price=13.45, unit_amount=34, profit=-4, balance_after=-400, was_forced=False)
 
@@ -135,8 +156,11 @@ class TradeModelTest(TestCase):
     
        
     def test_constraint_trader_and_round_unique_together(self):
-        market = Market.objects.create(round=5)
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
+        trader = Trader.objects.create(market=market, name='Joe Salesman', balance=30)
 
         # we try to make a trade with same trader and same round - this should cast an integrety error in the database
     
@@ -152,8 +176,11 @@ class TradeModelTest(TestCase):
             self.assertEqual(error_mgs, "error message")
     
     def test_constraint_trade_and_round_unique_together_okay_to_update_trade(self):
-        market = Market.objects.create(round=5)
-        trader = Trader.objects.create(market=market, name='Joe Salesman')
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
+        trader = Trader.objects.create(market=market, name='Joe Salesman', balance=4)
 
         # we try to make a trade with same trader and same round - this should cast an integrety error in the database
     
@@ -166,7 +193,10 @@ class TradeModelTest(TestCase):
 class TestRoundStatModel(TestCase):
 
     def test_object_creation_and_name(self):
-        market = Market.objects.create(round=5)
+        market = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         roundstat = RoundStat.objects.create(market=market, round=3, avg_price=34.343) 
         r1 = RoundStat.objects.first()
         self.assertIsInstance(r1, RoundStat)
@@ -177,8 +207,14 @@ class TestRoundStatModel(TestCase):
 
 
     def test_market_and_round_uinque_together(self):
-        market1 = Market.objects.create(round=5)
-        market2 = Market.objects.create(round=5)
+        market1 = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
+        market2 = Market.objects.create(
+            product_name='bread',
+            initial_balance='4000',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         RoundStat.objects.create(
             market=market1, round=3, avg_price=34.343)
 

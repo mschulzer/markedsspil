@@ -7,7 +7,7 @@ from math import floor
 class TestProcessTrade(TestCase):
 
     def test_trade_fields_calculated_and_saved_properly(self):
-        market = Market.objects.create(alpha=100.3, beta=3.4, theta=4.5)
+        market = Market.objects.create(product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
         market.refresh_from_db()
         alpha, beta, theta = market.alpha, market.beta, market.theta
 
@@ -46,7 +46,7 @@ class TestProcessTrade(TestCase):
         """
         trade values are being calculated correctly in a case, where the raw demand is negative
         """
-        market = Market.objects.create(alpha=0, beta=23233.4, theta=999)
+        market = Market.objects.create(product_name="x", initial_balance=40, alpha=0, beta=23233.4, theta=999, min_cost=2, max_cost=10)
         market.refresh_from_db()
         alpha, beta, theta = market.alpha, market.beta, market.theta
 
@@ -85,8 +85,9 @@ class TestCreateForcedTrade(TestCase):
 
     def test_create_forced_trade_NOT_new_trader(self):
 
-        market = Market.objects.create(round=5)
-        trader = Trader.objects.create(market=market)
+        market = Market.objects.create(
+            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4, round=5)
+        trader = Trader.objects.create(market=market, balance=3)
         forced_trade = create_forced_trade(trader=trader, round_num=5, is_new_trader=False)
 
         self.assertEqual(forced_trade.was_forced, True)
@@ -97,8 +98,10 @@ class TestCreateForcedTrade(TestCase):
         self.assertEqual(forced_trade.unit_amount, None)
 
     def test_create_forced_trade_new_trader(self):
-        market = Market.objects.create(round=5)
-        trader = Trader.objects.create(market=market)
+
+        market = Market.objects.create(
+            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4, round=5)
+        trader = Trader.objects.create(market=market, balance=400)
         forced_trade = create_forced_trade(trader=trader, round_num=3, is_new_trader=True)
 
         # we create a forced trade for an earlier round (when the trader was not yet in the market)
@@ -115,16 +118,20 @@ class TestGetTrades(TestCase):
     def setUp(self):
         """ Setup this test data before each test method in clas """
 
-        self.market1 = Market.objects.create()
-        self.trader11 = Trader.objects.create(market=self.market1, name="trader11")
-        self.trader12 = Trader.objects.create(market=self.market1, name="trader12")
+        self.market1 = Market.objects.create(
+            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
+
+        self.trader11 = Trader.objects.create(market=self.market1, name="trader11", balance=4)
+        self.trader12 = Trader.objects.create(market=self.market1, name="trader12", balance=3)
         self.trade1 = Trade.objects.create(trader=self.trader11, round=0)
         self.trade2 = Trade.objects.create(trader=self.trader12, round=1)
 
+        self.market2 = Market.objects.create(
+            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
 
-        self.market2 = Market.objects.create()
-        self.trader21 = Trader.objects.create(market=self.market2, name="trader21")
-        self.trader22 = Trader.objects.create(market=self.market2, name="trader22")
+        self.trader21 = Trader.objects.create(
+            market=self.market2, name="trader21", balance=2)
+        self.trader22 = Trader.objects.create(market=self.market2, name="trader22", balance=2)
         self.trade3 = Trade.objects.create(trader=self.trader21, round=0)
         self.trade4 = Trade.objects.create(trader=self.trader22, round=1)
 
