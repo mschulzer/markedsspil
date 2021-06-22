@@ -21,7 +21,7 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, "You succesfully updated the market. Changes will take effect from this round.")
+                request, "You succesfully updated the market. Changes will take effect from this round forward.")
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
     
     else: # request.method = 'GET'

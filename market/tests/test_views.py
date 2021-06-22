@@ -251,20 +251,21 @@ class JoinViewTest(TestCase):
 
 
     def test_new_trader_created_when_form_is_valid(self):
-        market=Market.objects.create(product_name='baguettes', initial_balance=5000,alpha=21.402,beta=44.2,
+        market=Market.objects.create(product_name='baguettes', initial_balance=1234,alpha=21.402,beta=44.2,
                     theta=2.0105, min_cost=11, max_cost=144)
         response = self.client.post(reverse('market:join'), {
                                     'name': 'Hanne', 'market_id': market.market_id})
         self.assertEqual(Trader.objects.all().count(), 1)
         new_trader = Trader.objects.first()
         self.assertEqual(new_trader.market, market)
+        self.assertEqual(new_trader.balance, 1234)
         self.assertTrue('trader_id' in self.client.session)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:play'))
         
     def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(self):
         # a market is in round 3
-        market=Market.objects.create(product_name='baguettes', initial_balance=5000,alpha=21.402,beta=44.2,
+        market=Market.objects.create(product_name='baguettes', initial_balance=23,alpha=21.402,beta=44.2,
                     theta=2.0105, min_cost=11, max_cost=144, round=3)
         
         # a players named Hanne tries to join the market (she is late)
@@ -286,8 +287,8 @@ class JoinViewTest(TestCase):
             self.assertEqual(hannes_trades[i].round, i)
             self.assertEqual(hannes_trades[i].balance_after, None)
 
-        # The balance of the trader be equal the initial balance
-        self.assertEqual(hanne.balance, market.initial_balance)
+        # The balance of the trader be equal the initial balance 
+        self.assertEqual(hanne.balance, 23)
 
         # status code and redirect are corrext        
         self.assertEqual(response.status_code, 302)
@@ -915,3 +916,16 @@ class MarketEditTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], f"/{self.market.market_id}/monitor/")
 
+    def test_invalid_post_data_updates_market_and_redirects(self):
+        self.client.login(username='somename', password='testpass123')
+        data = {'product_name': 'surdejsbolle', 'alpha': 14, 'beta':10, 'theta':32}
+
+        url = reverse('market:market_edit', args=(self.market.market_id,))
+        response = self.client.post(url, data=data)
+
+        self.market.refresh_from_db()
+        self.assertEqual(self.market.alpha, 14)
+        self.assertEqual(self.market.product_name, 'surdejsbolle')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], f"/{self.market.market_id}/monitor/")

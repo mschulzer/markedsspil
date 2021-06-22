@@ -43,12 +43,14 @@
 				Market Details
 			</div>
 		<div class="card-body">
-			<form class="mb-5" action="" id="create-market-form" method="post">{% csrf_token %}
+			<form action="" id="create-market-form" method="post">{% csrf_token %}
 				{{ form|crispy }}
 			</form>
+ 	        <div class="d-flex justify-content-center">
+				<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
+			</div>
 		</div>
 	</div>
-	<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
 </div>
 
 {% endblock content %}
