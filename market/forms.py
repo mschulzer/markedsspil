@@ -71,7 +71,11 @@ class MarketForm(forms.ModelForm):
                 'Max cost should be greater than 0')
         return max_cost
 
-
+class MarketUpdateForm(MarketForm):
+    
+    class Meta(MarketForm.Meta):
+        fields = ['product_name', 'alpha', 'beta', 'theta']
+ 
 class TraderForm(forms.ModelForm):
     market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market you want to join') 
 

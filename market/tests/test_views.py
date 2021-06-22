@@ -875,3 +875,43 @@ class TraderTableTest(TestCase):
         response = self.client.get(reverse('market:trader_table', args=(self.market.market_id,)))
         self.assertEqual(response.status_code, 302)
  
+class MarketEditTest(TestCase):
+
+
+    @classmethod
+    def setUpTestData(cls):        
+        
+        User = get_user_model()
+        
+        User.objects.create_user(
+            username='somename',
+            password='testpass123',
+        )
+        cls.market = Market.objects.create(product_name='baguettes', initial_balance=300, alpha=10, beta=11, theta=1, round=4, min_cost=1, max_cost=3)
+
+    # get request 
+    def test_page_exits_and_uses_template(self):
+        self.client.login(username='somename', password='testpass123')
+        url = reverse('market:market_edit', args=(self.market.market_id,))
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'market/market_edit.html')
+
+    # post request
+
+    def test_valid_post_data_updates_market_and_redirects(self):
+        self.client.login(username='somename', password='testpass123')
+        data = {'product_name': 'surdejsbolle', 'alpha': 14, 'beta':10, 'theta':32}
+
+        url = reverse('market:market_edit', args=(self.market.market_id,))
+        response = self.client.post(url, data=data)
+
+        self.market.refresh_from_db()
+        self.assertEqual(self.market.alpha, 14)
+        self.assertEqual(self.market.product_name, 'surdejsbolle')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], f"/{self.market.market_id}/monitor/")
+

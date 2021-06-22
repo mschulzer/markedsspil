@@ -6,21 +6,30 @@ from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
 from random import randint
 from .models import Market, Trader, Trade, RoundStat
-from decimal import Decimal
-from .forms import MarketForm, TraderForm, TradeForm
+from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import UpdateView
 
+@login_required
+def market_edit(request, market_id):
+    market = get_object_or_404(Market, market_id=market_id)
 
-class MarketUpdateView(LoginRequiredMixin, UpdateView):
-    model = Market
-    context_object_name = 'market'
-    fields = ('alpha', 'beta', 'theta',)
-    template_name = 'market/market_edit.html'
+    if request.method == 'POST':
+        form = MarketUpdateForm(request.POST, instance=market)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "You succesfully updated the market. Changes will take effect from this round.")
+            return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
+    
+    else: # request.method = 'GET'
+        form = MarketUpdateForm(instance=market)
+
+    context = {"form":form, "market":market}
+
+    return render(request, "market/market_edit.html", context)
 
 @login_required
 @require_GET

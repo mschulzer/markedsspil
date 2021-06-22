@@ -15,6 +15,7 @@
     <thead>
         <tr>
             <th>Product name</th>
+            <th>Initial balance</th>
             <th>Alpha</th>
             <th>Beta</th>
             <th>Theta</th>
@@ -26,6 +27,7 @@
     <tbody>
         <tr>    
             <td>{{ market.product_name }}</td>
+            <td>{{ market.initial_balance }}</td>
             <td>{{ market.alpha }}</td>
             <td>{{ market.beta }}</td>
             <td>{{ market.theta }}</td>
@@ -113,7 +115,7 @@
     {% endfor %}
 
     <button type="button" class="btn btn-primary mb-5" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
-        Download statistics
+        Download data
     </button>
 {% endif %}
 
