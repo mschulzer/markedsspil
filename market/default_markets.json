@@ -1,5 +1,5 @@
 {
-    "baguettes-equal-costs": {
+    "scenario_1": {
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -9,7 +9,7 @@
         "min_cost": 8,
         "max_cost": 8
     },
-    "baguettes-different-costs": {
+    "scenario_2": {
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -18,25 +18,5 @@
         "theta": 14.58,
         "min_cost": 5,
         "max_cost": 15
-    },
-    "wedding-cake-equal-costs": {
-        "product_name_singular": "wedding cake",
-        "product_name_plural": "wedding cakes",
-        "initial_balance": 20000,
-        "alpha": 200,
-        "beta": 17.5,
-        "theta": 14.58,
-        "min_cost": 400,
-        "max_cost": 400
-    },
-    "wedding-cake-different-costs": {
-        "product_name_singular": "wedding cake",
-        "product_name_plural": "wedding cakes",
-        "initial_balance": 20000,
-        "alpha": 105,
-        "beta": 17.5,
-        "theta": 14.58,
-        "min_cost": 300,
-        "max_cost": 500
     }
 }

@@ -5,51 +5,41 @@
 
 {% block content %}
 
-<h3 class="mb-3">Create a market</h3>
-<div class="row">
+<h3>Create a market</h3>
+<h6 class="mb-3">Choose between predefined scenarios or create your own custom market from scratch</h6>
 
-	<div class="col-12 col-lg-5 mb-4">
-		<div class="card">
-			<div class="card-header">
-				Default Markets 	
+<div class="card mb-3">
+	<div class="card-header">
+		Predefined Market Scenarios 	
+	</div>
+	<div class="card-body">
+		<form id='market_radio_form'>
+			<h5 class="card-title">Select scenario (see details below)</h5>
+			<div class="pl-3 mb-2">
+				<input type="radio" id="scenario_1" name="scenario" value="scenario_1" checked>
+				<label for="baguettes">Scenario 1. All traders have the same production costs. This is a good place to start.</label><br>
+				<input type="radio" id="scenario_2" name="scenario" value="scenario_2">
+				<label for="cake">Scenario 2. Traders have different production costs and competition is uneven.</label><br>
+				<input type="radio" id="custom" name="scenario" value="custom">
+				<label for="custom">Custom. Feel free to create your own market!</label><br>
 			</div>
-			<div class="card-body">
-				<form id='market_radio_form'>
-					<h5 class="card-title">Select product</h5>
-					<div class="pl-3 mb-2">
-						<input type="radio" id="baguettes" name="product" value="baguettes" checked>
-						<label for="baguettes">Baguettes</label><br>
-						<input type="radio" id="cake" name="product" value="wedding-cake">
-						<label for="cake">Wedding Cakes</label><br>
-						<input type="radio" id="custom" name="product" value="custom">
-						<label for="custom">Custom</label><br>
-					</div>
-					<div id="select_terms">
-						<h5 class="card-title">Select terms of competition</h5>
-						<div class="pl-3">
-							<input type="radio" id="equal" name="terms" value="equal-costs" checked>
-							<label for="equal">Same production costs for all</label><br>
-							<input type="radio" id="different" name="terms" value="different-costs">
-							<label for="different">Different production costs</label><br>
-						</div>
-					</div>
-				</form>
-			</div>
+		</form>
+
+		<div class="d-flex justify-content-center">
+		<input type="submit" value="Create Market" class="btn btn-primary my-2" form="create-market-form">
 		</div>
 	</div>
-	<div class="col-12 col-lg-7 mb-4">
-		<div class="card">
-			<div class="card-header">
-				Market Details
-			</div>
-		<div class="card-body">
-			<form action="" id="create-market-form" method="post">{% csrf_token %}
-				{{ form|crispy }}
-			</form>
- 	        <div class="d-flex justify-content-center">
-				<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
-			</div>
-		</div>
+</div>
+<div class="card">
+	<div class="card-header">
+		Market Details
+	</div>
+<div class="card-body">
+	<form action="" id="create-market-form" method="post">{% csrf_token %}
+		{{ form|crispy }}
+	</form>
+	<div class="d-flex justify-content-center">
+		<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
 	</div>
 </div>
 
@@ -82,19 +72,16 @@
 		document.getElementById('id_max_cost').value=""
 	}
 	
-	fill_form(default_markets["baguettes-equal-costs"])
+	fill_form(default_markets["scenario_1"])
 	
 	document.getElementById('market_radio_form').addEventListener('change', function() {
-
-		product = document.querySelector('input[name="product"]:checked').value
-		if (product=="custom"){
+		
+		scenario = document.querySelector('input[name="scenario"]:checked').value
+		if (scenario=="custom"){
 			clear_form()
-			document.getElementById("select_terms").style.display="none";
 		}
 		else{
-			document.getElementById("select_terms").style.display="block";
-			terms = document.querySelector('input[name="terms"]:checked').value
-			fill_form(default_markets[product + "-" + terms]);
+			fill_form(default_markets[scenario]);
 		}
 	}); 
 

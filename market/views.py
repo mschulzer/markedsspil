@@ -72,10 +72,12 @@ def create(request):
     elif request.method == 'GET':
         form = MarketForm()
     
-    # code smell: path to should probably not be hard coded
-    with open('/code/market/default_markets.json') as file:  
-        data = json.load(file)
-    
+    try: # code smell: path to json file should probably not be hard coded
+        with open('/code/market/default_markets.json') as file:  
+            data = json.load(file)
+    except: 
+        data = json.dumps({})
+
     return render(request, 'market/create.html', {'form': form, 'default_markets': json.dumps(data)})
 
 def join(request):
