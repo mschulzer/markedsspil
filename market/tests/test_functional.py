@@ -100,7 +100,7 @@ class TwoPlayerGame(TestCase):
 
     
     def test_round_1_one_forced_moce(self):
-        market = Market.objects.create(product_name='baguettes', initial_balance=5000, alpha=21.402, beta=44.2,
+        market = Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
                                        theta=2.0105, min_cost=11, max_cost=144, round=1)
         marianne = Trader.objects.create(market=market, name="Marianne", balance=234)
         klaus = Trader.objects.create(market=market, name="Klaus", balance=324)

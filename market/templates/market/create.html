@@ -62,7 +62,8 @@
 	//default_markets =JSON.parse("{{ default_markets|escapejs }}") // is this unsafe? 
 
 	function fill_form(product){
-		document.getElementById('id_product_name').value=product.product_name
+		document.getElementById('id_product_name_singular').value=product.product_name_singular
+		document.getElementById('id_product_name_plural').value=product.product_name_plural
 		document.getElementById('id_initial_balance').value=product.initial_balance
 		document.getElementById('id_alpha').value=product.alpha
 		document.getElementById('id_beta').value=product.beta
@@ -71,7 +72,8 @@
 		document.getElementById('id_max_cost').value=product.max_cost
 	}
 	function clear_form(){
-		document.getElementById('id_product_name').value=""
+		document.getElementById('id_product_name_singular').value=""
+		document.getElementById('id_product_name_plural').value=""
 		document.getElementById('id_initial_balance').value=""
 		document.getElementById('id_alpha').value=""
 		document.getElementById('id_beta').value=""

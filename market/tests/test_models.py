@@ -14,7 +14,6 @@ class MarketModelTest(TestCase):
             password='testpass123',
         )
         cls.market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, created_by=cls.test_user)
 
@@ -49,7 +48,6 @@ class MarketModelTest(TestCase):
     def test_alpha_will_be_saved_with_max_4_decimals(self):
         """ alpha is defined in the model have 4 decimal places """
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=0.11112222, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
@@ -58,7 +56,6 @@ class MarketModelTest(TestCase):
     def test_alpha_will_be_saved_with_max_4_decimals_test_2(self):
         """ alpha is defined in the model have 4 decimal places """
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=0.11118, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
@@ -68,7 +65,6 @@ class MarketModelTest(TestCase):
     def test_alpha_will_be_saved_with_max_4_decimals_test_3(self):
         """ alpha is defined in the model have 4 decimal places """
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=23.1111111, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
@@ -80,7 +76,6 @@ class MarketModelTest(TestCase):
         This means that 999999.9999 is the largest value of alpha, we can save
         """
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=999999.999912, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market.refresh_from_db()
@@ -107,7 +102,6 @@ class TraderModelTest(TestCase):
     @classmethod
     def setUp(self):
         self.market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20)
 
@@ -144,7 +138,6 @@ class TradeModelTest(TestCase):
     
     def test_object_name(self):
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         trader = Trader.objects.create(market=market, name='Joe Salesman', balance=400)
@@ -157,7 +150,6 @@ class TradeModelTest(TestCase):
        
     def test_constraint_trader_and_round_unique_together(self):
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         trader = Trader.objects.create(market=market, name='Joe Salesman', balance=30)
@@ -177,7 +169,6 @@ class TradeModelTest(TestCase):
     
     def test_constraint_trade_and_round_unique_together_okay_to_update_trade(self):
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         trader = Trader.objects.create(market=market, name='Joe Salesman', balance=4)
@@ -194,7 +185,6 @@ class TestRoundStatModel(TestCase):
 
     def test_object_creation_and_name(self):
         market = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         roundstat = RoundStat.objects.create(market=market, round=3, avg_price=34.343) 
@@ -208,11 +198,9 @@ class TestRoundStatModel(TestCase):
 
     def test_market_and_round_uinque_together(self):
         market1 = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         market2 = Market.objects.create(
-            product_name='bread',
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
         RoundStat.objects.create(

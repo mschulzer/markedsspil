@@ -7,7 +7,7 @@ from math import floor
 class TestProcessTrade(TestCase):
 
     def test_trade_fields_calculated_and_saved_properly(self):
-        market = Market.objects.create(product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
+        market = Market.objects.create(initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
         market.refresh_from_db()
         alpha, beta, theta = market.alpha, market.beta, market.theta
 
@@ -46,7 +46,7 @@ class TestProcessTrade(TestCase):
         """
         trade values are being calculated correctly in a case, where the raw demand is negative
         """
-        market = Market.objects.create(product_name="x", initial_balance=40, alpha=0, beta=23233.4, theta=999, min_cost=2, max_cost=10)
+        market = Market.objects.create(initial_balance=40, alpha=0, beta=23233.4, theta=999, min_cost=2, max_cost=10)
         market.refresh_from_db()
         alpha, beta, theta = market.alpha, market.beta, market.theta
 
@@ -86,7 +86,7 @@ class TestCreateForcedTrade(TestCase):
     def test_create_forced_trade_NOT_new_trader(self):
 
         market = Market.objects.create(
-            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4, round=5)
+            initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4, round=5)
         trader = Trader.objects.create(market=market, balance=3)
         forced_trade = create_forced_trade(trader=trader, round_num=5, is_new_trader=False)
 
@@ -100,7 +100,7 @@ class TestCreateForcedTrade(TestCase):
     def test_create_forced_trade_new_trader(self):
 
         market = Market.objects.create(
-            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4, round=5)
+            initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4, round=5)
         trader = Trader.objects.create(market=market, balance=400)
         forced_trade = create_forced_trade(trader=trader, round_num=3, is_new_trader=True)
 
@@ -119,7 +119,7 @@ class TestGetTrades(TestCase):
         """ Setup this test data before each test method in clas """
 
         self.market1 = Market.objects.create(
-            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
+            initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
 
         self.trader11 = Trader.objects.create(market=self.market1, name="trader11", balance=4)
         self.trader12 = Trader.objects.create(market=self.market1, name="trader12", balance=3)
@@ -127,7 +127,7 @@ class TestGetTrades(TestCase):
         self.trade2 = Trade.objects.create(trader=self.trader12, round=1)
 
         self.market2 = Market.objects.create(
-            product_name='x', initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
+            initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
 
         self.trader21 = Trader.objects.create(
             market=self.market2, name="trader21", balance=2)

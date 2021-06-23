@@ -6,9 +6,10 @@ from math import floor
 class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
-        fields = ['product_name', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
+        fields = ['product_name_singular','product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
-            'product_name': ("What's the name of the product (e.g. 'baguette')?"),
+            'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
+            'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
             'initial_balance': ("How much money should the participants start out with?"),
             'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
             'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
@@ -74,7 +75,7 @@ class MarketForm(forms.ModelForm):
 class MarketUpdateForm(MarketForm):
     
     class Meta(MarketForm.Meta):
-        fields = ['product_name', 'alpha', 'beta', 'theta']
+        fields = ['product_name_singular','product_name_plural', 'alpha', 'beta', 'theta']
  
 class TraderForm(forms.ModelForm):
     market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market you want to join') 

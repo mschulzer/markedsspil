@@ -16,7 +16,8 @@ def new_unique_market_id():
 
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
-    product_name = models.CharField(max_length=16)
+    product_name_singular = models.CharField(default="default_singular",max_length=16)
+    product_name_plural = models.CharField(default="default_plural", max_length=16)
     initial_balance = models.PositiveIntegerField()
     # w/ below settings, alpha, beta and theta can't exceed 999999.9999
     alpha = models.DecimalField(max_digits=10, decimal_places=4)  
