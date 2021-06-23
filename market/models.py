@@ -42,7 +42,6 @@ class Market(models.Model):
         return f"{self.market_id}[{self.round}]:{self.alpha},{self.beta},{self.theta}"
 
 class Trader(models.Model):
-    initial_balance = 5000
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16,)
     prod_cost = models.IntegerField(default=1)
