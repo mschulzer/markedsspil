@@ -8,7 +8,7 @@ class MarketForm(forms.ModelForm):
         model = Market
         fields = ['product_name', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
-            'product_name': ("What's the name of the product (e.g. 'Baguettes')?"),
+            'product_name': ("What's the name of the product (e.g. 'Baguette')?"),
             'initial_balance': ("How much money should the participants start out with?"),
             'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
             'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),

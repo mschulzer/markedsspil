@@ -1,6 +1,6 @@
 {
     "baguettes-equal-costs": {
-        "product_name": "Baguettes",
+        "product_name": "Baguette",
         "initial_balance": 5000,
         "alpha": 105,
         "beta": 17.5,
@@ -9,7 +9,7 @@
         "max_cost": 8
     },
     "baguettes-different-costs": {
-        "product_name": "Baguettes",
+        "product_name": "Baguette",
         "initial_balance": 5000,
         "alpha": 105,
         "beta": 17.5,
