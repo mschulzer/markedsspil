@@ -219,7 +219,7 @@ def play(request):
 
         if context['wait']:
             messages.success(
-            request, f"You made a trade! We are now waiting for market host to finish round {market.round}...   ")
+            request, f"You made a decision! Your goods will be produced and set to sale when the market host finishes round {market.round}...   ")
         elif market.round > 0:
             messages.success(
                 request, f"You are now ready for round {market.round}!")

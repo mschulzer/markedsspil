@@ -583,7 +583,7 @@ class PlayViewGetRequestTest(TestCase):
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "waiting" in message.message)
+            "You made a decision" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn('last round', html)
