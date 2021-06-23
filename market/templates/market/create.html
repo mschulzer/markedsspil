@@ -30,19 +30,19 @@
 		</div>
 	</div>
 </div>
-<div class="card">
+<div class="card mb-3">
 	<div class="card-header">
 		Market Details
 	</div>
-<div class="card-body">
-	<form action="" id="create-market-form" method="post">{% csrf_token %}
-		{{ form|crispy }}
-	</form>
-	<div class="d-flex justify-content-center">
-		<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
+	<div class="card-body">
+		<form action="" id="create-market-form" method="post">{% csrf_token %}
+			{{ form|crispy }}
+		</form>
+		<div class="d-flex justify-content-center">
+			<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
+		</div>
 	</div>
 </div>
-
 {% endblock content %}
 {% block javascript %}
 <script>
