@@ -15,8 +15,11 @@
 
     <p class="pt-3 p-2" >    
         {% if show_last_round_data %}
-            Last round you produced <b>{{ trades.last.unit_amount }}</b> and sold <b>{{ trades.last.units_sold }}</b>
-            units. The demand was <b>{{ trades.last.demand }} </b>units. Your price was <b>{{ trades.last.unit_price}} </b>kr. and the
+            Last round you produced <b>{{ trades.last.unit_amount }}</b> {{ market.product_name_plural}} and sold
+            <b>{{ trades.last.units_sold }}</b>
+           {{ market.product_name_plural}}. The demand was <b>{{ trades.last.demand }}
+           </b>{{ market.product_name_plural}}. Your price was
+           <b>{{ trades.last.unit_price}} </b>kr. and the
             market
             average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b> kr.<br class="hide-when-small">
             Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr. 
@@ -31,7 +34,6 @@
         Make your next trade
         </div>
         <div class="card-body">
-
             <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>
                 {% csrf_token %}
                 {{ form|crispy }}

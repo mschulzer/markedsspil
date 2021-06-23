@@ -99,7 +99,7 @@ def join(request):
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
-                request, f"Hi {form.cleaned_data['name']}! You're now ready to trade on the market {form.cleaned_data['market_id']}")
+                request, f"Hi {form.cleaned_data['name']}. You're now ready to trade on the market {market.market_id}. It's time so sell some {market.product_name_plural}!")
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -219,7 +219,7 @@ def play(request):
 
         if context['wait']:
             messages.success(
-            request, f"You made a decision! Your goods will be produced and set to sale when the market host finishes round {market.round}...   ")
+            request, f"You made a decision! Your {market.product_name_plural} will be produced and set to sale when the market host finishes round {market.round}...   ")
         elif market.round > 0:
             messages.success(
                 request, f"You are now ready for round {market.round}!")
