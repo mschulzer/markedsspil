@@ -14,8 +14,8 @@ class MarketForm(forms.ModelForm):
             'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
             'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
             'theta':("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
-            'min_cost':("What is the minimal production cost for one unit of the product?"),
-            'max_cost': ("What is the maximal production cost for one unit of the product?")
+            'min_cost':("What are the minimal production costs for one unit of the product?"),
+            'max_cost': ("What are the maximal production costs for one unit of the product?")
         }
 
     def clean(self):

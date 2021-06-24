@@ -11,13 +11,13 @@ from .helpers import create_forced_trade, filter_trades, process_trade
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
-from .market_settings import scenarios
+from .market_settings import SCENARIOS
 
 @login_required
 def market_edit(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
-    # only the user how created the market have permission to edit it
+    # only the user how created the market has permission to edit it
     if not request.user == market.created_by:
         return HttpResponseRedirect(reverse('market:home'))
 
@@ -73,8 +73,8 @@ def create(request):
     elif request.method == 'GET':
         form = MarketForm()
     
-    context = {'form': form, 'scenarios': scenarios,
-               'scenarios_json': json.dumps(scenarios)}
+    context = {'form': form, 'scenarios': SCENARIOS,
+               'scenarios_json': json.dumps(SCENARIOS)}
 
     return render(request, 'market/create.html', context)
 
@@ -99,7 +99,7 @@ def join(request):
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
-                request, f"Hi {form.cleaned_data['name']}. You're now ready to trade on the market {market.market_id}. It's time so sell some {market.product_name_plural}!")
+                request, f"Hi {form.cleaned_data['name']}! You're now ready to trade on the {market.product_name_singular} market {market.market_id}.")
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -219,7 +219,7 @@ def play(request):
 
         if context['wait']:
             messages.success(
-            request, f"You made a decision! Your {market.product_name_plural} will be produced and set to sale when the market host finishes round {market.round}...   ")
+            request, f"You made a decision! Your {market.product_name_plural} will be produced and put up for sale when the market host finishes round {market.round}.")
         elif market.round > 0:
             messages.success(
                 request, f"You are now ready for round {market.round}!")

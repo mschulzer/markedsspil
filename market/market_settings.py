@@ -1,5 +1,8 @@
+# List of predefined market scenarios. 
+# Scenarios added to the list will get automatically shown as options in the create market interface. 
+# The first scenario in the list will be selected by default.  
 
-scenarios = [
+SCENARIOS = [
     {
         "description": "Scenario 1. All traders have the same production costs. This is a good place to start.",
         "product_name_singular": "baguette",
@@ -23,7 +26,7 @@ scenarios = [
         "max_cost": 15
     },
     {
-        "description": "Custom. Feel free to create your own market!",
+        "description": "Custom. Feel free to create your own market.",
         "product_name_singular": "",
         "product_name_plural": "",
         "initial_balance": "",
