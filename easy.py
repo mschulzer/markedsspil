@@ -9,7 +9,7 @@ from market.models import Market, Trader, Trade, RoundStat
 print("Imported Market, Trader and Trade models")
 
 # delete all markets, traders, and trades
-#Market.objects.all().delete()
+Market.objects.all().delete()
 
 market1 = Market.objects.create(round=1)
 trader11 = Trader.objects.create(market=market1, name="trader11")

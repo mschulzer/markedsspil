@@ -15,12 +15,15 @@
 
     <p class="pt-3 p-2" >    
         {% if show_last_round_data %}
-            Last round you produced <b>{{ trades.last.unit_amount }}</b> units and sold <b>{{ trades.last.units_sold }}</b>
-            units. Your price was <b>{{ trades.last.unit_price}}</b>, whereas the market
-            average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b>.<br class="hide-when-small">
-            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b>. 
+            Last round you produced <b>{{ trades.last.unit_amount }}</b> and sold
+            <b>{{ trades.last.units_sold }}</b>
+           {{ market.product_name_plural}}. The demand was <b>{{ trades.last.demand }}</b>. Your price was
+           <b>{{ trades.last.unit_price}} </b>kr. and the
+            market
+            average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b> kr.<br class="hide-when-small">
+            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr. 
         {% endif %}
-            Your current balance is <b style="color:green">{{ trader.balance }}</b>.
+            Your current balance is <b style="color:green">{{ trader.balance }}</b> kr.
         <br>
     </p>
 
@@ -30,7 +33,6 @@
         Make your next trade
         </div>
         <div class="card-body">
-
             <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>
                 {% csrf_token %}
                 {{ form|crispy }}
@@ -64,6 +66,23 @@
 {% if market.round > 0 %}
 
     <div class="accordion mb-5" id="accordionCharts">
+        <!-- Price chart-->
+        <div class="card">
+            <div class="card-header" id="headingOne">
+                <h2 class="mb-0">
+                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
+                        data-target="#collapsePrice" aria-expanded="false" aria-controls="collapseOne">
+                        Price History Graph
+                    </button>
+                </h2>
+            </div>
+
+            <div id="collapsePrice" class="collapse" aria-labelledby="headingOne" data-parent="#accordionCharts">
+                <div class="card-body">
+                    <canvas id="priceCanvas"></canvas>
+                </div>
+            </div>
+        </div>
 
         <!-- Units chart-->
         <div class="card">
@@ -79,24 +98,6 @@
                 <div class="card-body">
                     <!-- to make canvas shown by default add .show to the dive above -->
                     <canvas id="unitsCanvas"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Price chart-->
-        <div class="card">
-            <div class="card-header" id="headingOne">
-                <h2 class="mb-0">
-                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                        data-target="#collapsePrice" aria-expanded="false" aria-controls="collapseOne">
-                        Price History Graph
-                    </button>
-                </h2>
-            </div>
-
-            <div id="collapsePrice" class="collapse" aria-labelledby="headingOne" data-parent="#accordionCharts">
-                <div class="card-body">
-                    <canvas id="priceCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -287,7 +288,7 @@
     const show_formula_breakpoint = 490;
 
     function set_price_label(){
-        price_label.innerHTML = "Unit Price: " + price_slider.value; 
+        price_label.innerHTML = "Unit Price: " + price_slider.value + " kr."; 
     }
     
     function set_amount_label(){

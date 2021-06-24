@@ -1,4 +1,3 @@
-<!-- new file -->
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
 
@@ -7,10 +6,66 @@
 {% block content %}
 
 <h3>Create a market</h3>
-<form action="" method="post">{% csrf_token %}
-	{{ form|crispy }}
-	<input type="submit" value="Create" class="btn btn-primary">
-</form>
-<br>
-<br>
-{% endblock %}
+<h6 class="mb-3">Choose between predefined scenarios or create your own custom market from scratch</h6>
+
+<div class="card mb-3">
+	<div class="card-header">
+		Predefined Market Scenarios 	
+	</div>
+	<div class="card-body">
+		<form id='market_radio_form'>
+			<h5 class="card-title">Select scenario (see/edit details below)</h5>
+			<div class="pl-3 mb-2">
+				{% for scenario in scenarios %}
+					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
+						{% if forloop.counter0 == 0 %}checked{% endif%}>
+					<label for="scenario_{{ forloop.counter0 }}">{{ scenario.description }}</label><br>
+				{% endfor %}
+			</div>
+		</form>
+
+		<div class="d-flex justify-content-center">
+		<input type="submit" value="Create Market" class="btn btn-primary my-2" form="create-market-form">
+		</div>
+	</div>
+</div>
+<div class="card mb-3">
+	<div class="card-header">
+		Market Details
+	</div>
+	<div class="card-body">
+		<form action="" id="create-market-form" method="post">{% csrf_token %}
+			{{ form|crispy }}
+		</form>
+		<div class="d-flex justify-content-center">
+			<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
+		</div>
+	</div>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+
+	scenarios = {{ scenarios_json|safe }}
+
+	function fill_form(scenario){
+		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
+		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
+		document.getElementById('id_initial_balance').value=scenario.initial_balance
+		document.getElementById('id_alpha').value=scenario.alpha
+		document.getElementById('id_beta').value=scenario.beta
+		document.getElementById('id_theta').value=scenario.theta
+		document.getElementById('id_min_cost').value=scenario.min_cost
+		document.getElementById('id_max_cost').value=scenario.max_cost
+	}
+	
+	fill_form(scenarios[0])
+	
+	document.getElementById('market_radio_form').addEventListener('change', function() {
+		scenario_number = document.querySelector('input[name="scenario"]:checked').value
+			fill_form(scenarios[scenario_number]);
+	}); 
+
+</script>
+{% endblock javascript %}
