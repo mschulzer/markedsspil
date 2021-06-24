@@ -11,6 +11,7 @@ from .helpers import create_forced_trade, filter_trades, process_trade
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
+from .market_settings import scenarios
 
 @login_required
 def market_edit(request, market_id):
@@ -72,13 +73,10 @@ def create(request):
     elif request.method == 'GET':
         form = MarketForm()
     
-    try: # code smell: path to json file should probably not be hard coded
-        with open('/code/market/default_markets.json') as file:  
-            data = json.load(file)
-    except: 
-        data = json.dumps({})
+    context = {'form': form, 'scenarios': scenarios,
+               'scenarios_json': json.dumps(scenarios)}
 
-    return render(request, 'market/create.html', {'form': form, 'default_markets': json.dumps(data)})
+    return render(request, 'market/create.html', context)
 
 def join(request):
     if request.method == 'POST':

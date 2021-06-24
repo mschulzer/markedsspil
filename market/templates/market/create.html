@@ -8,6 +8,9 @@
 <h3>Create a market</h3>
 <h6 class="mb-3">Choose between predefined scenarios or create your own custom market from scratch</h6>
 
+{% for scenario in scenarios %}
+	{{ scenario.html.x}}
+{% endfor %}
 <div class="card mb-3">
 	<div class="card-header">
 		Predefined Market Scenarios 	
@@ -16,12 +19,11 @@
 		<form id='market_radio_form'>
 			<h5 class="card-title">Select scenario (see/edit details below)</h5>
 			<div class="pl-3 mb-2">
-				<input type="radio" id="scenario_1" name="scenario" value="scenario_1" checked>
-				<label for="baguettes">Scenario 1. All traders have the same production costs. This is a good place to start.</label><br>
-				<input type="radio" id="scenario_2" name="scenario" value="scenario_2">
-				<label for="cake">Scenario 2. Traders have different production costs and competition is uneven.</label><br>
-				<input type="radio" id="custom" name="scenario" value="custom">
-				<label for="custom">Custom. Feel free to create your own market!</label><br>
+				{% for scenario in scenarios %}
+					<input type="radio" id="{{ scenario.id }}" name="scenario" value="{{ forloop.counter0 }}"
+						{% if scenario.checked %}checked{% endif%}>
+					<label for="{{ scenario.id }}">{{ scenario.description }}</label><br>
+				{% endfor %}
 			</div>
 		</form>
 
@@ -44,45 +46,28 @@
 	</div>
 </div>
 {% endblock content %}
+
 {% block javascript %}
 <script>
 
-	default_markets = {{ default_markets|safe }}
+	scenarios = {{ scenarios_json|safe }}
 
-	//default_markets =JSON.parse("{{ default_markets|escapejs }}") // is this unsafe? 
-
-	function fill_form(product){
-		document.getElementById('id_product_name_singular').value=product.product_name_singular
-		document.getElementById('id_product_name_plural').value=product.product_name_plural
-		document.getElementById('id_initial_balance').value=product.initial_balance
-		document.getElementById('id_alpha').value=product.alpha
-		document.getElementById('id_beta').value=product.beta
-		document.getElementById('id_theta').value=product.theta
-		document.getElementById('id_min_cost').value=product.min_cost
-		document.getElementById('id_max_cost').value=product.max_cost
-	}
-	function clear_form(){
-		document.getElementById('id_product_name_singular').value=""
-		document.getElementById('id_product_name_plural').value=""
-		document.getElementById('id_initial_balance').value=""
-		document.getElementById('id_alpha').value=""
-		document.getElementById('id_beta').value=""
-		document.getElementById('id_theta').value=""
-		document.getElementById('id_min_cost').value=""
-		document.getElementById('id_max_cost').value=""
+	function fill_form(scenario){
+		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
+		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
+		document.getElementById('id_initial_balance').value=scenario.initial_balance
+		document.getElementById('id_alpha').value=scenario.alpha
+		document.getElementById('id_beta').value=scenario.beta
+		document.getElementById('id_theta').value=scenario.theta
+		document.getElementById('id_min_cost').value=scenario.min_cost
+		document.getElementById('id_max_cost').value=scenario.max_cost
 	}
 	
-	fill_form(default_markets["scenario_1"])
+	fill_form(scenarios[0])
 	
 	document.getElementById('market_radio_form').addEventListener('change', function() {
-		
-		scenario = document.querySelector('input[name="scenario"]:checked').value
-		if (scenario=="custom"){
-			clear_form()
-		}
-		else{
-			fill_form(default_markets[scenario]);
-		}
+		scenario_number = document.querySelector('input[name="scenario"]:checked').value
+			fill_form(scenarios[scenario_number]);
 	}); 
 
 </script>
