@@ -2,8 +2,6 @@
 scenarios = [
     {
         "description": "Scenario 1. All traders have the same production costs. This is a good place to start.",
-        "html_id": "scenario_1", 
-        "checked": True, # Chosen by default in radio button input group
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -15,7 +13,6 @@ scenarios = [
     },
     {   
         "description": "Scenario 2. Traders have different production costs and competition is uneven.",
-        "html_id": "scenario_2",
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -27,7 +24,6 @@ scenarios = [
     },
     {
         "description": "Custom. Feel free to create your own market!",
-        "html_id": "custom",
         "product_name_singular": "",
         "product_name_plural": "",
         "initial_balance": "",

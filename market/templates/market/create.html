@@ -8,9 +8,6 @@
 <h3>Create a market</h3>
 <h6 class="mb-3">Choose between predefined scenarios or create your own custom market from scratch</h6>
 
-{% for scenario in scenarios %}
-	{{ scenario.html.x}}
-{% endfor %}
 <div class="card mb-3">
 	<div class="card-header">
 		Predefined Market Scenarios 	
@@ -20,9 +17,9 @@
 			<h5 class="card-title">Select scenario (see/edit details below)</h5>
 			<div class="pl-3 mb-2">
 				{% for scenario in scenarios %}
-					<input type="radio" id="{{ scenario.html_id }}" name="scenario" value="{{ forloop.counter0 }}"
-						{% if scenario.checked %}checked{% endif%}>
-					<label for="{{ scenario.html_id }}">{{ scenario.description }}</label><br>
+					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
+						{% if forloop.counter0 == 0 %}checked{% endif%}>
+					<label for="scenario_{{ forloop.counter0 }}">{{ scenario.description }}</label><br>
 				{% endfor %}
 			</div>
 		</form>
