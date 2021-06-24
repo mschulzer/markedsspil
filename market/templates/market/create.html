@@ -20,9 +20,9 @@
 			<h5 class="card-title">Select scenario (see/edit details below)</h5>
 			<div class="pl-3 mb-2">
 				{% for scenario in scenarios %}
-					<input type="radio" id="{{ scenario.id }}" name="scenario" value="{{ forloop.counter0 }}"
+					<input type="radio" id="{{ scenario.html_id }}" name="scenario" value="{{ forloop.counter0 }}"
 						{% if scenario.checked %}checked{% endif%}>
-					<label for="{{ scenario.id }}">{{ scenario.description }}</label><br>
+					<label for="{{ scenario.html_id }}">{{ scenario.description }}</label><br>
 				{% endfor %}
 			</div>
 		</form>
