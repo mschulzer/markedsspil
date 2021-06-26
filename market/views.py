@@ -199,13 +199,13 @@ def play(request):
             'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
 
             # context for price graph
-            'data_price_json': json.dumps([trade.unit_price for trade in trades]),
-            'data_prod_cost_json': json.dumps([trader.prod_cost for _ in trades]),
+            'data_price_json': json.dumps([float(trade.unit_price) for trade in trades]),
+            'data_prod_cost_json': json.dumps([float(trader.prod_cost) for _ in trades]),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
  
             #context for balance graph
             'balance_labels' : json.dumps(list(range(-1, market.round))),
-            'data_balance_json': json.dumps([trader.market.initial_balance] + [trade.balance_after for trade in trades]),
+            'data_balance_json': json.dumps([float(trader.market.initial_balance)] + [trade.balance_after for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():

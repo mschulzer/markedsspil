@@ -11,7 +11,8 @@ def process_trade(market, trade, avg_price):
     Used by monitor-view on post-requests, when host finishes a round
     """
 
-    alpha, beta, theta = float(market.alpha), float(market.beta), float(market.theta)  
+    #alpha, beta, theta = float(market.alpha), float(market.beta), float(market.theta)  
+    alpha, beta, theta = market.alpha, market.beta, market.theta
 
     # calculate values 
     expenses = trade.trader.prod_cost * trade.unit_amount  
@@ -22,7 +23,7 @@ def process_trade(market, trade, avg_price):
     trade_profit = income - expenses   
 
     assert(units_sold >=0)
-    assert(type(trade_profit) is int)
+    #assert(type(trade_profit) is int)
     
     # update trade and trader objects
     trade.demand = demand
