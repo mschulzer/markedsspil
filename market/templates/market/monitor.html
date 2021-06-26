@@ -118,7 +118,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  var roundnums = [];
+  var roundnums = [0];
   var tradernames = [];
   var balancedata = [];
   var tradernum = 0;
@@ -127,7 +127,7 @@
   {% if market.round > 0 %}
     {% for round in rounds %}
     <script>
-   	  roundnums.push("{{round}}");
+   	  roundnums.push(parseInt("{{round}}")+1);
     </script>
     {% endfor %}
     {% for trader in traders %}
@@ -140,7 +140,7 @@
 	  balancedata.push({ label: "{{trader.name}}",
 						 backgroundColor: 'rgb('+red+','+green+','+blue+')',
 						 borderColor: 'rgb('+red+','+green+','+blue+')',
-						 data: [],
+						 data: [parseInt("{{trader.initial_balance}}")],
 					   });
 	</script>
 	  {% for trade in trader.trade_set.all %}
