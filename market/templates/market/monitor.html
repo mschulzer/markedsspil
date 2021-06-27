@@ -89,7 +89,11 @@
                     <tr>
                         <th></th>
                         {% for round in rounds %}
-                        <th scope="col">Round {{ round }}</th>
+						<th scope="col" id="{{field}}_{{round}}">Round </th>
+                        <script>
+						  var col = document.getElementById("{{field}}_{{round}}");
+						  col.innerHTML += parseInt("{{round}}")+1;
+						</script>
                         {% endfor %}
                     </tr>
                 <thead>
