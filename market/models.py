@@ -23,8 +23,7 @@ class Market(models.Model):
     # w/ below settings, alpha, beta and theta can't exceed 
     initial_balance = models.DecimalField(
         max_digits=12, 
-        decimal_places=2, 
-        validators=[MinValueValidator(Decimal('0.01'))])
+        decimal_places=2)
 
     alpha = models.DecimalField(
         max_digits=14, 
@@ -38,10 +37,10 @@ class Market(models.Model):
         validators=[MinValueValidator(Decimal('0.0000'))])
 
     min_cost = models.DecimalField(max_digits=14, decimal_places=2, 
-        validators=[MinValueValidator(Decimal('0.01'))])
+        validators=[MinValueValidator(Decimal('1'))]) 
 
     max_cost = models.DecimalField(max_digits=14, decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))])
+        validators=[MinValueValidator(Decimal('1'))])
 
     round = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True)

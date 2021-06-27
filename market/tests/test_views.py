@@ -151,7 +151,7 @@ class CreateMarketViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.content.decode('utf8')
         self.assertIn(
-            "Denne værdi skal være større end eller lig 0.", html)
+            "Denne værdi skal være større end eller lig 1.", html)
 
 
 class JoinViewTest(TestCase):

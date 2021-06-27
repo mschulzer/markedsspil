@@ -66,7 +66,7 @@ class MarketFormTest(TestCase):
         self.assertFalse(is_valid)
         self.assertTrue('min_cost' in form.errors)
         self.assertTrue(
-            'Denne værdi skal være større end eller lig 0.01.' in form.errors['min_cost'])
+            'Denne værdi skal være større end eller lig 1.' in form.errors['min_cost'])
 
     def test_zero_min_cost_is_invalid(self):
         """ min cost can't be zero """
