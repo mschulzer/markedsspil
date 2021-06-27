@@ -28,11 +28,13 @@ class HomeViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/home.html'),
 
+
 class CreateMarketViewTests(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        
+        # Set up non-modified objects used by all test methods in class
+
         # create user
         User = get_user_model()
         User.objects.create_user(
@@ -40,14 +42,14 @@ class CreateMarketViewTests(TestCase):
             password='testpass123',
         )
         
-        # Set up non-modified objects used by all test methods in class
-        cls.valid_data = {'alpha': 21.402, 'beta': 44.2,
+        cls.valid_data = {'product_name_singular': 'baguettes','product_name_plural':'baguettes', 'initial_balance':5000, 'alpha': 21.402, 'beta': 44.2,
                     'theta': 2.0105, 'min_cost': 11, 'max_cost': 144}
 
-        cls.invalid_data = {'alpha': 21.402, 'beta': 44.2,
+        # min cost > max cost
+        cls.invalid_data = {'product_name_singular': 'baguettes','product_name_plural':'baguettes', 'initial_balance': 5000, 'alpha': 21.402, 'beta': 44.2,
                           'theta': 2.0105, 'min_cost': 11, 'max_cost': 10}
 
-        cls.invalid_data2 = {'alpha': '', 'beta': 44.2,
+        cls.invalid_data2 = {'product_name_singular': 'baguettes', 'product_name_plural': 'baguettes', 'initial_balance': 5000, 'alpha': '', 'beta': 44.2,
                                 'theta': 2.0105, 'min_cost': 11, 'max_cost': 10}
 
     # test get requests
@@ -181,7 +183,8 @@ class JoinViewTest(TestCase):
         self.assertIn('name="market_id" value="KXZCVCZL"', html)
 
     def test_notify_users_who_have_already_joined_a_market(self):
-        market=Market.objects.create()
+        market=Market.objects.create(initial_balance=5000,alpha=21.402,beta=44.2,
+                    theta=2.0105, min_cost=11, max_cost=144)
         session = self.client.session
         session['trader_id'] = 3
         session['market_id'] = 'ABCDEF'
@@ -233,8 +236,9 @@ class JoinViewTest(TestCase):
         self.assertEqual(Trader.objects.all().count(), 0)
 
     def test_proper_behaviour_and_nice_feedback_message_when_username_not_available(self):
-        market = Market.objects.create()
-        Trader.objects.create(market=market, name="jonna")
+        market = Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144)
+        Trader.objects.create(market=market, name="jonna", balance=market.initial_balance)
 
         response = self.client.post(reverse('market:join'), {
                                     'name': 'jonna', 'market_id': market.market_id})
@@ -247,20 +251,23 @@ class JoinViewTest(TestCase):
 
 
     def test_new_trader_created_when_form_is_valid(self):
-        market = Market.objects.create()
+        market=Market.objects.create(initial_balance=1234,alpha=21.402,beta=44.2,
+                    theta=2.0105, min_cost=11, max_cost=144)
         response = self.client.post(reverse('market:join'), {
                                     'name': 'Hanne', 'market_id': market.market_id})
         self.assertEqual(Trader.objects.all().count(), 1)
         new_trader = Trader.objects.first()
         self.assertEqual(new_trader.market, market)
+        self.assertEqual(new_trader.balance, 1234)
         self.assertTrue('trader_id' in self.client.session)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:play'))
         
     def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(self):
         # a market is in round 3
-        market = Market.objects.create(round=3)
-
+        market=Market.objects.create(initial_balance=23,alpha=21.402,beta=44.2,
+                    theta=2.0105, min_cost=11, max_cost=144, round=3)
+        
         # a players named Hanne tries to join the market (she is late)
         response = self.client.post(reverse('market:join'), {
                                     'name': 'Hanne', 'market_id': market.market_id})
@@ -280,8 +287,8 @@ class JoinViewTest(TestCase):
             self.assertEqual(hannes_trades[i].round, i)
             self.assertEqual(hannes_trades[i].balance_after, None)
 
-        # The balance of the trader be equal the initial balance
-        self.assertEqual(hanne.balance, Trader.initial_balance)
+        # The balance of the trader be equal the initial balance 
+        self.assertEqual(hanne.balance, 23)
 
         # status code and redirect are corrext        
         self.assertEqual(response.status_code, 302)
@@ -294,7 +301,8 @@ class MonitorViewGETRequestsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods in class
-        cls.market = Market.objects.create()
+        cls.market =  Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144)
 
     def test_view_url_exists_at_proper_name_and_uses_proper_template(self):
         response = self.client.get(
@@ -312,8 +320,9 @@ class MonitorViewGETRequestsTest(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_custom_template_tags(self):
-        market = Market.objects.create(round = 3)
-        trader = Trader.objects.create(market=market)
+        market = Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
+                                                             theta=2.0105, min_cost=11, max_cost=144,round=3)
+        trader = Trader.objects.create(market=market, balance=market.initial_balance)
         trade = Trade.objects.create(trader=trader, round=market.round)
         response = self.client.get(
             reverse('market:monitor', args=(market.market_id,)))
@@ -327,9 +336,10 @@ class MonitorViewPOSTRequestsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Set up non-modified objects used by all test methods in class
-        cls.market = Market.objects.create()
+        cls.market =  Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144)
         cls.trader = Trader.objects.create(
-            name='Joe', market=cls.market)
+            name='Joe', market=cls.market, balance=cls.market.initial_balance)
 
         Trade.objects.create(trader=cls.trader, round=0)
         cls.url = reverse('market:monitor', args=(cls.market.market_id,))
@@ -350,9 +360,10 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
     def test_one_trader_has_made_one_trade_this_round(self):
 
         # There is a market in round 7 & a trader in this market
-        market = Market.objects.create(round=7)
+        market = Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=7)
         trader = Trader.objects.create(
-            name='Joe2', market=market)
+            name='Joe2', market=market, balance=market.initial_balance)
 
         # The trader makes a trade
         trade = Trade.objects.create(trader=trader, round=market.round)
@@ -379,7 +390,7 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
 
         # The profit and balance should now be on the trade object
         trade.refresh_from_db()
-        self.assertEqual(trade.balance_after, Trader.initial_balance)
+        self.assertEqual(trade.balance_after, trader.market.initial_balance)
         self.assertEqual(trade.profit, 0)
 
         # the round of the market should be 7+1=8
@@ -388,11 +399,12 @@ class MonitorViewPOSTRequestsExtraTest(TestCase):
 
     def test_monitor_view_created_forced_moves_for_inactive_player(self):
         # There is a market in round 7 & a two traders in this market
-        market = Market.objects.create(round=7)
+        market = Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
+                                                             theta=2.0105, min_cost=11, max_cost=144, round=7)
         trader1 = Trader.objects.create(
-            name='Hansi', market=market)
+            name='Hansi', market=market, balance=market.initial_balance)
         trader2 = Trader.objects.create(
-            name='Kwaganzi', market=market)
+            name='Kwaganzi', market=market, balance=market.initial_balance)
 
         # for testing purposes we set a balance for trader 2:
         trader2.balance=123456
@@ -436,14 +448,17 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         """
         Recreating of database state before server error when testing program the 7th June 2021...
         """
-        self.market = Market.objects.create(round=1)
+        self.market=Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                                                theta=2.0105, min_cost=11, max_cost=144,round=1)
         
-        # 3 player in the market
-        self.christian = Trader.objects.create(name="christian", market=self.market, prod_cost=8)
-        self.martin = Trader.objects.create(name="martin", market=self.market, prod_cost=8)
-        self.nadja = Trader.objects.create(name="nadja", market=self.market, prod_cost=8)
-        self.jens = Trader.objects.create(name="jens", market=self.market, prod_cost=8)
-        self.kristian = Trader.objects.create(name="kristian", market=self.market, prod_cost=8)
+        # 5 players in the market
+        self.christian = Trader.objects.create(name="christian", market=self.market, prod_cost=8, balance=self.market.initial_balance)
+        self.martin = Trader.objects.create(
+            name="martin", market=self.market, prod_cost=8, balance=self.market.initial_balance)
+        self.nadja = Trader.objects.create(name="nadja", market=self.market, prod_cost=8, balance=self.market.initial_balance)
+        self.jens = Trader.objects.create(name="jens", market=self.market, prod_cost=8,balance=self.market.initial_balance)
+        self.kristian = Trader.objects.create(
+            name="kristian", market=self.market, prod_cost=8, balance=self.market.initial_balance)
     
 
         # round 0 is over, and these trades in round 0 have been created properly
@@ -463,7 +478,7 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
 
         self.k1 = Trade.objects.create(trader=self.kristian, round=1, was_forced=False,
                                   unit_price=17, unit_amount=31)
-
+    
     def test_players_are_ready(self):
         self.assertTrue(self.christian.is_ready())
         self.assertTrue(self.martin.is_ready())
@@ -472,7 +487,7 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
 
         num_ready_traders = filter_trades(market=self.market, round=self.market.round).count() 
         self.assertEqual(num_ready_traders, 4)
-
+    
     def test_correct_response_code_and_location_after_post_request(self):
         url = reverse('market:monitor', args=(self.market.market_id,))
         response = self.client.post(url)
@@ -480,16 +495,17 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         self.assertEqual(response['Location'], url)
     
     def test_balance_and_profit_of_trades_updates(self):
+        self.assertTrue(1==1)
         self.assertEqual(self.c1.balance_after, None)
         self.assertEqual(self.m1.balance_after, None)
         self.assertEqual(self.n1.balance_after, None)
         self.assertEqual(self.k1.balance_after, None)
-
+    
         self.assertEqual(self.c1.profit, None)
         self.assertEqual(self.m1.profit, None)
         self.assertEqual(self.n1.profit, None)
         self.assertEqual(self.k1.profit, None)
-
+    
 
         url = reverse('market:monitor', args=(self.market.market_id,))
     
@@ -508,14 +524,14 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         self.assertIsInstance(self.m1.profit, int)
         self.assertIsInstance(self.n1.profit, int)
         self.assertIsInstance(self.k1.profit, int)
-
+    
     def test_market_avg_price_has_been_calculated_and_saved(self):
         url = reverse('market:monitor', args=(self.market.market_id,))
         response = self.client.post(url)
         self.assertTrue(RoundStat.objects.filter(round=1, market=self.market).exists())
         r1stat = RoundStat.objects.get(round=1, market=self.market)
         self.assertEqual(r1stat.avg_price, (9+11+11+17)/4)
-
+    
     def test_market_is_in_round_2(self):
         self.market.refresh_from_db()
         self.assertEqual(self.market.round, 1)
@@ -523,11 +539,11 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         response = self.client.post(url)
         self.market.refresh_from_db()
         self.assertEqual(self.market.round, 2)
-
+    
     def test_correct_num_trades_in_db(self):
         num_trades = Trade.objects.all().count()
         self.assertEqual(num_trades, 8)
-
+    
 class PlayViewGetRequestTest(TestCase):
 
     def test_no_trader_id_in_session_redirects_to_join(self):
@@ -541,10 +557,11 @@ class PlayViewGetRequestTest(TestCase):
 
     def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(self):
         # some market is in round 0
-        market=Market.objects.create()
+        market= Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144)
 
         # a user has joined properly
-        trader = Trader.objects.create(name='otto', market=market)
+        trader = Trader.objects.create(name='otto', market=market, balance=market.initial_balance)
         session = self.client.session
         session['trader_id'] = trader.pk
         session['username'] = 'Hans'
@@ -566,7 +583,7 @@ class PlayViewGetRequestTest(TestCase):
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "waiting" in message.message)
+            "You made a decision" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn('last round', html)
@@ -588,10 +605,12 @@ class PlayViewGetRequestTest(TestCase):
         User has traded in round 4, and in round 3.
         """
         # some market is in round 4
-        market=Market.objects.create(round=4)
+        market=Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                                           theta=2.0105, min_cost=11, max_cost=144,round=4)
 
         # a user has joined properly
-        trader = Trader.objects.create(name='otto', market=market)
+        trader = Trader.objects.create(
+            name='otto', market=market, balance=market.initial_balance)
         session = self.client.session
         session['trader_id'] = trader.pk
         session['username'] = 'Hans'
@@ -630,10 +649,12 @@ class PlayViewGetRequestTest(TestCase):
         User is in round 4. Traded in round 2, but not in round 3, and not yet in round 4. 
         """
         # some market is in round 4
-        market = Market.objects.create(round=4)
+        market=Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                                           theta=2.0105, min_cost=11, max_cost=144,round=4)
 
         # a user has joined properly
-        trader = Trader.objects.create(name='otto', market=market)
+        trader = Trader.objects.create(
+            name='otto', market=market, balance=market.initial_balance)
         session = self.client.session
         session['trader_id'] = trader.pk
         session['username'] = 'Hans'
@@ -671,7 +692,8 @@ class PlayViewGetRequestTest(TestCase):
         """
         The form fields should have their max values determined by the market and traders
         """
-        market = Market.objects.create(round=4, min_cost=1, max_cost = 3)
+        market = Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                  theta=2.0105,round=4, min_cost=1, max_cost = 3)
 
         # a user has joined properly
         trader = Trader.objects.create(name='otto', market=market, balance=101, prod_cost=2)
@@ -708,15 +730,24 @@ class PlayViewPOSTRequestTest(TestCase):
 
     def test_if_all_data_is_good_then_save_trade_and_redirect_to_play(self):
         # some market is in round 0
-        market = Market.objects.create()
+        market = Market.objects.create(
+                initial_balance=5001,
+                alpha=105,
+                beta=17.5,
+                theta=14.58,
+                min_cost=8,
+                max_cost=8 
+        )
 
         # a user has joined properly
-        trader = Trader.objects.create(name='otto', market=market)
+        
+        trader = Trader.objects.create(name='otto', market=market, balance=market.initial_balance)
+        
         session = self.client.session
         session['trader_id'] = trader.pk
         session.save()
-
-        self.assertEqual(trader.balance, 5000)
+    
+        self.assertEqual(trader.balance, 5001)
         self.assertEqual(trader.prod_cost, 1)
 
         # the client sends in a trade form with valid data
@@ -739,26 +770,28 @@ class PlayViewPOSTRequestTest(TestCase):
         self.assertEqual(response.status_code, 302)
         expected_redirect_url = reverse('market:play')
         self.assertEqual(response['Location'], expected_redirect_url)
-
+        
 class CurrentRoundViewTest(TestCase):
 
     def test_response_status_code_404_when_market_does_not_exists(self):
         url = reverse('market:current_round', args=('BARMARKETID',))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
-
+    
     def test_response_status_code_200_when_market_exists(self):
-        market = Market.objects.create()
+        market =  Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144)
         url = reverse('market:current_round', args=(market.market_id,))
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-
+    
     def test_returns_correct_non_zero_round(self):
-        market = Market.objects.create(round=11)
+        market = Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                                       theta=2.0105, min_cost=11, max_cost=144, round=11)
         url = reverse('market:current_round', args=(market.market_id,))
         response = self.client.get(url)
         self.assertEqual(response.json(), {"round": 11})
-
+    
 
 class MyMarketTest(TestCase):
 
@@ -797,7 +830,8 @@ class MyMarketTest(TestCase):
 
     def test_no_markets_empty_template(self):
         """ User should not see markets created by other user """
-        Market.objects.create(created_by = self.hanne)
+        Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                              theta=2.0105, created_by=self.hanne)
         self.client.login(username='somename', password='testpass123')
         response = self.client.get(reverse('market:my_markets')) 
         self.assertEqual(response.status_code, 200)       
@@ -806,9 +840,115 @@ class MyMarketTest(TestCase):
 
     def test_no_markets_empty_template(self):
         """ User has created a market so reponse should contain info on this market """
-        Market.objects.create(created_by=self.hanne, max_cost=13)
+        Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+                              theta=2.0105, created_by=self.hanne, min_cost=10, max_cost=13)
         self.client.login(username='hanne', password='testpass123')
         response = self.client.get(reverse('market:my_markets'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'hanne')
         self.assertContains(response, '13')
+
+
+class TraderTableTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):        
+        
+        User = get_user_model()
+        
+        User.objects.create_user(
+            username='somename',
+            password='testpass123',
+        )
+        cls.market = Market.objects.create( initial_balance=300, alpha=10, beta=11, theta=1, round=4, min_cost=1, max_cost=3)
+
+
+    def test_page_exists_for_logged_in_client(self):
+        """ a logged in client should user not logged in will be redirected to login page """
+        self.client.login(username='somename', password='testpass123')
+        response = self.client.get(reverse('market:trader_table', args=(self.market.market_id,)))
+        self.assertEqual(response.status_code, 200)
+ 
+
+    def test_page_exists_for_logged_in_user(self):
+        """ a client not logged in should be redirected to login page """
+        response = self.client.get(reverse('market:trader_table', args=(self.market.market_id,)))
+        self.assertEqual(response.status_code, 302)
+ 
+class MarketEditTest(TestCase):
+
+    def setUp(self):        
+        
+        User = get_user_model()
+        
+        self.user = User.objects.create_user(
+            username='somename',
+            password='testpass123',
+        )
+
+    ###################### get requests ############################ 
+    def test_page_exits_and_uses_template(self):
+        self.client.login(username='somename', password='testpass123')
+        market = Market.objects.create( initial_balance=300, alpha=10, beta=11, theta=1, round=4, min_cost=1, max_cost=3, created_by=self.user)
+        url = reverse('market:market_edit', args=(market.market_id,))
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'market/market_edit.html')
+
+    def test_other_user_has_no_permission_to_edit_market(self):
+        """
+        Only the user who created the market should be allowed to edit is
+        """
+        market = Market.objects.create( initial_balance=300, alpha=10, beta=11, theta=1, round=4, min_cost=1, max_cost=3, created_by=self.user)
+        
+        User = get_user_model()
+        other_user = User.objects.create_user(
+            username='other',
+            password='testpassXXX',
+        )
+        self.client.login(username='other', password='testpassXXX')        
+       
+        url = reverse('market:market_edit', args=(market.market_id,))
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302) 
+        self.assertEqual(response['Location'], reverse('market:home'))
+
+    ###################### post requests ############################ 
+
+    def test_valid_post_data_updates_market_and_redirects(self):
+        market = Market.objects.create( initial_balance=300, alpha=10, beta=11, theta=1, round=4, min_cost=1, max_cost=3, created_by=self.user)
+        self.client.login(username='somename', password='testpass123')
+        data = {'product_name_singular': 'surdejsbolle', 'product_name_plural':'surdejsboller', 'alpha': 14, 'beta':10, 'theta':32}
+
+        url = reverse('market:market_edit', args=(market.market_id,))
+        response = self.client.post(url, data=data)
+
+        market.refresh_from_db()
+        self.assertEqual(float(market.alpha), 14)
+        self.assertEqual(market.product_name_singular, 'surdejsbolle')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], reverse('market:monitor', args=(market.market_id,)))
+
+    def test_invalid_post_data_does_not_update_market(self):
+        """
+        alpha is negative, so form is invalid. No values should be updated in this case
+        """
+        market = Market.objects.create( initial_balance=300, alpha=10, beta=11, theta=1, round=4, min_cost=1, max_cost=3, created_by=self.user)
+
+        self.client.login(username='somename', password='testpass123')
+        
+        data = {'product_name_singular': 'surdejsbolle', 'product_name_plural':'surdejsboller', 'alpha': -3, 'beta':10, 'theta':32}
+
+        url = reverse('market:market_edit', args=(market.market_id,))
+        response = self.client.post(url, data=data)
+
+        market.refresh_from_db()
+        self.assertEqual(float(market.alpha), 10) # alpha has not changed
+
+        self.assertEqual(response.status_code, 200) # return template
+        self.assertTemplateUsed(response, 'market/market_edit.html')
+        

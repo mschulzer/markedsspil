@@ -6,13 +6,35 @@ from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
 from random import randint
 from .models import Market, Trader, Trade, RoundStat
-from decimal import Decimal
-from .forms import MarketForm, TraderForm, TradeForm
+from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
+from .market_settings import SCENARIOS
 
+@login_required
+def market_edit(request, market_id):
+    market = get_object_or_404(Market, market_id=market_id)
+
+    # only the user how created the market has permission to edit it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+
+    if request.method == 'POST':
+        form = MarketUpdateForm(request.POST, instance=market)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "You succesfully updated the market. Changes will take effect from this round forward.")
+            return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
+    
+    else: # request.method = 'GET'
+        form = MarketUpdateForm(instance=market)
+
+    context = {"form":form, "market":market}
+
+    return render(request, "market/market_edit.html", context)
 
 @login_required
 @require_GET
@@ -40,6 +62,7 @@ def my_markets(request):
 
 @login_required
 def create(request):
+   
     if request.method == 'POST':
         form = MarketForm(request.POST)
         if form.is_valid():
@@ -49,7 +72,11 @@ def create(request):
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
     elif request.method == 'GET':
         form = MarketForm()
-    return render(request, 'market/create.html', {'form': form})
+    
+    context = {'form': form, 'scenarios': SCENARIOS,
+               'scenarios_json': json.dumps(SCENARIOS)}
+
+    return render(request, 'market/create.html', context)
 
 def join(request):
     if request.method == 'POST':
@@ -60,7 +87,7 @@ def join(request):
             new_trader = form.save(commit=False)
             new_trader.market = market
             new_trader.prod_cost = randint(market.min_cost, market.max_cost)
-            new_trader.balance = Trader.initial_balance
+            new_trader.balance = market.initial_balance
             new_trader.save()
 
             request.session['trader_id'] = new_trader.pk
@@ -72,7 +99,7 @@ def join(request):
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
-                request, f"Hi {form.cleaned_data['name']}! You're now ready to trade on the market {form.cleaned_data['market_id']}")
+                request, f"Hi {form.cleaned_data['name']}! You're now ready to trade on the {market.product_name_singular} market {market.market_id}.")
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -95,7 +122,7 @@ def monitor(request, market_id):
         'num_ready_traders':filter_trades(market=market, round=market.round).count(),
         'rounds': range(market.round),
         'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
-        'initial_balance':Trader.initial_balance
+        'initial_balance':market.initial_balance
     }
 
     if request.method == "GET":
@@ -185,7 +212,7 @@ def play(request):
  
             #context for balance graph
             'balance_labels' : json.dumps(list(range(market.round+1))),
-            'data_balance_json': json.dumps([trader.initial_balance] + [trade.balance_after for trade in trades]),
+            'data_balance_json': json.dumps([trader.market.initial_balance] + [trade.balance_after for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():
@@ -199,7 +226,7 @@ def play(request):
 
         if context['wait']:
             messages.success(
-            request, f"You made a trade! We are now waiting for market host to finish round {market.round}...   ")
+            request, f"You made a decision! Your {market.product_name_plural} will be produced and put up for sale when the market host finishes round {market.round}.")
         elif market.round > 0:
             messages.success(
                 request, f"You are now ready for round {market.round}!")

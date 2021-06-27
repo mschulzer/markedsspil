@@ -1,0 +1,27 @@
+{% extends "market/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Market{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+    Change Market Parameters 
+</h2>
+
+<p>
+    Below, you can edit some of the parameters for the market <b>{{ market.market_id }}</b><br>
+</p>
+
+
+<form class="mb-5" method="POST" action="{% url 'market:market_edit' market.market_id %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'market:monitor' market.market_id %}" class="btn btn-primary">Cancel</a>
+        <button class="btn btn-warning" type="submit">Update</button>
+    </div>
+</form>
+
+
+{% endblock content %}

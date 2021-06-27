@@ -16,14 +16,17 @@ def new_unique_market_id():
 
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
+    product_name_singular = models.CharField(default="default_singular",max_length=16)
+    product_name_plural = models.CharField(default="default_plural", max_length=16)
+    initial_balance = models.PositiveIntegerField()
     # w/ below settings, alpha, beta and theta can't exceed 999999.9999
-    alpha = models.DecimalField(max_digits=10, decimal_places=4, default=105)  
-    beta = models.DecimalField(max_digits=10, decimal_places=4, default=17.5)  
-    theta = models.DecimalField(max_digits=10, decimal_places=4, default=14.58)
+    alpha = models.DecimalField(max_digits=10, decimal_places=4)  
+    beta = models.DecimalField(max_digits=10, decimal_places=4)  
+    theta = models.DecimalField(max_digits=10, decimal_places=4)
     # choosing PositiveIntegerField for max_cost and min_cost will ensure auto-generated
     # error messages in the market creating form when choosing negative values for these fields
-    min_cost = models.PositiveIntegerField(default=8) 
-    max_cost = models.PositiveIntegerField(default=8)  
+    min_cost = models.PositiveIntegerField() 
+    max_cost = models.PositiveIntegerField()  
     round = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)
@@ -40,12 +43,11 @@ class Market(models.Model):
         return f"{self.market_id}[{self.round}]:{self.alpha},{self.beta},{self.theta}"
 
 class Trader(models.Model):
-    initial_balance = 5000
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16,)
     prod_cost = models.IntegerField(default=1)
     # balance field is not strictly necessary, as it should always be possible to find this value in a stored Trade object
-    balance = models.IntegerField(default=initial_balance, blank=True) 
+    balance = models.IntegerField(blank=True) 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:

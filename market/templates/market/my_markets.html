@@ -8,12 +8,14 @@
     Your Markets
 </h2>
 {% if markets %}
-    <table class="table table-striped">
+    <table class="table table-striped table-responsive">
         <thead>
             <tr>
                 <th>Created by</th>
                 <th>Created at</th>
                 <th>ID</th>
+                <th>Product name</th>
+                <th>Initial balance</th>
                 <th>alpha</th>
                 <th>beta</th>
                 <th>theta</th>
@@ -25,15 +27,18 @@
         {% for market in markets %}
 
         <tbody>
-            <td>{{ market.created_by }}</td>
-            <td>{{ market.created_at }}</td>
-            <td>{{ market.market_id }}</td>
-            <td>{{ market.alpha }}</td>
-            <td>{{ market.beta }}</td>
-            <td>{{ market.theta }}</td>
-            <td>{{ market.min_cost }}</td>
-            <td>{{ market.max_cost }}</td>
-            <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>
+            <tr>
+                <td>{{ market.created_by }}</td>
+                <td>{{ market.created_at }}</td>
+                <td>{{ market.market_id }}</td>
+                <td>{{ market.product_name_singular }}</td>
+                <td>{{ market.initial_balance }}</td>
+                <td>{{ market.alpha }}</td>
+                <td>{{ market.beta }}</td>
+                <td>{{ market.theta }}</td>
+                <td>{{ market.min_cost }}</td>
+                <td>{{ market.max_cost }}</td>
+                <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>
             </tr>
         </tbody>
         {% endfor %}
