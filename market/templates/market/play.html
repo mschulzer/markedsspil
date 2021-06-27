@@ -12,18 +12,18 @@
             }
         }
     </style>
-
+   
     <p class="pt-3 p-2" >    
         {% if show_last_round_data %}
             Last round you produced <b>{{ trades.last.unit_amount }}</b> and sold
             <b>{{ trades.last.units_sold }}</b>
            {{ market.product_name_plural}}. The demand was <b>{{ trades.last.demand }}</b>. Your price was
-           <b>{{ trades.last.unit_price}} </b>kr. and the
+           <b>{{ trades.last.unit_price}} </b> and the
             market
-            average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b> kr.<br class="hide-when-small">
-            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr. 
+            average price was <b>{{ round_stats.all.last.avg_price | floatformat:2 }}</b><br class="hide-when-small">
+            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> 
         {% endif %}
-            Your current balance is <b style="color:green">{{ trader.balance }}</b> kr.
+            Your current balance is <b style="color:green">{{ trader.balance }}</b>
         <br>
     </p>
 
@@ -276,8 +276,8 @@
         price_slider.value = "{{ trades.last.unit_price }}"
     {% endif %}
 
-    var balance = parseInt("{{ trader.balance }}")
-    var unit_prod_cost = parseInt("{{ trader.prod_cost }}")
+    var balance = parseFloat("{{ trader.balance }}")
+    var unit_prod_cost = parseFloat("{{ trader.prod_cost }}".replace(',', '.'))
     var total_cost = document.getElementById('total_cost');
     var income_best_case = document.getElementById('income_best_case');
     var balance_after_production = document.getElementById('balance_after_production');
@@ -288,7 +288,7 @@
     const show_formula_breakpoint = 490;
 
     function set_price_label(){
-        price_label.innerHTML = "Unit Price: " + price_slider.value + " kr."; 
+        price_label.innerHTML = "Unit Price: " + parseFloat(price_slider.value).toFixed(2); 
     }
     
     function set_amount_label(){
@@ -297,7 +297,7 @@
     
     function set_total_cost(){
         amount = amount_slider.value; 
-        total_prod_cost.innerHTML = amount * unit_prod_cost;
+        total_prod_cost.innerHTML = (amount * unit_prod_cost).toFixed(2);
         if ($(window).width() > show_formula_breakpoint) {
             formula = document.getElementById('total_prod_cost_formula')
             formula.innerHTML = `${amount} * ${unit_prod_cost} = `;
@@ -307,23 +307,23 @@
     
     function set_potential_income(){
         amount = amount_slider.value;
-        price = price_slider.value;
-        income_best_case.innerHTML = amount*price;
+        price = parseFloat(price_slider.value);
+        income_best_case.innerHTML = (amount*price).toFixed(2);
         
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('income_best_case_formula')
-            formula.innerHTML = `${amount} * ${price} = `; 
+            formula.innerHTML = `${amount} * ${price.toFixed(2)} = `; 
         }
     }
 
     function set_balance_after_production(){
         amount = amount_slider.value;
         costs = amount * unit_prod_cost;
-        balance_after_production.innerHTML = balance - costs;
+        balance_after_production.innerHTML = (balance - costs).toFixed(2);
 
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('balance_after_production_formula')
-            formula.innerHTML = `${balance} - ${costs} = `;
+            formula.innerHTML = `${balance.toFixed(2)} - ${costs.toFixed(2)} = `;
         } 
     }
 
@@ -347,12 +347,12 @@
         } else{
             profit_worst_case.style.color = 'green'
         }
-        profit_best_case.innerHTML = best_case_profit;
-        profit_worst_case.innerHTML = - expences;
+        profit_best_case.innerHTML = best_case_profit.toFixed(2);
+        profit_worst_case.innerHTML = (-expences).toFixed(2);
 
         if ($(window).width() > show_formula_breakpoint) { 
-            document.getElementById('profit_best_case_formula').innerHTML = `${best_case_income} - ${expences} = `;
-            document.getElementById('profit_worst_case_formula').innerHTML = `0 - ${expences} = `;
+            document.getElementById('profit_best_case_formula').innerHTML = `${best_case_income.toFixed(2)} - ${expences.toFixed(2)} = `;
+            document.getElementById('profit_worst_case_formula').innerHTML = `0 - ${expences.toFixed(2)} = `;
         }     
     }
 

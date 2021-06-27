@@ -7,16 +7,21 @@ class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
         fields = ['product_name_singular','product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
-        # help_texts = {
-        #     'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
-        #     'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
-        #     'initial_balance': ("How much money should the participants start out with?"),
-        #     'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
-        #     'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
-        #     'theta': ("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
-        #     'min_cost': ("What are the minimal production costs for one unit of the product?"),
-        #     'max_cost': ("What are the maximal production costs for one unit of the product?")
-        # }
+        widgets = {
+            'initial_balance': forms.NumberInput(attrs={'step': 1}),
+            'min_cost': forms.NumberInput(attrs={'step': 1}),
+            'max_cost': forms.NumberInput(attrs={'step': 1})
+        }
+        help_texts = {
+            'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
+            'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
+            'initial_balance': ("How much money should the participants start out with?"),
+            'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
+            'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
+            'theta': ("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
+            'min_cost': ("What are the minimal production costs for one unit of the product?"),
+            'max_cost': ("What are the maximal production costs for one unit of the product?")
+        }
 
     def clean(self):
         """ Form is invalid if min cost > max cost """
@@ -98,5 +103,5 @@ class TradeForm(forms.ModelForm):
                 max_unit_amount = 10000  # this number is arbitrary
 
             self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount 
-            self.fields['unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost} kr.)"
+            self.fields['unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost})"
             self.fields['unit_amount'].help_text = f"How many {trader.market.product_name_plural} do you want to produce?"

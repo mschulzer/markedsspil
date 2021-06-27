@@ -10,8 +10,6 @@ def process_trade(market, trade, avg_price):
     Calculates key values for a single trade and updates trade and trader accordingly.
     Used by monitor-view on post-requests, when host finishes a round
     """
-
-    #alpha, beta, theta = float(market.alpha), float(market.beta), float(market.theta)  
     alpha, beta, theta = market.alpha, market.beta, market.theta
 
     # calculate values 

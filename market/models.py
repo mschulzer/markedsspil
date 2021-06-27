@@ -17,38 +17,32 @@ def new_unique_market_id():
 
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
-    product_name_singular = models.CharField(default="default_singular",max_length=16,
-        help_text="The singular form of the product being sold (e.g. 'baguette')")
-    product_name_plural = models.CharField(default="default_plural", max_length=16,
-        help_text="The plural form of the product being sold (eg. 'baguettes')")
-    
+    product_name_singular = models.CharField(default="default_singular",max_length=16)
+    product_name_plural = models.CharField(default="default_plural", max_length=16)
+
     # w/ below settings, alpha, beta and theta can't exceed 
     initial_balance = models.DecimalField(
         max_digits=12, 
         decimal_places=2, 
-        validators=[MinValueValidator(Decimal('0.01'))],
-        help_text="How much money should the participants start out with?")
+        validators=[MinValueValidator(Decimal('0.01'))])
 
     alpha = models.DecimalField(
         max_digits=14, 
         decimal_places=4, 
-        validators=[MinValueValidator(Decimal('0.0000'))],
-        help_text="How big should the demand for a trader's product be, if all traders set the price to zero?"
-    )
+        validators=[MinValueValidator(Decimal('0.0000'))])
 
-    beta = models.DecimalField(max_digits=14, decimal_places=2, 
-        validators=[MinValueValidator(Decimal('0.0000'))],
-        help_text="How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?")
-    theta = models.DecimalField(max_digits=14, decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.0000'))],
-        help_text="How much should the demand for a trader's product increase, when the market's average price goes up by one?")
+    beta = models.DecimalField(max_digits=14, decimal_places=4, 
+        validators=[MinValueValidator(Decimal('0.0000'))])
+
+    theta = models.DecimalField(max_digits=14, decimal_places=4,
+        validators=[MinValueValidator(Decimal('0.0000'))])
+
     min_cost = models.DecimalField(max_digits=14, decimal_places=2, 
-        validators=[MinValueValidator(Decimal('0.01'))],
-        help_text="What are the minimal production costs for one unit of the product?"
-        )
+        validators=[MinValueValidator(Decimal('0.01'))])
+
     max_cost = models.DecimalField(max_digits=14, decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.01'))],
-        help_text="What are the maximal production costs for one unit of the product?")
+        validators=[MinValueValidator(Decimal('0.01'))])
+
     round = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)
@@ -68,7 +62,7 @@ class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16,)
     prod_cost = models.DecimalField(
-        default=1,
+        default=1.00,
         max_digits=14, 
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))],
@@ -112,8 +106,7 @@ class Trade(models.Model):
         max_digits=14,
         decimal_places=2,
     )
-    balance_after = models.IntegerField(null=True, blank=True)
-    models.DecimalField(
+    balance_after =  models.DecimalField(
         null=True,
         blank=True,
         max_digits=14,
@@ -133,7 +126,7 @@ class Trade(models.Model):
 class RoundStat(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     round = models.IntegerField()  
-    # w/ below settings avg. can't be bigger than 999999.9999.  
+    # w/ below settings avg. can't be bigger than 9999999999.9999.  
     # Therefore, there has to be an upper bound on choice of unit_price set by players. 
     avg_price = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True, null=True)

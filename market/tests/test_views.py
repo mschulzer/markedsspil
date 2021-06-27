@@ -9,7 +9,7 @@ from django.urls import reverse
 from ..models import Market, Trader, Trade, RoundStat
 from ..forms import TraderForm
 from ..helpers import filter_trades
-
+from decimal import Decimal
 
 class HomeViewTests(TestCase):
 
@@ -117,15 +117,15 @@ class CreateMarketViewTests(TestCase):
         self.assertTrue(error_english or error_danish, html)
 
     
-    def test_error_mgs_shown_to_user_when_alpha_bigger_than_999999(self):
+    def test_error_mgs_shown_to_user_when_alpha_bigger_than_9999999999(self):
         """ 
-        In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 999999.9999
-        Choosing alpha = 1000000 in the create form should should create an understandable message to the user,
+        In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 9999999999.9999
+        Choosing alpha = 10000000000 in the create form should should create an understandable message to the user,
         not a database-error. 
         """   
         self.client.login(username='somename', password='testpass123')
 
-        data = {'alpha': 1000000, 'beta': 44.2,
+        data = {'alpha': 10000000000, 'beta': 44.2,
                           'theta': 2.0105, 'min_cost': 11, 'max_cost': 144}
 
         response = self.client.post(
@@ -133,7 +133,7 @@ class CreateMarketViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200) 
         html = response.content.decode('utf8')
-        self.assertIn("Der må maksimalt være 6 cifre før kommaet.", html)
+        self.assertIn("Der må maksimalt være 10 cifre før kommaet.", html)
 
     def test_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(self):
         """ 
@@ -495,7 +495,6 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         self.assertEqual(response['Location'], url)
     
     def test_balance_and_profit_of_trades_updates(self):
-        self.assertTrue(1==1)
         self.assertEqual(self.c1.balance_after, None)
         self.assertEqual(self.m1.balance_after, None)
         self.assertEqual(self.n1.balance_after, None)
@@ -515,15 +514,15 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         self.n1.refresh_from_db()
         self.k1.refresh_from_db()
         
-        self.assertIsInstance(self.c1.balance_after, int)
-        self.assertIsInstance(self.m1.balance_after, int)
-        self.assertIsInstance(self.n1.balance_after, int)
-        self.assertIsInstance(self.k1.balance_after, int)
+        self.assertIsInstance(self.c1.balance_after, Decimal)
+        self.assertIsInstance(self.m1.balance_after, Decimal)
+        self.assertIsInstance(self.n1.balance_after, Decimal)
+        self.assertIsInstance(self.k1.balance_after, Decimal)
         
-        self.assertIsInstance(self.c1.profit, int)
-        self.assertIsInstance(self.m1.profit, int)
-        self.assertIsInstance(self.n1.profit, int)
-        self.assertIsInstance(self.k1.profit, int)
+        self.assertIsInstance(self.c1.profit, Decimal)
+        self.assertIsInstance(self.m1.profit, Decimal)
+        self.assertIsInstance(self.n1.profit, Decimal)
+        self.assertIsInstance(self.k1.profit, Decimal)
     
     def test_market_avg_price_has_been_calculated_and_saved(self):
         url = reverse('market:monitor', args=(self.market.market_id,))
@@ -572,6 +571,7 @@ class PlayViewGetRequestTest(TestCase):
         self.assertEqual(Trade.objects.filter(trader=trader, round=0).count(),1)
 
         # user goes to play url and should get play-template shown with wait equal true in context
+        
         response = self.client.get(
             reverse('market:play'))
         self.assertEqual(response.status_code, 200)
@@ -622,7 +622,7 @@ class PlayViewGetRequestTest(TestCase):
         # user goes to play url
         response = self.client.get(reverse('market:play'))
 
-        # The user has not traded in this round so he should get back play temlpate with wait=false in context
+        # The user has not traded in this round so he should get back play template with wait=false in context
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/play.html'),
         self.assertFalse(response.context.get('wait'))
@@ -646,12 +646,12 @@ class PlayViewGetRequestTest(TestCase):
 
     def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(self):
         """
-        User is in round 4. Traded in round 2, but not in round 3, and not yet in round 4. 
+        User is in round 4. He traded in round 2, but not in round 3, and not yet in round 4. 
         """
         # some market is in round 4
-        market=Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
+        market=Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
                                                            theta=2.0105, min_cost=11, max_cost=144,round=4)
-
+        market.refresh_from_db()
         # a user has joined properly
         trader = Trader.objects.create(
             name='otto', market=market, balance=market.initial_balance)
@@ -711,8 +711,8 @@ class PlayViewGetRequestTest(TestCase):
         form = response.context['form']
 
         # we expect the max input value of unit_price to be 5* market.max_cost = 15
-        self.assertIn('max="15"', str(form))
-        self.assertNotIn('max="16"', str(form))
+        self.assertIn('max="15.00"', str(form))
+        self.assertNotIn('max="16.00"', str(form))
 
         # we expect the max input value of unit_amount to be floor(trader.balance/trader.prod_cost) = 50
         self.assertIn('max="50"', str(form))
