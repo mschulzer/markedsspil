@@ -149,6 +149,13 @@ def play(request):
                 new_trade.save()
             return redirect(reverse('market:play'))
 
+        # For lining up the graphs properly,
+        # this duplicates the first list element
+        def dup_fst(l):
+            if len(l) > 0:
+                l.insert(0,l[0])
+            return l
+
         # Get requests only :
         form = TradeForm(trader)
         trades = Trade.objects.filter(trader=trader)
@@ -157,27 +164,27 @@ def play(request):
             'market': market,
             'trader':trader,
             'form':form,
-            'rounds':range(market.round),
+            'rounds':range(market.round+1),
             'round_stats': round_stats,
             'trades':trades,
             'wait':False,
             'show_last_round_data':False,
 
             # labels for unit and price charts
-            'rounds_json': json.dumps(list(range(market.round))),
+            'rounds_json': json.dumps(list(range(market.round+1))),
 
             # context for units graph
-            'data_demand_json': json.dumps([trade.demand for trade in trades]),
-            'data_sold_json': json.dumps([trade.units_sold for trade in trades]),
-            'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
+            'data_demand_json': json.dumps(dup_fst([trade.demand for trade in trades])),
+            'data_sold_json': json.dumps(dup_fst([trade.units_sold for trade in trades])),
+            'data_produced_json': json.dumps(dup_fst([trade.unit_amount for trade in trades])),
 
             # context for price graph
-            'data_price_json': json.dumps([trade.unit_price for trade in trades]),
-            'data_prod_cost_json': json.dumps([trader.prod_cost for _ in trades]),
-            'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
+            'data_price_json': json.dumps(dup_fst([trade.unit_price for trade in trades])),
+            'data_prod_cost_json': json.dumps(dup_fst([trader.prod_cost for _ in trades])),
+            'data_market_avg_price_json': json.dumps(dup_fst([float(round_stat.avg_price) for round_stat in round_stats])),
  
             #context for balance graph
-            'balance_labels' : json.dumps(list(range(-1, market.round))),
+            'balance_labels' : json.dumps(list(range(market.round+1))),
             'data_balance_json': json.dumps([trader.initial_balance] + [trade.balance_after for trade in trades]),
         }
 
