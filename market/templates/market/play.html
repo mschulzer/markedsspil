@@ -20,10 +20,10 @@
            {{ market.product_name_plural}}. The demand was <b>{{ trades.last.demand }}</b>. Your price was
            <b>{{ trades.last.unit_price}} </b> and the
             market
-            average price was <b>{{ round_stats.all.last.avg_price | floatformat:2 }}</b><br class="hide-when-small">
-            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> 
+            average price was <b>{{ round_stats.all.last.avg_price | floatformat:2 }}</b>.<br class="hide-when-small">
+            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b>. 
         {% endif %}
-            Your current balance is <b style="color:green">{{ trader.balance }}</b>
+            Your current balance is <b style="color:green">{{ trader.balance }}</b>.
         <br>
     </p>
 
@@ -276,7 +276,7 @@
         price_slider.value = "{{ trades.last.unit_price }}"
     {% endif %}
 
-    var balance = parseFloat("{{ trader.balance }}")
+    var balance = parseFloat("{{ trader.balance }}".replace(',', '.'))
     var unit_prod_cost = parseFloat("{{ trader.prod_cost }}".replace(',', '.'))
     var total_cost = document.getElementById('total_cost');
     var income_best_case = document.getElementById('income_best_case');
