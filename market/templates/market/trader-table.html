@@ -4,7 +4,7 @@
     </i>
 
 {% else %}
-    <table class="table table-sm table-striped">
+    <table class="table table-sm table-striped" id="trader_status_table">
         <thead id="trader_status_thead">
             <tr>
                 <th scope="col">#</th>
@@ -17,7 +17,7 @@
         <tbody>
             {% for trader in traders %}
             <tr>
-                <th scope="row">{{ forloop.counter }}</th>
+                <th scope="row" id="player_{{ forloop.counter }}">{{ forloop.counter }}</th>
                 <td>{{ trader.name }}</td>
                 {% if trader.is_ready %}
                     <td style="color:green">✓</td>
@@ -29,6 +29,30 @@
             </tr>
             {% endfor %}
         </tbody>
+
+        <script>
+          function swap_rows(r1, r2) {
+              for (var i = 1; i < r1.cells.length; i++) {
+                  var tmp = r1.cells[i].innerHTML;
+                  r1.cells[i].innerHTML = r2.cells[i].innerHTML;
+                  r2.cells[i].innerHTML = tmp;
+              }
+          }
+          var BALANCE = 4;
+          var table = document.getElementById("trader_status_table");
+          for (var i = 0; i < table.rows.length; i++) {
+              for (var j = i; j > 0; j--) {
+                  var j_balance = parseInt(table.rows[j].cells[BALANCE].innerHTML);
+                  var prev_balance = parseInt(table.rows[j-1].cells[BALANCE].innerHTML);
+                  if (j_balance > prev_balance) {
+                      console.log(j_balance, prev_balance);
+                      swap_rows(table.rows[j],table.rows[j-1]);
+                  } else {
+                      break;
+                  }
+              }
+          }
+        </script>
     </table>
     {% if num_ready_traders == 0 %}
         <button type="button" class="btn btn-primary" disabled>
