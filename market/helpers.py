@@ -21,7 +21,6 @@ def process_trade(market, trade, avg_price):
     trade_profit = income - expenses   
 
     assert(units_sold >=0)
-    #assert(type(trade_profit) is int)
     
     # update trade and trader objects
     trade.demand = demand

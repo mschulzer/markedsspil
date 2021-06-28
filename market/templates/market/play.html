@@ -300,7 +300,7 @@
         total_prod_cost.innerHTML = (amount * unit_prod_cost).toFixed(2);
         if ($(window).width() > show_formula_breakpoint) {
             formula = document.getElementById('total_prod_cost_formula')
-            formula.innerHTML = `${amount} * ${unit_prod_cost} = `;
+            formula.innerHTML = `${amount} * ${unit_prod_cost.toFixed(2)} = `;
         } 
     }
 
