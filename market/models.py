@@ -28,6 +28,9 @@ class Market(models.Model):
     min_cost = models.PositiveIntegerField() 
     max_cost = models.PositiveIntegerField()  
     round = models.IntegerField(default=0)
+    max_rounds = models.IntegerField(default=15)
+    endless = models.BooleanField(default=False)
+    game_over = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)
 
