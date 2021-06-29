@@ -10,6 +10,8 @@ from ..models import Market, Trader, Trade, RoundStat
 from ..forms import TraderForm
 from ..helpers import filter_trades
 from decimal import Decimal
+from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory, TraderFactory, UserFactory, MarketFactory
+
 
 class HomeViewTests(TestCase):
 
@@ -333,88 +335,65 @@ class MonitorViewGETRequestsTest(TestCase):
 
 class MonitorViewPOSTRequestsTest(TestCase):
 
-    @classmethod
-    def setUpTestData(cls):
-        # Set up non-modified objects used by all test methods in class
-        cls.market =  Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
-                                       theta=2.0105, min_cost=11, max_cost=144)
-        cls.trader = Trader.objects.create(
-            name='Joe', market=cls.market, balance=cls.market.initial_balance)
-
-        Trade.objects.create(trader=cls.trader, round=0)
-        cls.url = reverse('market:monitor', args=(cls.market.market_id,))
-
     def test_response_status_code_404_when_market_does_not_exists(self):
-        url = reverse('market:monitor', args=('ASDFGHJK',))
+        url = reverse('market:monitor', args=('BADMARKETID',))
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
     def test_redirect_to_same_url_when_good_arguments(self):
-        response = self.client.post(self.url)
+        """ Redirect to monitor view after succesful post-request """
+        # At least one trade has to have been made this round before post-request
+        trade = UnProcessedTradeFactory(round=0)
+        self.assertEqual(trade.round, trade.trader.market.round)
+        url = reverse('market:monitor', args=(trade.trader.market.market_id,))
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], self.url) 
-
-
-class MonitorViewPOSTRequestsExtraTest(TestCase):
+        self.assertEqual(response['Location'], url) 
     
     def test_one_trader_has_made_one_trade_this_round(self):
 
-        # There is a market in round 7 & a trader in this market
-        market = Market.objects.create( initial_balance=5000, alpha=21.402, beta=44.2,
-                                       theta=2.0105, min_cost=11, max_cost=144, round=7)
-        trader = Trader.objects.create(
-            name='Joe2', market=market, balance=market.initial_balance)
+        # Some trader makes a trade in round 7
+        market = MarketFactory(round=7)
+        trader = TraderFactory(market=market)
+        trade = UnProcessedTradeFactory(trader=trader, round=7)
 
-        # The trader makes a trade
-        trade = Trade.objects.create(trader=trader, round=market.round)
-        trade.save()
-        
-        # At this point, the balance and the profit of the trade should be none
+        # At this point, most fields of the trade should be none
         self.assertEqual(trade.round, 7)
-        self.assertEqual(trade.trader.name, 'Joe2')
-        self.assertEqual(trade.balance_after, None)
         self.assertEqual(trade.profit, None)
-        
+        self.assertEqual(trade.demand, None)
+        self.assertEqual(trade.units_sold, None)
+        self.assertEqual(trade.balance_after, None)
+
         # The teacher finishes the round
-        trades = filter_trades(market=market, round=market.round)
-        self.assertEqual(trades.count(), 1)
-        self.assertEqual(trades.first().trader.market, market)
-        self.assertEqual(trades.first().round, 7)
-
-        self.assertEqual(market.round, 7)
-
-        url = reverse('market:monitor', args=(market.market_id,))
+        url = reverse('market:monitor', args=(trade.trader.market.market_id,))
         response = self.client.post(url)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], url) 
 
-        # The profit and balance should now be on the trade object
+        # The profit,balance should now be on the trade object
         trade.refresh_from_db()
-        self.assertEqual(trade.balance_after, trader.market.initial_balance)
-        self.assertEqual(trade.profit, 0)
+        self.assertEqual(trade.round, 7)
+        self.assertIsInstance(trade.balance_after, Decimal)
+        self.assertIsInstance(trade.profit, Decimal)
+        self.assertIsInstance(trade.units_sold, int)
+        self.assertIsInstance(trade.demand, int)
 
         # the round of the market should be 7+1=8
         market.refresh_from_db()
         self.assertEqual(market.round, 8)
 
     def test_monitor_view_created_forced_moves_for_inactive_player(self):
-        # There is a market in round 7 & a two traders in this market
-        market = Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
-                                                             theta=2.0105, min_cost=11, max_cost=144, round=7)
-        trader1 = Trader.objects.create(
-            name='Hansi', market=market, balance=market.initial_balance)
-        trader2 = Trader.objects.create(
-            name='Kwaganzi', market=market, balance=market.initial_balance)
-
-        # for testing purposes we set a balance for trader 2:
-        trader2.balance=123456
-        trader2.save()
+        # There is a market in round 7 & two traders in this market
+        market = MarketFactory(round=7)
+                
+        trader1 = TraderFactory(market=market)
+        trader2 = TraderFactory(market=market, balance=123456)
 
         # trader1 makes a trade...
-        Trade.objects.create(trader=trader1 , round=market.round)
+        trade = TradeFactory(trader=trader1 , round=7)
 
         # this trade is not saved as a forced trade
-        self.assertEqual(Trade.objects.get(trader=trader1).was_forced, False)
+        self.assertEqual(trade.was_forced, False)
 
         # trader2 has not made any trades
         self.assertEqual(Trade.objects.filter(trader=trader2).count(),0)
@@ -748,7 +727,7 @@ class PlayViewPOSTRequestTest(TestCase):
         session.save()
     
         self.assertEqual(trader.balance, 5001)
-        self.assertEqual(trader.prod_cost, 1)
+        self.assertEqual(trader.prod_cost, 8)
 
         # the client sends in a trade form with valid data
         response = self.client.post(

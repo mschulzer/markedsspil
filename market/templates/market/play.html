@@ -263,6 +263,7 @@
 </script>
 
 {% if not wait %}
+{{ trader.balance }}
 <script>    
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
@@ -276,7 +277,7 @@
         price_slider.value = "{{ trades.last.unit_price }}"
     {% endif %}
 
-    var balance = parseFloat("{{ trader.balance }}")
+    var balance = parseFloat("{{ trader.balance }}".replace(',', '.'))
     var unit_prod_cost = parseFloat("{{ trader.prod_cost }}".replace(',', '.'))
     var total_cost = document.getElementById('total_cost');
     var income_best_case = document.getElementById('income_best_case');

@@ -53,6 +53,7 @@ def create_forced_trade(trader, round_num, is_new_trader):
         trader=trader,
         unit_price=None, 
         unit_amount=None,
+        demand=None,
         balance_after=balance_after,
         profit = None,
         was_forced=True

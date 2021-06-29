@@ -1,12 +1,9 @@
-from unicodedata import decimal
 from django.test import TestCase
 from ..models import Market, Trader, Trade
-from ..helpers import create_forced_trade, filter_trades
 from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade
-from ..forms import TraderForm
-from ..helpers import filter_trades
+from .factories import TraderFactory, UserFactory, MarketFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
 
 class TwoPlayerGame(TestCase):
      
@@ -100,18 +97,20 @@ class TwoPlayerGame(TestCase):
 
     
     def test_round_1_one_forced_moce(self):
-        market = Market.objects.create(initial_balance=5000, alpha=21.402, beta=44.2,
-                                       theta=2.0105, min_cost=11, max_cost=144, round=1)
-        marianne = Trader.objects.create(market=market, name="Marianne", balance=234)
-        klaus = Trader.objects.create(market=market, name="Klaus", balance=324)
+
+        market = MarketFactory(round=1)
+        marianne = TraderFactory(market=market, name="Marianne")
+        klaus = TraderFactory(market=market, name="Klaus", balance=324)
 
         # round zero trades
-        m0 = Trade.objects.create(trader=marianne, round=0, unit_price=2, unit_amount=4, profit=30,balance_after=5030, was_forced=False)
-        k0 = Trade.objects.create(trader=klaus, round=0,unit_price=None, unit_amount=None, profit=None, balance_after=None, was_forced=True)
+        #m0 = Trade.objects.create(trader=marianne, round=0, unit_price=2, unit_amount=4, profit=30,balance_after=5030, was_forced=False)
+        m0 = TradeFactory(trader=marianne, round=0)
+        k0 = ForcedTradeFactory(trader=klaus, round=0)
+
+        #k0 = Trade.objects.create(trader=klaus, round=0, unit_price=None, unit_amount=None, profit=None, balance_after=None, was_forced=True)
 
         # round 1 trades
-        m1= Trade.objects.create(trader=marianne, round=1, unit_price=4,
-                             unit_amount=2, profit=None, balance_after=None, was_forced=False)
+        m1= UnProcessedTradeFactory(trader=marianne, round=1)
 
         # let's assert that the trade was not forced and that the player is ready
         self.assertFalse(m1.was_forced)

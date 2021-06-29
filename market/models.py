@@ -3,6 +3,8 @@ from django.utils.crypto import get_random_string
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from decimal import Decimal
+from random import randint as random_integer
+
 
 def new_unique_market_id():
     """
@@ -61,7 +63,6 @@ class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16,)
     prod_cost = models.DecimalField(
-        default=1.00,
         max_digits=14, 
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))],
@@ -79,6 +80,16 @@ class Trader(models.Model):
                 fields=['market', 'name'], name='market_and_name_unique_together'),
         ]
     
+    def save(self, *args, **kwargs):
+        """
+        Set random productions cost before creating a new trader (not when updating an existing trader)
+        If prod cost is provided, use the provided value. 
+        """
+        if not self.id:
+            if not self.prod_cost:
+                self.prod_cost = Decimal(random_integer(int(self.market.min_cost), int(self.market.max_cost)))
+        super(Trader, self).save(*args, **kwargs)
+    
     def __str__(self):
         return f"{self.name} [{self.market.market_id}] - ${self.balance}"
 
@@ -89,12 +100,11 @@ class Trader(models.Model):
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
     unit_price = models.DecimalField(
-        default=0,
         null=True,
         max_digits=14,
         decimal_places=2,
     )
-    unit_amount = models.IntegerField(default=0, null=True)
+    unit_amount = models.IntegerField(null=True)
     round = models.IntegerField() # not always equal to trader.market.round
     was_forced = models.BooleanField(default=False) 
     demand = models.IntegerField(null=True, blank=True)

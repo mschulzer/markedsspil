@@ -3,6 +3,7 @@ from ..models import Market, Trader, Trade, RoundStat
 from django.test import Client
 from django.contrib.auth import get_user_model
 from decimal import Decimal 
+
 class MarketModelTest(TestCase):
 
     @classmethod
