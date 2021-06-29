@@ -30,25 +30,26 @@
             {% endfor %}
         </tbody>
     </table>
-    {% if num_ready_traders == 0 %}
-        <button type="button" class="btn btn-primary" disabled>
-            Finish Round
-        </button>
-    {% else %}
-        {% if num_ready_traders < traders|length %}       
-            <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
+	{% if market.game_over %}
+        {% if num_ready_traders == 0 %}
+            <button type="button" class="btn btn-primary" disabled>
                 Finish Round
             </button>
-         
         {% else %}
-            <!-- all traders area ready so show a submit button with no confirmation required -->
-            <button type="button" class="btn btn-success" onclick="next_round()">
-                Finish Round
-            </button>
+            {% if num_ready_traders < traders|length %}       
+                <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
+                    Finish Round
+                </button>
+             
+            {% else %}
+                <!-- all traders area ready so show a submit button with no confirmation required -->
+                <button type="button" class="btn btn-success" onclick="next_round()">
+                    Finish Round
+                </button>
+            {% endif %}
         {% endif %}
-    {% endif %}
-
+	{% endif %}
     <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
         {% csrf_token %}
     </form>

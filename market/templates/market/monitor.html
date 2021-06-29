@@ -7,6 +7,20 @@
     Monitoring Market: {{ market.market_id }}
 </h2>
 
+{% if market.endless == False %}
+<h3 id="round_counter">
+  Round {{market.round}} / {{market.max_rounds}}
+</h3>
+<script>
+  rounds = parseInt("{{market.round}}")+1;
+  document.getElementById("round_counter").innerHTML =
+	  "Round "
+	+ rounds.toString()
+	+ " / "
+    + "{{market.max_rounds}}";
+</script>
+{% endif %}
+
 <p>Players can join using this link:</p>
 <input type="text" value="{{ request.get_host }}{% url 'market:join' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
 <button class="btn btn-primary" onclick="copy_join_link()">Copy</button>
