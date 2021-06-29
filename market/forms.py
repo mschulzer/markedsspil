@@ -6,11 +6,13 @@ from math import floor
 class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
-        fields = ['product_name_singular','product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
+        fields = ['product_name_singular','product_name_plural', 'initial_balance', 'max_rounds', 'endless', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
             'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
             'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
             'initial_balance': ("How much money should the participants start out with?"),
+            'max_rounds': ("How many rounds should the game last for?"),
+            'endless': ("Should the game last until manually stopped?"),
             'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
             'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
             'theta':("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
@@ -27,6 +29,14 @@ class MarketForm(forms.ModelForm):
             if min_cost > max_cost:
                 raise ValidationError("Min cost can't be bigger than max cost")
         return cleaned_data
+
+    def clean_max_rounds(self):
+        """Form is invalid if max_rounds < 1"""
+        max_rounds = self.cleaned_data['max_rounds']
+
+        if max_rounds < 1:
+            raise forms.ValidationError('There must be at least 1 round')
+        return max_rounds
 
     def clean_alpha(self):
         """ Form is invalid if alpha < 0 """
