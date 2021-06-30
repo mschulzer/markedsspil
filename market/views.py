@@ -36,7 +36,7 @@ def market_edit(request, market_id):
 
     return render(request, "market/market_edit.html", context)
 
-@login_required
+# @login_required
 @require_GET
 def trader_table(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
@@ -152,9 +152,14 @@ def monitor(request, market_id):
             market=market, round=market.round, avg_price=avg_price)
 
         market.round += 1
+        if market.round == market.max_rounds:
+            market.game_over = True
         market.save()
 
-        return redirect(reverse('market:monitor', args=(market.market_id,)))
+        if market.game_over:
+            return redirect(reverse('market:game_over', args=(market.market_id,)))
+        else:
+            return redirect(reverse('market:monitor', args=(market.market_id,)))
 
 
 def play(request):
@@ -224,7 +229,10 @@ def play(request):
             messages.success(
                 request, f"You are now ready for round {market.round}!")
 
-        return render(request, 'market/play.html', context)
+        if market.game_over:
+            return redirect(reverse('market:game_over', args=(market.market_id,)))
+        else:
+            return render(request, 'market/play.html', context)
 
 
 @require_GET
@@ -234,6 +242,21 @@ def current_round(request, market_id):
         'round':market.round
     }
     return JsonResponse(data)
+
+def game_over(request, market_id):
+
+    market = get_object_or_404(Market, market_id=market_id)
+    traders = Trader.objects.filter(market=market)
+    context = {
+        'market': market,
+        'traders': traders,
+        'num_ready_traders':filter_trades(market=market, round=market.round).count(),
+        'rounds': range(market.round),
+        'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
+        'initial_balance':market.initial_balance
+    }
+
+    return render(request, 'market/game_over.html', context)
 
 """
 def download(request, market_id):
