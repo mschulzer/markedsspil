@@ -19,18 +19,15 @@ def new_unique_market_id():
 
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
-    product_name_singular = models.CharField(default="default_singular",max_length=16)
-    product_name_plural = models.CharField(default="default_plural", max_length=16)
+    product_name_singular = models.CharField(max_length=16)
+    product_name_plural = models.CharField(max_length=16)
 
-    # w/ below settings, alpha, beta and theta can't exceed 
-    initial_balance = models.DecimalField(
-        max_digits=12, 
-        decimal_places=2)
-
+    # w/ below settings, alpha, beta and theta can't be chosen bigger than 9999999999.9999 and can't be negative
+    # By specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
     alpha = models.DecimalField(
         max_digits=14, 
         decimal_places=4, 
-        validators=[MinValueValidator(Decimal('0.0000'))])
+        validators = [MinValueValidator(Decimal('0.0000'))])
 
     beta = models.DecimalField(max_digits=14, decimal_places=4, 
         validators=[MinValueValidator(Decimal('0.0000'))])
@@ -38,11 +35,18 @@ class Market(models.Model):
     theta = models.DecimalField(max_digits=14, decimal_places=4,
         validators=[MinValueValidator(Decimal('0.0000'))])
 
+    # w/ below settings, initial balance, min_cost and max_cost can't be chosen bigger than 9999999999.99
+    # min_cost and max_cost has to be positive
+    # By specifying the validators here, forms will automatically not validate with user input exceeding the chosen boundaries
+    initial_balance = models.DecimalField(
+        max_digits=12,
+        decimal_places=2)
+
     min_cost = models.DecimalField(max_digits=14, decimal_places=2, 
-        validators=[MinValueValidator(Decimal('1'))]) 
+        validators=[MinValueValidator(Decimal('0.01'))]) 
 
     max_cost = models.DecimalField(max_digits=14, decimal_places=2,
-        validators=[MinValueValidator(Decimal('1'))])
+        validators=[MinValueValidator(Decimal('0.01'))])
 
     round = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, null=True)
@@ -62,19 +66,25 @@ class Market(models.Model):
 class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16,)
+    # prod_cost is the traders prod_cost pr unit. With below settings this has to be a positive amount less 9999999999.99 
     prod_cost = models.DecimalField(
-        max_digits=14, 
+        max_digits=12, 
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))],
     )
+    # With below settings the traders balance has be numerically less 9999999999.99
+    # balance has blank=True because the balance is not chosen by the submitter of the form 
     balance = models.DecimalField(
         blank=True,
-        max_digits=14,
+        max_digits=12,
         decimal_places=2,
     )
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
+        # There can only be one trader with a given name in a given market. 
+        # Specifying the constraint here to discover bugs in code
+        # The constraint is also specified in forms.py 
         constraints = [
             models.UniqueConstraint(
                 fields=['market', 'name'], name='market_and_name_unique_together'),
@@ -94,36 +104,49 @@ class Trader(models.Model):
         return f"{self.name} [{self.market.market_id}] - ${self.balance}"
 
     def is_ready(self):
+        " A trader is 'ready' if (s)he has decided on a trade in the current round"
         has_traded_this_round = Trade.objects.filter(trader=self, round=self.market.round, was_forced=False).count() == 1     
         return has_traded_this_round
 
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
+    
+    # unit_price is the price of one product
+    # w/ below settings, the unit_price of a product can't set bigger than 9999999999.99
+    # unit price can be null because 'forced trades' have no unit_price
     unit_price = models.DecimalField(
         null=True,
-        max_digits=14,
+        max_digits=12,
         decimal_places=2,
     )
+    # unit_amount is the number of products produced
+    # unit_amount can be null, because 'forced trades' have no unit_amount
     unit_amount = models.IntegerField(null=True)
+
     round = models.IntegerField() # not always equal to trader.market.round
+    # a trade 'was-forced' if the trader did not make a trade decision in the given round. 
     was_forced = models.BooleanField(default=False) 
-    demand = models.IntegerField(null=True, blank=True)
-    units_sold = models.IntegerField(null=True, blank=True) 
+    
+    # demand, units_sold, profit and balance_after will all be set to null when a trade object is created and updated with a real value when the round is finised
+    demand = models.IntegerField(null=True)
+  
+    units_sold = models.IntegerField(null=True) 
+
     profit = models.DecimalField(
         null=True,
-        blank=True,
-        max_digits=14,
+        max_digits=12,
         decimal_places=2,
     )
     balance_after =  models.DecimalField(
         null=True,
-        blank=True,
-        max_digits=14,
+        max_digits=12,
         decimal_places=2,
     )
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     
     class Meta:
+        # There can only be one trade pr trader pr round
+        # Specifying the constraint here to discover bugs in code
         constraints = [
             models.UniqueConstraint(fields=['trader', 'round'], name='trader_and_round_unique_together'),
     ]
@@ -135,12 +158,14 @@ class Trade(models.Model):
 class RoundStat(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     round = models.IntegerField()  
-    # w/ below settings avg. can't be bigger than 9999999999.9999.  
-    # Therefore, there has to be an upper bound on choice of unit_price set by players. 
-    avg_price = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True) 
+    # w/ below settings avg. can't be bigger than 9999999999.99  
+    avg_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
+        # There can only be one stat object pr market pr round
+        # Specifying the constraint here to discover bugs in code
+
         constraints = [
             models.UniqueConstraint(
                 fields=['market', 'round'], name='market_and_round_unique_together'),

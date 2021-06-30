@@ -26,7 +26,7 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, "You succesfully updated the market. Changes will take effect from this round forward.")
+                request, "You successfully updated the market. Changes will take effect from this round forward.")
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
     
     else: # request.method = 'GET'
@@ -40,6 +40,11 @@ def market_edit(request, market_id):
 @require_GET
 def trader_table(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
+    
+    # only the user how created the market has permission to edit it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+
     traders = Trader.objects.filter(market=market)
     num_ready_traders = filter_trades(
         market=market, round=market.round).count()
@@ -110,10 +115,14 @@ def join(request):
     return render(request, 'market/join.html', {'form':form})
 
 
-
+@login_required
 def monitor(request, market_id):
-
     market = get_object_or_404(Market, market_id=market_id)
+
+    #only the user how created the market has permission to monitor it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+    
     traders = Trader.objects.filter(market=market)
     context = {
         'market': market,

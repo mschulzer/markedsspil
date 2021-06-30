@@ -46,7 +46,7 @@ def round_to_int(number):
     return round(number)
 
 class TradeFactory(factory.django.DjangoModelFactory):
-    """ Mimics a regular trade that has been processed (after host has finished round) """
+    """ Produces a regular trade that has been processed (after host has finished round) """
     class Meta:
         model = Trade
     
@@ -60,7 +60,7 @@ class TradeFactory(factory.django.DjangoModelFactory):
     round = 37
 
 class UnProcessedTradeFactory(factory.django.DjangoModelFactory):
-    """ Mimics a regular trade that has not been processed (before host has finished round) """     
+    """ Produces a regular trade that has not been processed (before host has finished round) """     
     class Meta:
         model = Trade
 
@@ -70,10 +70,14 @@ class UnProcessedTradeFactory(factory.django.DjangoModelFactory):
     round = 37
 
 class ForcedTradeFactory(factory.django.DjangoModelFactory):
+    """ 
+    Produces a forced trade 
+    Note that balance_after will be set to None by default. Sometimes balance_after should be set equal to trader.balance
+     """
     class Meta:
         model = Trade
 
     trader = factory.SubFactory(TraderFactory)
     was_forced = True
-    balance_after = Decimal(TraderFactory.balance)
+    balance_after = None
     round = 37
