@@ -40,7 +40,7 @@ def market_edit(request, market_id):
 @require_GET
 def trader_table(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
-    traders = Trader.objects.filter(market=market)
+    traders = Trader.objects.filter(market=market).order_by('-balance')
     num_ready_traders = filter_trades(
         market=market, round=market.round).count()
     context = {
