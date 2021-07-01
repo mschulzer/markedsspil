@@ -22,8 +22,8 @@ class Market(models.Model):
     product_name_singular = models.CharField(max_length=16)
     product_name_plural = models.CharField(max_length=16)
 
-    # w/ below settings, alpha, beta and theta can't be chosen bigger than 9999999999.9999 and can't be negative
-    # By specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
+    # w/ below settings, alpha, beta and theta has to be positive numbers <= 9999999999.9999
+    # When specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
     alpha = models.DecimalField(
         max_digits=14, 
         decimal_places=4, 
@@ -35,9 +35,8 @@ class Market(models.Model):
     theta = models.DecimalField(max_digits=14, decimal_places=4,
         validators=[MinValueValidator(Decimal('0.0000'))])
 
-    # w/ below settings, initial balance, min_cost and max_cost can't be chosen bigger than 9999999999.99
+    # w/ below settings, initial balance, min_cost and max_cost has to be <= 9999999999.99
     # min_cost and max_cost has to be positive
-    # By specifying the validators here, forms will automatically not validate with user input exceeding the chosen boundaries
     initial_balance = models.DecimalField(
         max_digits=12,
         decimal_places=2)
@@ -66,16 +65,14 @@ class Market(models.Model):
 class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     name = models.CharField(max_length=16,)
-    # prod_cost is the traders prod_cost pr unit. With below settings this has to be a positive amount less 9999999999.99 
+    # w/ below settings a trader's production cost pr unit has to be a positive amount <= 9999999999.99 
     prod_cost = models.DecimalField(
         max_digits=12, 
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))],
     )
-    # With below settings the traders balance has be numerically less 9999999999.99
-    # balance has blank=True because the balance is not chosen by the submitter of the form 
+    # w/ below settings a trader's balance has be numerically <= 9999999999.99
     balance = models.DecimalField(
-        blank=True,
         max_digits=12,
         decimal_places=2,
     )
@@ -83,7 +80,7 @@ class Trader(models.Model):
 
     class Meta:
         # There can only be one trader with a given name in a given market. 
-        # Specifying the constraint here to discover bugs in code
+        # Specifying the constraint here to discover bugs in code during development
         # The constraint is also specified in forms.py 
         constraints = [
             models.UniqueConstraint(
@@ -111,8 +108,7 @@ class Trader(models.Model):
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
     
-    # unit_price is the price of one product
-    # w/ below settings, the unit_price of a product can't set bigger than 9999999999.99
+    # w/ below settings, the unit_price can't set bigger than 9999999999.99
     # unit price can be null because 'forced trades' have no unit_price
     unit_price = models.DecimalField(
         null=True,
@@ -127,7 +123,8 @@ class Trade(models.Model):
     # a trade 'was-forced' if the trader did not make a trade decision in the given round. 
     was_forced = models.BooleanField(default=False) 
     
-    # demand, units_sold, profit and balance_after will all be set to null when a trade object is created and updated with a real value when the round is finised
+    # demand, units_sold, profit and balance_after will all be set to null when a trade object is created and
+    # updated with a real value when the round is finished
     demand = models.IntegerField(null=True)
   
     units_sold = models.IntegerField(null=True) 
@@ -146,7 +143,7 @@ class Trade(models.Model):
     
     class Meta:
         # There can only be one trade pr trader pr round
-        # Specifying the constraint here to discover bugs in code
+        # Specifying the constraint here to discover bugs in code during development
         constraints = [
             models.UniqueConstraint(fields=['trader', 'round'], name='trader_and_round_unique_together'),
     ]
@@ -158,13 +155,13 @@ class Trade(models.Model):
 class RoundStat(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
     round = models.IntegerField()  
-    # w/ below settings avg. can't be bigger than 9999999999.99  
+    # w/ below settings avg. price can't be bigger than 9999999999.99  
     avg_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         # There can only be one stat object pr market pr round
-        # Specifying the constraint here to discover bugs in code
+        # Specifying the constraint here to discover bugs in code during development
 
         constraints = [
             models.UniqueConstraint(
