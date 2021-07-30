@@ -7,14 +7,19 @@ class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
         fields = ['product_name_singular','product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
+        widgets = {
+            'initial_balance': forms.NumberInput(attrs={'step': 1}),
+            'min_cost': forms.NumberInput(attrs={'step': 1}),
+            'max_cost': forms.NumberInput(attrs={'step': 1})
+        }
         help_texts = {
             'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
             'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
             'initial_balance': ("How much money should the participants start out with?"),
             'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
             'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
-            'theta':("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
-            'min_cost':("What are the minimal production costs for one unit of the product?"),
+            'theta': ("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
+            'min_cost': ("What are the minimal production costs for one unit of the product?"),
             'max_cost': ("What are the maximal production costs for one unit of the product?")
         }
 
@@ -27,51 +32,7 @@ class MarketForm(forms.ModelForm):
             if min_cost > max_cost:
                 raise ValidationError("Min cost can't be bigger than max cost")
         return cleaned_data
-
-    def clean_alpha(self):
-        """ Form is invalid if alpha < 0 """
-        alpha = self.cleaned_data['alpha']
-
-        if alpha < 0:
-            raise forms.ValidationError('Alpha should be non-negative for market to make sense')
-        return alpha
-
-    def clean_beta(self):
-        """ Form is invalid if beta < 0 """
-        beta = self.cleaned_data['beta']
-
-        if beta < 0:
-            raise forms.ValidationError('Beta should be non-negative for market to make sense')
-        return beta
-
-    def clean_theta(self):
-        """ Form is invalid if beta < 0 """
-        theta = self.cleaned_data['theta']
-
-        if theta < 0:
-            raise forms.ValidationError(
-                'Theta should be non-negative for market to make sense')
-        return theta
-
-    def clean_min_cost(self):
-        """ Mininimal production cost should be greater than 0 """
-        min_cost = self.cleaned_data['min_cost']
-
-        if min_cost <= 0:
-            raise forms.ValidationError(
-                'Min cost should be greater than 0')
-        return min_cost
-
-
-    def clean_max_cost(self):
-        """ Maximal production cost should be greater than 0 """
-        max_cost = self.cleaned_data['max_cost']
-
-        if max_cost <= 0:
-            raise forms.ValidationError(
-                'Max cost should be greater than 0')
-        return max_cost
-
+    
 class MarketUpdateForm(MarketForm):
     
     class Meta(MarketForm.Meta):
@@ -85,9 +46,6 @@ class TraderForm(forms.ModelForm):
         fields = ['name']
         labels = {
             'name': ('Name'),
-        }
-        help_texts = {
-            'name': ('The name you choose here will be visible in the scoreboard for the participant in this market'),
         }
 
     def clean_market_id(self):
@@ -119,7 +77,7 @@ class TradeForm(forms.ModelForm):
         model = Trade
         fields = ['unit_price', 'unit_amount']
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':1}),
+            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':0.1}),
             'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':1}),
         }
         labels = {
@@ -145,5 +103,5 @@ class TradeForm(forms.ModelForm):
                 max_unit_amount = 10000  # this number is arbitrary
 
             self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount 
-            self.fields['unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost} kr.)"
+            self.fields['unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost})"
             self.fields['unit_amount'].help_text = f"How many {trader.market.product_name_plural} do you want to produce?"

@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonRespons
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
-from random import randint
+from random import randint as random_integer
 from .models import Market, Trader, Trade, RoundStat
 from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
+from decimal import Decimal
 
 @login_required
 def market_edit(request, market_id):
@@ -86,7 +87,7 @@ def join(request):
 
             new_trader = form.save(commit=False)
             new_trader.market = market
-            new_trader.prod_cost = randint(market.min_cost, market.max_cost)
+            new_trader.prod_cost = random_integer(int(market.min_cost), int(market.max_cost))
             new_trader.balance = market.initial_balance
             new_trader.save()
 
@@ -180,6 +181,7 @@ def play(request):
         form = TradeForm(trader)
         trades = Trade.objects.filter(trader=trader)
         round_stats = RoundStat.objects.filter(market=market)
+
         context = {
             'market': market,
             'trader':trader,
@@ -199,13 +201,13 @@ def play(request):
             'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
 
             # context for price graph
-            'data_price_json': json.dumps([trade.unit_price for trade in trades]),
-            'data_prod_cost_json': json.dumps([trader.prod_cost for _ in trades]),
+            'data_price_json': json.dumps([float(trade.unit_price) if trade.unit_price else None for trade in trades]),
+            'data_prod_cost_json': json.dumps([float(trader.prod_cost) for _ in trades]),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
  
             #context for balance graph
             'balance_labels' : json.dumps(list(range(-1, market.round))),
-            'data_balance_json': json.dumps([trader.market.initial_balance] + [trade.balance_after for trade in trades]),
+            'data_balance_json': json.dumps([float(trader.market.initial_balance)] + [float(trade.balance_after) if trade.balance_after else None for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():
@@ -213,7 +215,7 @@ def play(request):
 
         elif market.round > 0:
             last_trade = trades.get(round=market.round -1)
-            if type(last_trade.profit) is int:
+            if type(last_trade.profit) is Decimal:
                 context['show_last_round_data'] = True
 
 

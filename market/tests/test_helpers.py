@@ -3,30 +3,31 @@ from ..models import Market, Trader, Trade
 from ..helpers import create_forced_trade, filter_trades, process_trade
 from decimal import Decimal
 from math import floor
+from decimal import Decimal 
 
 class TestProcessTrade(TestCase):
 
     def test_trade_fields_calculated_and_saved_properly(self):
-        market = Market.objects.create(initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1, max_cost=4)
+        market = Market.objects.create(initial_balance=20, alpha=100.3, beta=3.4, theta=4.5, min_cost=1.00, max_cost=4.00)
         market.refresh_from_db()
         alpha, beta, theta = market.alpha, market.beta, market.theta
 
-        trader = Trader.objects.create(market=market, balance=20, prod_cost=70)
-
-        avg_price = 14.5
+        trader = Trader.objects.create(market=market, balance=20.00, prod_cost=70.00)
+        trader.refresh_from_db()
+        avg_price = Decimal('14.50')
         trade = Trade.objects.create(
-            trader=trader, round=0, unit_price=12, unit_amount=100)
-        
+             trader=trader, round=0, unit_price=12, unit_amount=100)
+        trade.refresh_from_db()
         expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
-            market, trade, avg_price)
+             market, trade, avg_price)
 
         # test calculations
-        expected_expenses = 7000 
+        expected_expenses = Decimal('7000.00') 
         expected_raw_demand = 124.75  
         expected_demand = 125  
-        expected_units_sold = 100  
-        expected_income = 1200
-        expected_profit = - 5800
+        expected_units_sold = 100.00  
+        expected_income = Decimal('1200.00')
+        expected_profit = Decimal('-5800.00')
         self.assertEqual(expenses, expected_expenses)
         self.assertEqual(expected_raw_demand, raw_demand)
         self.assertEqual(demand, expected_demand)
@@ -34,38 +35,38 @@ class TestProcessTrade(TestCase):
         self.assertEqual(income, expected_income)
         self.assertEqual(trade_profit, expected_profit)
 
-        # test object updates
+        # # test object updates
         trader.refresh_from_db()
         trade.refresh_from_db()
 
-        self.assertEqual(trader.balance, - 5780)
-        self.assertEqual(trade.profit, -5800)
-        self.assertEqual(trade.balance_after, -5780)
+        self.assertEqual(trader.balance, Decimal('-5780.00'))
+        self.assertEqual(trade.profit, Decimal('-5800.00'))
+        self.assertEqual(trade.balance_after, Decimal('-5780.00'))
 
     def test_trade_fields_calculated_and_saved_properly_weird_values(self):
         """
         trade values are being calculated correctly in a case, where the raw demand is negative
         """
-        market = Market.objects.create(initial_balance=40, alpha=0, beta=23233.4, theta=999, min_cost=2, max_cost=10)
-        market.refresh_from_db()
+        market = Market.objects.create(initial_balance=40.00, alpha=0, beta=23233.4, theta=999, min_cost=2.00, max_cost=10.00)
         alpha, beta, theta = market.alpha, market.beta, market.theta
+        market.refresh_from_db()
 
         trader = Trader.objects.create(market=market, balance=-120, prod_cost=5)
-
-        avg_price = 143234.223
+        trader.refresh_from_db()
+        avg_price = Decimal('143234.22')
         trade = Trade.objects.create(
-            trader=trader, round=0, unit_price=12234, unit_amount=22)
-
+            trader=trader, round=0, unit_price=12234.00, unit_amount=22)
+        trade.refresh_from_db()
         expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
             market, trade, avg_price)
-
+        
         # test calculations
-        expected_expenses = 110 
-        expected_raw_demand = -141146426.823  
+        expected_expenses = Decimal('110.00') 
+        expected_raw_demand = Decimal('-141146429.820000')
         expected_demand = 0  
         expected_units_sold = 0 
-        expected_income = 0 
-        expected_profit = - 110 
+        expected_income = Decimal('0.00') 
+        expected_profit = Decimal('-110.00')
         self.assertEqual(expenses, expected_expenses)
         self.assertEqual(expected_raw_demand, raw_demand)
         self.assertEqual(demand, expected_demand)
@@ -73,12 +74,13 @@ class TestProcessTrade(TestCase):
         self.assertEqual(income, expected_income)
         self.assertEqual(trade_profit, expected_profit)
 
-        # test object updates
+        # # test object updates
         trader.refresh_from_db()
         trade.refresh_from_db()
-        self.assertEqual(trader.balance, -230)
-        self.assertEqual(trade.profit, -110)
-        self.assertEqual(trade.balance_after, -230)
+        self.assertEqual(trader.balance, Decimal('-230.00'))
+        self.assertEqual(trade.profit, Decimal('-110.00'))
+        self.assertEqual(trade.balance_after, Decimal('-230.00'))
+        
 
 
 class TestCreateForcedTrade(TestCase):

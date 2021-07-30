@@ -38,9 +38,9 @@ class MarketFormTest(TestCase):
         self.assertFalse('beta' in form.errors)
 
 
-    def test_alpha_with_bigger_than_999999_is_invalid(self):
-        """ alpha, beta and theta can't be bigger than 999999.9999 """
-        data = {'product_name_singular': 'baguette', 'product_name_plural': 'baguettes', 'initial_balance': 3000, 'alpha': 1000000, 'beta': 5.0334,
+    def test_alpha_with_bigger_than_9999999999_is_invalid(self):
+        """ alpha, beta and theta can't be bigger than 9999999999.9999 """
+        data = {'product_name_singular': 'baguette', 'product_name_plural': 'baguettes', 'initial_balance': 3000, 'alpha': 108880000000000, 'beta': 5.0334,
                                  'theta': 3.4432, 'min_cost': 3, 'max_cost': 6}
         form = MarketForm(data=data)
 
@@ -48,23 +48,15 @@ class MarketFormTest(TestCase):
 
         self.assertFalse(is_valid)
         self.assertTrue('alpha' in form.errors)
-        self.assertTrue('Der må maksimalt være 6 cifre før kommaet.' in str(form.errors))
+        self.assertFalse('beta' in form.errors)
+
+        self.assertTrue(
+            'Der må maksimalt være 14 cifre i alt.' in str(form.errors))
 
 
-    def test_non_integer_min_cost_is_invalid(self):
-        """ min_cost and max_cost have to be integer values """
-        data = {'product_name_singular': 'baguette', 'product_name_plural': 'baguettes', 'initial_balance': 3000, 'alpha': 3231.200, 'beta': 5.0334,
-                'theta': 3.4432, 'min_cost': 3.4, 'max_cost': 6}
-        form = MarketForm(data=data)
 
-        is_valid = form.is_valid()
-
-        self.assertFalse(is_valid)
-        self.assertTrue('min_cost' in form.errors)
-        self.assertTrue('Indtast et heltal.' in str(form.errors))
-
-    def test_negative_min_cost_is_invalid(self):
-        """ minimal production cost has to be non-negative """
+    def test_min_cost_must_be_positive(self):
+        """ minimal production cost has to positive """
         data = {'product_name_singular': 'baguette', 'product_name_plural': 'baguettes', 'alpha': 3231.200, 'beta': 5.0334,
                 'theta': 3.4432, 'min_cost': -3, 'max_cost': 6}
         form = MarketForm(data=data)
@@ -74,7 +66,7 @@ class MarketFormTest(TestCase):
         self.assertFalse(is_valid)
         self.assertTrue('min_cost' in form.errors)
         self.assertTrue(
-            'Denne værdi skal være større end eller lig 0.' in form.errors['min_cost'])
+            'Denne værdi skal være større end eller lig 1.' in form.errors['min_cost'])
 
     def test_zero_min_cost_is_invalid(self):
         """ min cost can't be zero """
@@ -144,6 +136,7 @@ class MarketFormTest(TestCase):
         self.assertTrue('theta' in form.errors)
         self.assertTrue('min_cost' in form.errors)
         self.assertTrue('max_cost' in form.errors)
+        self.assertTrue('initial_balance' in form.errors)
 
     def test_alpha_negative_is_invalid(self):
         """ alpha can't be negative """
@@ -159,7 +152,7 @@ class MarketFormTest(TestCase):
         self.assertTrue('beta' not in form.errors)
       
     def test_beta_negative_is_invalid(self):
-        """ alpha can't be negative """
+        """ beta can't be negative """
         data = {'product_name_singular':'baguette', 'product_name_plural':'baguettes', 'alpha': 3, 'beta': -0.13, 'theta': 3.21, 'min_cost':3, 'max_cost':13}
 
         form = MarketForm(data=data)
@@ -171,7 +164,7 @@ class MarketFormTest(TestCase):
 
 
     def test_theta_negative_is_invalid(self):
-        """ alpha can't be negative """
+        """ theta can't be negative """
         data = {'product_name_singular': 'baguette', 'product_name_plural': 'baguettes', 'alpha': 0, 'beta': 3, 'theta': -1234,
                 'min_cost': 3, 'max_cost': 13}
 

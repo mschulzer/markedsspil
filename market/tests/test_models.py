@@ -2,7 +2,7 @@ from django.test import TestCase
 from ..models import Market, Trader, Trade, RoundStat
 from django.test import Client
 from django.contrib.auth import get_user_model
-
+from decimal import Decimal 
 class MarketModelTest(TestCase):
 
     @classmethod
@@ -14,21 +14,30 @@ class MarketModelTest(TestCase):
             password='testpass123',
         )
         cls.market = Market.objects.create(
-            initial_balance='4000',
-            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, created_by=cls.test_user)
+            initial_balance=4000.123123,
+            alpha=102.20341111,
+            beta=304.50035, 
+            theta=14.1234, 
+            min_cost=6, 
+            max_cost=20.13, 
+            product_name_singular="x",
+            product_name_plural='xs',
+            created_by=cls.test_user)
 
     
     def test_saving_markets(self):
         saved_markets = Market.objects.all()
         self.assertEqual(saved_markets.count(), 1)
-        self.assertIsInstance(self.market, Market)
-        self.assertEqual(self.market.alpha, 102.2034)
-        self.assertEqual(self.market.beta, 304.5003)
-        self.assertEqual(self.market.theta, 14.1234)
-        self.assertEqual(self.market.min_cost, 6)
-        self.assertEqual(self.market.max_cost, 20)
-        self.assertEqual(self.market.round, 0)
-        self.assertEqual(self.market.created_by, self.test_user)
+        market = saved_markets.first()
+        self.assertIsInstance(market, Market)
+        self.assertEqual(market.alpha, Decimal('102.2034'))
+        self.assertEqual(market.beta, Decimal('304.5004'))
+        self.assertEqual(market.theta, Decimal('14.1234'))
+        self.assertEqual(market.min_cost, Decimal('6.00'))
+        self.assertEqual(market.max_cost, Decimal('20.13'))
+        self.assertEqual(market.round, 0)
+        self.assertEqual(market.initial_balance, Decimal('4000.12'))
+        self.assertEqual(market.created_by, self.test_user)
 
     def test_market_id_is_good(self):
         self.assertEqual(len(self.market.market_id), 8)
@@ -42,59 +51,10 @@ class MarketModelTest(TestCase):
         self.assertEqual(Market.objects.all().count(), 1)
 
     def test_object_name(self):
-        expected_object_name = f"{self.market.market_id}[0]:102.2034,304.5003,14.1234"
-        self.assertEqual(str(self.market), expected_object_name)
-
-    def test_alpha_will_be_saved_with_max_4_decimals(self):
-        """ alpha is defined in the model have 4 decimal places """
-        market = Market.objects.create(
-            initial_balance='4000',
-            alpha=0.11112222, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
-        market.refresh_from_db()
-        self.assertEqual(float(market.alpha), 0.1111)
-
-    def test_alpha_will_be_saved_with_max_4_decimals_test_2(self):
-        """ alpha is defined in the model have 4 decimal places """
-        market = Market.objects.create(
-            initial_balance='4000',
-            alpha=0.11118, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
-        market.refresh_from_db()
-        self.assertEqual(float(market.alpha), 0.1112)
-
-
-    def test_alpha_will_be_saved_with_max_4_decimals_test_3(self):
-        """ alpha is defined in the model have 4 decimal places """
-        market = Market.objects.create(
-            initial_balance='4000',
-            alpha=23.1111111, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
-        market.refresh_from_db()
-        self.assertEqual(float(market.alpha), 23.1111)
-
-    def test_alpha_max_num_digits_test_1(self):
-        """ 
-        Max_num_digits is set to 10 & decimalplaces to 4. 
-        This means that 999999.9999 is the largest value of alpha, we can save
-        """
-        market = Market.objects.create(
-            initial_balance='4000',
-            alpha=999999.999912, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
-        market.refresh_from_db()
-        self.assertEqual(float(market.alpha), 999999.9999)
-
-
-    def test_alpha_max_num_digits_test_1(self):
-        """ 
-        Max_num_digits is set to 10 & decimalplaces to 4. 
-        Trying to set alpha to one million ill through an error
-        """
-        try:
-            market = Market.objects.create(alpha=1000000)
-            market.refresh_from_db()
-            error_message = "no error"
-        except:
-            error_message = "above was not possible"
-        finally:
-            self.assertEqual(error_message, "above was not possible")
+        expected_object_name = f"{self.market.market_id}[0]:102.2034,304.5004,14.1234"
+        market = Market.objects.first()
+        self.assertEqual(str(market), expected_object_name)
+ 
 
 
 class TraderModelTest(TestCase):
@@ -102,20 +62,23 @@ class TraderModelTest(TestCase):
     @classmethod
     def setUp(self):
         self.market = Market.objects.create(
-            initial_balance='4000',
-            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20)
+            initial_balance='4000.12',
+            alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6.01, max_cost=20.23)
 
+        self.market = Market.objects.first()
         self.trader = Trader.objects.create(
-            market=self.market, name='Stefan', prod_cost=2, balance=4000)
-
+            market=self.market, name='Stefan', prod_cost=20.23, balance=4000.12)
+        self.trader = Trader.objects.first()
+        
     def test_saving_traders(self):
+
         saved_traders = Trader.objects.all()
         self.assertEqual(saved_traders.count(), 1)
         self.assertIsInstance(self.trader, Trader)
         self.assertEqual(self.trader.market, self.market)
         self.assertEqual(self.trader.name, 'Stefan')
-        self.assertEqual(self.trader.prod_cost, 2)
-        self.assertEqual(self.trader.balance, 4000)
+        self.assertEqual(self.trader.prod_cost, Decimal('20.23'))
+        self.assertEqual(self.trader.balance, Decimal('4000.12'))
 
                
     def test_object_name(self):  
@@ -131,7 +94,10 @@ class TraderModelTest(TestCase):
 
     def test_is_ready_is_no_longer_true(self):
         Trade.objects.create(trader=self.trader, round=self.trader.market.round)
-        self.market.round += 1
+        self.market.round = 17
+        self.market.save()
+        self.market.refresh_from_db()
+        self.trader.refresh_from_db()
         self.assertFalse(self.trader.is_ready())      
 
 class TradeModelTest(TestCase):
@@ -180,19 +146,19 @@ class TradeModelTest(TestCase):
         trade.balance_after = 400
         trade.save()
 
-
+from decimal import Decimal 
 class TestRoundStatModel(TestCase):
 
     def test_object_creation_and_name(self):
         market = Market.objects.create(
             initial_balance='4000',
             alpha=102.2034, beta=304.5003, theta=14.1234, min_cost=6, max_cost=20, round=5)
-        roundstat = RoundStat.objects.create(market=market, round=3, avg_price=34.343) 
+        roundstat = RoundStat.objects.create(market=market, round=3, avg_price=34.3433) 
         r1 = RoundStat.objects.first()
         self.assertIsInstance(r1, RoundStat)
         self.assertEqual(r1.market, market)
         self.assertEqual(r1.round, 3)
-        self.assertEqual(float(r1.avg_price), 34.343)
+        self.assertEqual(r1.avg_price, Decimal('34.34'))
         self.assertEqual(str(r1), f"{market.market_id}[3]")
 
 
