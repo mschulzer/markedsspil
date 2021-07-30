@@ -4,7 +4,6 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonRespons
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
-from random import randint as random_integer
 from .models import Market, Trader, Trade, RoundStat
 from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
@@ -27,7 +26,7 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, "You succesfully updated the market. Changes will take effect from this round forward.")
+                request, "You successfully updated the market. Changes will take effect from this round forward.")
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
     
     else: # request.method = 'GET'
@@ -41,6 +40,11 @@ def market_edit(request, market_id):
 @require_GET
 def trader_table(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
+    
+    # only the user how created the market has permission to edit it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+
     traders = Trader.objects.filter(market=market)
     num_ready_traders = filter_trades(
         market=market, round=market.round).count()
@@ -87,7 +91,6 @@ def join(request):
 
             new_trader = form.save(commit=False)
             new_trader.market = market
-            new_trader.prod_cost = random_integer(int(market.min_cost), int(market.max_cost))
             new_trader.balance = market.initial_balance
             new_trader.save()
 
@@ -112,10 +115,14 @@ def join(request):
     return render(request, 'market/join.html', {'form':form})
 
 
-
+@login_required
 def monitor(request, market_id):
-
     market = get_object_or_404(Market, market_id=market_id)
+
+    #only the user how created the market has permission to monitor it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+    
     traders = Trader.objects.filter(market=market)
     context = {
         'market': market,
