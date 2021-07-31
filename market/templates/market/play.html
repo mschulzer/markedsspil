@@ -1,8 +1,9 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
 {% load custom_tags %}
+{% load i18n %}
 
-{% block title %}Play{% endblock %}
+{% block title %}{% translate 'Title_Play' %}{% endblock %}
 
 {% block content %}
     <style>
@@ -13,24 +14,32 @@
         }
     </style>
 
-    <p class="pt-3 p-2" >    
-        {% if show_last_round_data %}
-            Last round you produced <b>{{ trades.last.unit_amount }}</b> and sold
-            <b>{{ trades.last.units_sold }}</b>
-           {{ market.product_name_plural}}. The demand was <b>{{ trades.last.demand }}</b>. Your price was
-           <b>{{ trades.last.unit_price}} </b>kr. and the
+    <p class="pt-3 p-2" >
+      {% if show_last_round_data %}
+	    {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+            Last round you produced <b>{{ lastRoundUnits }}</b> and sold
+            <b>{{ lastRoundSold }}</b>
+           {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
+           <b>{{ lastRoundPrice }} </b>kr. and the
             market
-            average price was <b>{{ round_stats.all.last.avg_price | floatformat:1 }}</b> kr.<br class="hide-when-small">
-            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr. 
+           average price was <b>{{ lastRoundAvgPrice | floatformat:1 }}</b> kr.<br class="hide-when-small">
+		   {% endblocktranslate %}
+		   {% blocktranslate %}
+           Your profit was
+		   {% endblocktranslate %}
+		   {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
         {% endif %}
-            Your current balance is <b style="color:green">{{ trader.balance }}</b> kr.
-        <br>
+
+	  {% blocktranslate with balance=trader.balance %}
+		Your current balance is <b style="color:green">{{ balance }}</b> kr.
+	  {% endblocktranslate %}
+	   <br>
     </p>
 
 {% if not wait %}
     <div class="card mb-4">
         <div class="card-header">
-        Make your next trade
+         {% translate 'MakeNextTrade' %}
         </div>
         <div class="card-body">
             <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>
@@ -44,18 +53,18 @@
             <div class="d-flex justify-content-center">
                 <ul class="text-secondary">
                     <li>
-                        Total production costs: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
+                        {% translate 'Play_TotalProdCost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
                     </li>
                     <li>
-                        Balance after production: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
+                        {% translate 'Play_BalanceAfterProd' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
                     </li>
                     <li>
-                        Income (all units sold): <span id="income_best_case_formula"></span><b id="income_best_case"></b>
+                        {% translate 'Play_IncomeAllSold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
                     </li>
                     <li>
-                        Profit (all units sold): <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
+                        {% translate 'Play_ProfitAllSold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
                     </li>
-                    <li>Profit (no units sold): <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
+                    <li>{% translate 'Play_ProfitNoneSold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
                     </li>
                 </ul>
             </div>
@@ -72,7 +81,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                         data-target="#collapsePrice" aria-expanded="false" aria-controls="collapseOne">
-                        Price History Graph
+                        {% translate 'PriceHistoryGraph' %}
                     </button>
                 </h2>
             </div>
@@ -90,7 +99,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
                         data-target="#collapseProduction" aria-expanded="true" aria-controls="collapseTwo">
-                        Production History Graph
+                        {% translate 'ProductionHistoryGraph' %}
                     </button>
                 </h2>
             </div>
@@ -108,7 +117,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                         data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseOne">
-                        Balance History Graph
+                        {% translate 'BalanceHistoryGraph' %}
                     </button>
                 </h2>
             </div>
@@ -263,14 +272,13 @@
 </script>
 
 {% if not wait %}
-<script>    
+<script>
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
     var amount_label = labels[1]
     
     var amount_slider = document.getElementById("id_unit_amount");
     var price_slider = document.getElementById("id_unit_price");
-
     {% if show_last_round_data %}
         amount_slider.value = "{{ trades.last.unit_amount }}"
         price_slider.value = "{{ trades.last.unit_price }}"
@@ -287,12 +295,14 @@
     // only show calculations when screen width is bigger than this number
     const show_formula_breakpoint = 490;
 
-    function set_price_label(){
-        price_label.innerHTML = "Unit Price: " + price_slider.value + " kr."; 
+  function set_price_label(){
+	  console.log(price_label.innerHTML);
+        //price_label.innerHTML = "Unit Price: " + price_slider.value + " kr."; 
     }
     
-    function set_amount_label(){
-        amount_label.innerHTML = "Amount: " + amount_slider.value;
+  function set_amount_label(){
+	  console.log(price_label.innerHTML);
+        //amount_label.innerHTML = "Amount: " + amount_slider.value;
     }
     
     function set_total_cost(){

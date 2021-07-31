@@ -1,27 +1,27 @@
 {% extends "market/base.html" %}
-{% block title %}My Markets{% endblock %}
+{% block title %}{% translate 'Title_MyMarkets' %}{% endblock %}
 {% block content %}
 
 <br>
 
 <h2>
-    Your Markets
+    {% translate 'YourMarkets' %}
 </h2>
 {% if markets %}
     <table class="table table-striped table-responsive">
         <thead>
             <tr>
-                <th>Created by</th>
-                <th>Created at</th>
-                <th>ID</th>
-                <th>Product name</th>
-                <th>Initial balance</th>
-                <th>alpha</th>
-                <th>beta</th>
-                <th>theta</th>
-                <th>min prod.cost</th>
-                <th>max prod.cost</th>
-                <th>Revisit</th>
+                <th>{% translate 'MarketData_CreatedBy' %}</th>
+                <th>{% translate 'MarketData_CreatedAt' %}</th>
+                <th>{% translate 'MarketData_ID' %}</th>
+                <th>{% translate 'MarketData_ProductName' %}</th>
+                <th>{% translate 'MarketData_InitBalance' %}</th>
+                <th>{% translate 'MarketData_Alpha' %}</th>
+                <th>{% translate 'MarketData_Beta' %}</th>
+                <th>{% translate 'MarketData_Theta' %}</th>
+                <th>{% translate 'MarketData_MinProdCost' %}</th>
+                <th>{% translate 'MarketData_MaxProdCost' %}</th>
+                <th>{% translate 'MarketData_Revisit' %}</th>
             </tr>
         </thead>
         {% for market in markets %}
@@ -45,6 +45,6 @@
     </table>
 
 {% else %}
-    <p>You have not created any markets yet</p>
+    <p>{% translate 'NoMarkets' %}</p>
 {% endif %}
 {% endblock %}

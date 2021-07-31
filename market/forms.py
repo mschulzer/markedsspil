@@ -1,12 +1,13 @@
 from django import forms
 from .models import Market, Trade, Trader
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 from math import floor
 
 class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
-        fields = ['product_name_singular','product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
+        fields = ['product_name_singular', 'product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
             'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
             'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
@@ -16,6 +17,9 @@ class MarketForm(forms.ModelForm):
             'theta':("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
             'min_cost':("What are the minimal production costs for one unit of the product?"),
             'max_cost': ("What are the maximal production costs for one unit of the product?")
+        }
+        labels = {
+            'product_name_singluar': 'produktnavn (ental)'
         }
 
     def clean(self):
@@ -117,14 +121,14 @@ class TraderForm(forms.ModelForm):
 class TradeForm(forms.ModelForm):
     class Meta:
         model = Trade
-        fields = ['unit_price', 'unit_amount']
+        fields = ('unit_price', 'unit_amount')
         widgets = {
             'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':1}),
             'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':1}),
         }
         labels = {
-            'unit_price': ('Price: '),
-            'unit_amount': ('Amount: ')
+            'unit_price': _('Price')+': ',
+            'unit_amount': _('Amount')+': '
         }
         help_texts = {
             'unit_amount': ('How many units do you want to produce?'),
@@ -136,14 +140,14 @@ class TradeForm(forms.ModelForm):
         if trader:
             # traders can set the price of a product up to 5 times market's maximal prod cost
             self.fields['unit_price'].widget.attrs['max'] = 5 * \
-                trader.market.max_cost  
+                trader.market.max_cost
 
             # make sure, trader can't choose to produce an amount of units, he can't afford
-            if trader.prod_cost > 0:  
+            if trader.prod_cost > 0:
                 max_unit_amount = floor((trader.balance/trader.prod_cost))
             else:  # if prod_cost is 0 (this is currently not allowed to happen) 
                 max_unit_amount = 10000  # this number is arbitrary
 
             self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount 
-            self.fields['unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost} kr.)"
+            self.fields['unit_price'].help_text = f"Set a price for uno {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost} kr.)"
             self.fields['unit_amount'].help_text = f"How many {trader.market.product_name_plural} do you want to produce?"

@@ -1,0 +1,365 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-07-30 17:09+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: forms.py:130
+msgid "Price"
+msgstr "Pris"
+
+#: forms.py:131
+msgid "Amount"
+msgstr "Antal produkter"
+
+#: templates/market/base.html:10 templates/market/base.html:20
+msgid "MainTitle"
+msgstr ""
+
+#: templates/market/base.html:26
+msgid "Home"
+msgstr "Hjem"
+
+#: templates/market/base.html:27
+msgid "Current"
+msgstr "Nuværende"
+
+#: templates/market/base.html:40
+msgid "MyMarkets"
+msgstr "Mine markeder"
+
+#: templates/market/create.html:5
+msgid "Title_Create"
+msgstr "Opret nyt marked"
+
+#: templates/market/create.html:9
+msgid "CreateMarketTitle"
+msgstr "Opret et nyt marked"
+
+#: templates/market/create.html:10
+msgid "ChooseMarketCreation"
+msgstr "Vælg et prædefineret scenarie, eller lav et brugerdefineret marked."
+
+#: templates/market/create.html:14
+msgid "PredefinedScenarios"
+msgstr "Prædefinerede scenarier"
+
+#: templates/market/create.html:18
+msgid "SelectScenario"
+msgstr "Vælg scenarie (se/rediger detaljer herunder)"
+
+#: templates/market/create.html:35
+msgid "MarketDetails"
+msgstr "Markedsoplysninger"
+
+#: templates/market/home.html:5
+msgid "Title_Home"
+msgstr "Hjem"
+
+#: templates/market/home.html:9
+msgid "Greetings"
+msgstr "Velkommen til Markedsspillet!"
+
+#: templates/market/home.html:14
+#, python-format
+msgid ""
+"\n"
+"You are currently participating in the market\n"
+"<b>%(market_id)s</b>\n"
+"with the trader name\n"
+"<b>%(username)s</b>.\n"
+msgstr ""
+
+#: templates/market/home.html:21
+msgid "ReturnToMarket1"
+msgstr "Vend tilbage til dette marked?"
+
+#: templates/market/home.html:22
+msgid "ReturnToMarket2"
+msgstr "Fortsæt"
+
+#: templates/market/home.html:30
+msgid "JoinMarketOption"
+msgstr "Tilslut dig et marked"
+
+#: templates/market/home.html:35
+msgid "CreateMarketOption"
+msgstr "Opret et nyt marked"
+
+#: templates/market/home.html:40
+msgid "RevisitMarketOption"
+msgstr "Vend tilbage til et af dine tidligere markeder"
+
+#: templates/market/join.html:5
+msgid "Title_Join"
+msgstr "Deltag"
+
+#: templates/market/join.html:10
+msgid "NameAndJoin"
+msgstr "Vælg et brugernavn og tilslut dig et marked"
+
+#: templates/market/join.html:21
+msgid "PleaseNote"
+msgstr "Bemærk"
+
+#: templates/market/join.html:22
+#, python-format
+msgid ""
+"\n"
+"<p>\n"
+"You've already joined the market\n"
+"<b>%(market_id)s</b>\n"
+"with the username\n"
+"<b>%(username)s</b>.\n"
+"If you use the above form, you will loose access to your data from this "
+"market...\n"
+"</p>\n"
+"<p>Keep playing on<b>%(market_id)s</b>?\n"
+msgstr ""
+
+#: templates/market/join.html:32
+msgid "KeepPlaying"
+msgstr ""
+
+#: templates/market/market_edit.html:4
+msgid "Title_Edit"
+msgstr "Rediger"
+
+#: templates/market/market_edit.html:9
+msgid "ChangeMarketParams"
+msgstr "Juster markedsindstillinger"
+
+#: templates/market/market_edit.html:13
+msgid "EditParamsBelow"
+msgstr "Herunder kan du justere markedets indstillinger"
+
+#: templates/market/market_edit.html:22
+msgid "UpdateParams"
+msgstr "Opdater"
+
+#: templates/market/monitor.html:4
+msgid "Title_Monitor"
+msgstr "Overvåg"
+
+#: templates/market/monitor.html:12
+msgid "PlayersJoinWithLink"
+msgstr "Spillere kan tilslutte sig markedet ved at bruge dette link"
+
+#: templates/market/monitor.html:19
+msgid "Market_ProductName"
+msgstr "Produktnavn"
+
+#: templates/market/monitor.html:20
+msgid "Market_InitialBalance"
+msgstr "Startsaldo"
+
+#: templates/market/monitor.html:21
+msgid "Market_Alpha"
+msgstr "Alpha"
+
+#: templates/market/monitor.html:22
+msgid "Market_Beta"
+msgstr "Beta"
+
+#: templates/market/monitor.html:23
+msgid "Market_Theta"
+msgstr "Theta"
+
+#: templates/market/monitor.html:24
+msgid "Market_MinProdCost"
+msgstr "Min produktionsomkostning"
+
+#: templates/market/monitor.html:25
+msgid "Market_MaxProdCost"
+msgstr "Max produktionsomkostning"
+
+#: templates/market/monitor.html:44
+#, python-format
+msgid "Trader Status Round #%(round)s"
+msgstr "Forhandlerstatus runde #%(round)s"
+
+#: templates/market/monitor.html:62
+msgid "ConfirmNextRound"
+msgstr "Påbegynd næste runde"
+
+#: templates/market/monitor.html:68
+msgid ""
+"\n"
+"Not all traders in your market are ready for next round.\n"
+"<br><br>\n"
+"If you choose to proceed now, these players will enter next round with "
+"unchanged balance.\n"
+"<br><br>\n"
+"Proceed to next round?\n"
+msgstr ""
+
+#: templates/market/monitor.html:77
+msgid "NotAllReadyCancel"
+msgstr "Annuller"
+
+#: templates/market/monitor.html:79
+msgid "NotAllReadyProceed"
+msgstr "Fortsæt"
+
+#: templates/market/my_markets.html:2
+msgid "Title_MyMarkets"
+msgstr "Mine markeder"
+
+#: templates/market/my_markets.html:8
+msgid "YourMarkets"
+msgstr "Dine markeder"
+
+#: templates/market/my_markets.html:14
+msgid "MarketData_CreatedBy"
+msgstr "Oprettet af"
+
+#: templates/market/my_markets.html:15
+msgid "MarketData_CreatedAt"
+msgstr "Oprettelsesdato"
+
+#: templates/market/my_markets.html:16
+msgid "MarketData_ID"
+msgstr "ID"
+
+#: templates/market/my_markets.html:17
+msgid "MarketData_ProductName"
+msgstr "Produktnavn"
+
+#: templates/market/my_markets.html:18
+msgid "MarketData_InitBalance"
+msgstr "Startsaldo"
+
+#: templates/market/my_markets.html:19
+msgid "MarketData_Alpha"
+msgstr "Alpha"
+
+#: templates/market/my_markets.html:20
+msgid "MarketData_Beta"
+msgstr "Beta"
+
+#: templates/market/my_markets.html:21
+msgid "MarketData_Theta"
+msgstr "Theta"
+
+#: templates/market/my_markets.html:22
+msgid "MarketData_MinProdCost"
+msgstr "Min produktionsomkostning"
+
+#: templates/market/my_markets.html:23
+msgid "MarketData_MaxProdCost"
+msgstr "Max produktionsomkostning"
+
+#: templates/market/my_markets.html:24
+msgid "MarketData_Revisit"
+msgstr "Besøg"
+
+#: templates/market/my_markets.html:48
+#, fuzzy
+#| msgid "JoinMarket"
+msgid "NoMarkets"
+msgstr "Du har endnu ikke oprettet nogen markeder"
+
+#: templates/market/play.html:6
+msgid "Title_Play"
+msgstr "Spil"
+
+#: templates/market/play.html:19
+#, python-format
+msgid ""
+"\n"
+"            Last round you produced <b>%(lastRoundUnits)s</b> and sold\n"
+"            <b>%(lastRoundSold)s</b>\n"
+"           %(unitsPlural)s. The demand was <b>%(lastRoundDemand)s</b>. Your "
+"price was\n"
+"           <b>%(lastRoundPrice)s </b>kr. and the\n"
+"            market\n"
+"           average price was <b>%(lastRoundAvgPrice | floatformat:1)s</b> kr."
+"<br class=\"hide-when-small\">\n"
+"\t\t   "
+msgstr ""
+
+#: templates/market/play.html:27
+msgid ""
+"\n"
+"           Your profit was\n"
+"\t\t   "
+msgstr ""
+
+#: templates/market/play.html:33
+#, python-format
+msgid ""
+"\n"
+"\t\tYour current balance is <b style=\"color:green\">%(balance)s</b> kr.\n"
+"\t  "
+msgstr ""
+
+#: templates/market/play.html:42
+msgid "MakeNextTrade"
+msgstr "Lav din næste handel"
+
+#: templates/market/play.html:56
+msgid "Play_TotalProdCost"
+msgstr "Samlede produktionsomkostninger"
+
+#: templates/market/play.html:59
+msgid "Play_BalanceAfterProd"
+msgstr "Saldo efter produktionsomkostninger"
+
+#: templates/market/play.html:62
+msgid "Play_IncomeAllSold"
+msgstr "Indtægt hvis alt sælges"
+
+#: templates/market/play.html:65
+msgid "Play_ProfitAllSold"
+msgstr "Udbytte hvis alt sælges"
+
+#: templates/market/play.html:67
+msgid "Play_ProfitNoneSold"
+msgstr "Udbytte hvis intet sælges"
+
+#: templates/market/play.html:84
+msgid "PriceHistoryGraph"
+msgstr "Prishistorik over tid"
+
+#: templates/market/play.html:102
+msgid "ProductionHistoryGraph"
+msgstr "Produktionsantal over tid"
+
+#: templates/market/play.html:120
+msgid "BalanceHistoryGraph"
+msgstr "Saldo over tid"
+
+#: templates/market/trader-table.html:13
+msgid "TraderTable_Name"
+msgstr "Forhandler"
+
+#: templates/market/trader-table.html:14
+msgid "TraderTable_Ready"
+msgstr "Klar"
+
+#: templates/market/trader-table.html:15
+msgid "TraderTable_ProdCost"
+msgstr "Produktionsomkostning"
+
+#: templates/market/trader-table.html:16
+msgid "TraderTable_Balance"
+msgstr "Saldo"
+
+#: templates/market/trader-table.html:37 templates/market/trader-table.html:43
+#: templates/market/trader-table.html:49
+msgid "FinishRound"
+msgstr "Afslut runde"

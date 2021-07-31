@@ -1,23 +1,25 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
-{% block title %}Home{% endblock %}
+{% block title %}{% translate 'Title_Home' %}{% endblock %}
 
 {% block content %}
 
-<h2>Velkommen til Markedsspillet</h2>
+<h2>{% translate 'Greetings' %}</h2>
 
 <br><br>
 {% if request.session.trader_id %}
-<p style="border: 2px solid black; padding:2em">You are currently participating in the market
-    <b>{{ request.session.market_id }}</b>
-    with the trader name
-    <b>{{ request.session.username }}</b>. 
-    <br>
-    Return to this market?
-    <a href="{% url 'market:play' %}">
-        Keep playing
-    </a>
+<p style="border: 2px solid black; padding:2em">
+{% blocktranslate with market_id=request.session.market_id username=request.session.username %}
+You are currently participating in the market
+<b>{{ market_id }}</b>
+with the trader name
+<b>{{ username }}</b>.
+{% endblocktranslate %}
+<br>
+{% translate 'ReturnToMarket1' %}
+<a href="{% url 'market:play' %}">{% translate 'ReturnToMarket2' %}</a>
 </p>
 
 </span>
@@ -25,17 +27,17 @@
 {% endif %}
 
 <br><br>
-<p>Join an existing market as new trader:</p>
+<p>{% translate 'JoinMarketOption' %}:</p>
 <form action="{% url 'market:join' %}" method="GET">
     <input type="submit" value="Join Market" class="btn btn-primary">
 </form>
 <br>
-<p>Create a new market:</p>
+<p>{% translate 'CreateMarketOption' %}:</p>
 <form action="{% url 'market:create' %}" method="GET">
     <input type="submit" value="Create Market" class="btn btn-secondary">
 </form>
 <br>
-<p>Revisit the markets you have hosted:</p>
+<p>{% translate 'RevisitMarketOption' %}:</p>
 <form action="{% url 'market:my_markets' %}" method="GET">
     <input type="submit" value="My Markets" class="btn btn-warning">
 </form>

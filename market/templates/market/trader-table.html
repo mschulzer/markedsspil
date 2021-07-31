@@ -1,3 +1,5 @@
+{% load i18n %}
+
 {% if traders|length == 0 %}
     <i>
         Waiting for the first player to join the market ... 
@@ -8,10 +10,10 @@
         <thead id="trader_status_thead">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Name</th>
-                <th scope="col">Ready</th>
-                <th scope="col">Prod Cost</th>
-                <th scope="col">Current Balance</th>
+                <th scope="col">{% translate 'TraderTable_Name' %}</th>
+                <th scope="col">{% translate 'TraderTable_Ready' %}</th>
+                <th scope="col">{% translate 'TraderTable_ProdCost' %}</th>
+                <th scope="col">{% translate 'TraderTable_Balance' %}</th>
             </tr>
         </thead>
         <tbody>
@@ -32,19 +34,19 @@
     </table>
     {% if num_ready_traders == 0 %}
         <button type="button" class="btn btn-primary" disabled>
-            Finish Round
+            {% translate 'FinishRound' %}
         </button>
     {% else %}
         {% if num_ready_traders < traders|length %}       
             <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
-                Finish Round
+                {% translate 'FinishRound' %}
             </button>
          
         {% else %}
             <!-- all traders area ready so show a submit button with no confirmation required -->
             <button type="button" class="btn btn-success" onclick="next_round()">
-                Finish Round
+                {% translate 'FinishRound' %}
             </button>
         {% endif %}
     {% endif %}

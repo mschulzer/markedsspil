@@ -1,20 +1,21 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
-{% block title %}Create{% endblock %}
+{% block title %}{% translate 'Title_Create' %}{% endblock %}
 
 {% block content %}
 
-<h3>Create a market</h3>
-<h6 class="mb-3">Choose between predefined scenarios or create your own custom market from scratch</h6>
+<h3>{% translate 'CreateMarketTitle' %}</h3>
+<h6 class="mb-3">{% translate 'ChooseMarketCreation' %}</h6>
 
 <div class="card mb-3">
 	<div class="card-header">
-		Predefined Market Scenarios 	
+		{% translate 'PredefinedScenarios'%}
 	</div>
 	<div class="card-body">
 		<form id='market_radio_form'>
-			<h5 class="card-title">Select scenario (see/edit details below)</h5>
+			<h5 class="card-title">{% translate 'SelectScenario' %}</h5>
 			<div class="pl-3 mb-2">
 				{% for scenario in scenarios %}
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
@@ -31,7 +32,7 @@
 </div>
 <div class="card mb-3">
 	<div class="card-header">
-		Market Details
+		{% translate 'MarketDetails' %}
 	</div>
 	<div class="card-body">
 		<form action="" id="create-market-form" method="post">{% csrf_token %}
