@@ -9,17 +9,24 @@ class MarketForm(forms.ModelForm):
         model = Market
         fields = ['product_name_singular', 'product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
-            'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
-            'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
-            'initial_balance': ("How much money should the participants start out with?"),
-            'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
-            'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
-            'theta':("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
-            'min_cost':("What are the minimal production costs for one unit of the product?"),
-            'max_cost': ("What are the maximal production costs for one unit of the product?")
+            'product_name_singular': _("Singular_MarketFormDesc"),
+            'product_name_plural': _("Plural_MarketFormDesc"),
+            'initial_balance': _("InitBalance_MarketFormDesc"),
+            'alpha': _("Alpha_MarketFormDesc"),
+            'beta': _("Beta_MarketFormDesc"),
+            'theta': _("Theta_MarketFormDesc"),
+            'min_cost': _("MinCost_MarketFormDesc"),
+            'max_cost': _("MaxCost_MarketFormDesc")
         }
         labels = {
-            'product_name_singluar': 'produktnavn (ental)'
+            'product_name_singular': _('Singular_MarketFormLabel'),
+            'product_name_plural': _('Plural_MarketFormLabel'),
+            'initial_balance': _('InitBalance_MarketFormLabel'),
+            'alpha': _('Alpha_MarketFormLabel'),
+            'beta': _('Beta_MarketFormLabel'),
+            'theta': _('Theta_MarketFormLabel'),
+            'min_cost': _('MinCost_MarketFormLabel'),
+            'max_cost': _('MaxCost_MarketFormLabel')
         }
 
     def clean(self):
@@ -82,16 +89,16 @@ class MarketUpdateForm(MarketForm):
         fields = ['product_name_singular','product_name_plural', 'alpha', 'beta', 'theta']
  
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market you want to join') 
+    market_id = forms.CharField(max_length=16, label=_("MarketUpdateForm_MarketID"), help_text=_('MarketUpdateForm_MarketIDDesc'))
 
     class Meta:
         model = Trader
         fields = ['name']
         labels = {
-            'name': ('Name'),
+            'name': _('MarketUpdateForm_Name'),
         }
         help_texts = {
-            'name': ('The name you choose here will be visible in the scoreboard for the participant in this market'),
+            'name': _('MarketUpdateForm_NameDesc'),
         }
 
     def clean_market_id(self):

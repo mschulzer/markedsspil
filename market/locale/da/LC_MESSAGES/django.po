@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-30 17:09+0200\n"
+"POT-Creation-Date: 2021-08-06 19:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,13 +18,117 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: forms.py:130
+#: forms.py:12
+msgid "Singular_MarketFormDesc"
+msgstr "Navnet på produktet i ental (f.eks. 'baguette')."
+
+#: forms.py:13
+msgid "Plural_MarketFormDesc"
+msgstr "Navnet på produktet i flertal (f.eks. 'baguetter')."
+
+#: forms.py:14
+msgid "InitBalance_MarketFormDesc"
+msgstr "Hvilken saldo skal deltagerne starte med?"
+
+#: forms.py:15
+msgid "Alpha_MarketFormDesc"
+msgstr ""
+"Hvor stor skal efterspørgslen på produktet være, hvis alle forhandlere "
+"sætter prisen til 0?"
+
+#: forms.py:16
+msgid "Beta_MarketFormDesc"
+msgstr ""
+"Hvor meget skal efterspørgslen på en forhandlers produkt mindskes, hvis de "
+"øger prisen pr. stk. med 1?"
+
+#: forms.py:17
+msgid "Theta_MarketFormDesc"
+msgstr ""
+"Hvor meget skal efterspørgslen på en forhandlers produkt øges, hvis den "
+"gennemsnitlige markedspris stiger med 1?"
+
+#: forms.py:18
+msgid "MinCost_MarketFormDesc"
+msgstr "Hvad er den laveste produktionspris en forhandler kan tildeles?"
+
+#: forms.py:19
+msgid "MaxCost_MarketFormDesc"
+msgstr "Hvad er den højeste produktionspris en forhandler kan tildeles?"
+
+#: forms.py:22
+msgid "Singular_MarketFormLabel"
+msgstr "Produktnavn (ental)"
+
+#: forms.py:23
+msgid "Plural_MarketFormLabel"
+msgstr "Produktnavn (flertal)"
+
+#: forms.py:24
+msgid "InitBalance_MarketFormLabel"
+msgstr "Startsaldo"
+
+#: forms.py:25
+msgid "Alpha_MarketFormLabel"
+msgstr "Alfa"
+
+#: forms.py:26
+msgid "Beta_MarketFormLabel"
+msgstr "Beta"
+
+#: forms.py:27
+msgid "Theta_MarketFormLabel"
+msgstr "Theta"
+
+#: forms.py:28
+msgid "MinCost_MarketFormLabel"
+msgstr "Min. produktionsomkostning"
+
+#: forms.py:29
+msgid "MaxCost_MarketFormLabel"
+msgstr "Max. produktionsomkostning"
+
+#: forms.py:92
+msgid "MarketUpdateForm_MarketID"
+msgstr "Markeds-ID"
+
+#: forms.py:92
+msgid "MarketUpdateForm_MarketIDDesc"
+msgstr "Indsæt ID-et for det marked, du gerne vil tilslutte dig."
+
+#: forms.py:98
+msgid "MarketUpdateForm_Name"
+msgstr "Navn"
+
+#: forms.py:101
+msgid "MarketUpdateForm_NameDesc"
+msgstr "Navnet du vælger her vil være synligt for de andre forhandlere på markedet."
+
+#: forms.py:137
 msgid "Price"
 msgstr "Pris"
 
-#: forms.py:131
+#: forms.py:138
 msgid "Amount"
 msgstr "Antal produkter"
+
+#: market_settings.py:9
+msgid "Scenario1"
+msgstr ""
+"Scenarie 1. Alle forhandlere har samme produktionsomkostninger. Dette er et "
+"godt sted at begynde."
+
+#: market_settings.py:20
+msgid "Scentario2"
+msgstr ""
+"Scenarie 2. Forhandlere har forskellige produktionsomkostninger, hvor nogen "
+"har bedre forudsætninger end andre."
+
+#: market_settings.py:31
+msgid "ScenarioCustom"
+msgstr ""
+"Brugerdefineret scenarie. Her kan du oprette et marked med selvvalgte "
+"parametre."
 
 #: templates/market/base.html:10 templates/market/base.html:20
 msgid "MainTitle"
@@ -61,6 +165,10 @@ msgstr "Prædefinerede scenarier"
 #: templates/market/create.html:18
 msgid "SelectScenario"
 msgstr "Vælg scenarie (se/rediger detaljer herunder)"
+
+#: templates/market/create.html:29 templates/market/create.html:42
+msgid "CreateMarket"
+msgstr "Opret et nyt marked"
 
 #: templates/market/create.html:35
 msgid "MarketDetails"
@@ -159,6 +267,10 @@ msgstr "Overvåg"
 msgid "PlayersJoinWithLink"
 msgstr "Spillere kan tilslutte sig markedet ved at bruge dette link"
 
+#: templates/market/monitor.html:14
+msgid "Copy"
+msgstr "Kopier"
+
 #: templates/market/monitor.html:19
 msgid "Market_ProductName"
 msgstr "Produktnavn"
@@ -169,7 +281,7 @@ msgstr "Startsaldo"
 
 #: templates/market/monitor.html:21
 msgid "Market_Alpha"
-msgstr "Alpha"
+msgstr "Alfa"
 
 #: templates/market/monitor.html:22
 msgid "Market_Beta"
@@ -181,11 +293,15 @@ msgstr "Theta"
 
 #: templates/market/monitor.html:24
 msgid "Market_MinProdCost"
-msgstr "Min produktionsomkostning"
+msgstr "Min. produktionsomkostning"
 
 #: templates/market/monitor.html:25
 msgid "Market_MaxProdCost"
-msgstr "Max produktionsomkostning"
+msgstr "Max. produktionsomkostning"
+
+#: templates/market/monitor.html:40
+msgid "EditMarket"
+msgstr "Rediger marked"
 
 #: templates/market/monitor.html:44
 #, python-format
@@ -257,11 +373,11 @@ msgstr "Theta"
 
 #: templates/market/my_markets.html:22
 msgid "MarketData_MinProdCost"
-msgstr "Min produktionsomkostning"
+msgstr "Min. produktionsomkostning"
 
 #: templates/market/my_markets.html:23
 msgid "MarketData_MaxProdCost"
-msgstr "Max produktionsomkostning"
+msgstr "Max. produktionsomkostning"
 
 #: templates/market/my_markets.html:24
 msgid "MarketData_Revisit"
@@ -343,6 +459,10 @@ msgstr "Produktionsantal over tid"
 msgid "BalanceHistoryGraph"
 msgstr "Saldo over tid"
 
+#: templates/market/trader-table.html:5
+msgid "WaitingForPlayer"
+msgstr "Venter på, at den første forhandler tilslutter sig til markedet..."
+
 #: templates/market/trader-table.html:13
 msgid "TraderTable_Name"
 msgstr "Forhandler"
@@ -363,3 +483,8 @@ msgstr "Saldo"
 #: templates/market/trader-table.html:49
 msgid "FinishRound"
 msgstr "Afslut runde"
+
+#, fuzzy
+#~| msgid "MarketData_ID"
+#~ msgid "Market ID"
+#~ msgstr "ID"

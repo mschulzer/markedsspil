@@ -11,7 +11,7 @@
 
 <p>{% translate 'PlayersJoinWithLink' %}:</p>
 <input type="text" value="{{ request.get_host }}{% url 'market:join' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
-<button class="btn btn-primary" onclick="copy_join_link()">Copy</button>
+<button class="btn btn-primary" onclick="copy_join_link()">{% translate 'Copy' %}</button>
 
 <table class="table table-striped table-responsive mt-4">
     <thead>
@@ -37,7 +37,7 @@
         </tr>
     </tbody>
 </table>
-<a class="btn btn-primary mb-5" href="{% url 'market:market_edit' market.market_id %}">Edit Market</a>
+<a class="btn btn-primary mb-5" href="{% url 'market:market_edit' market.market_id %}">{% translate 'EditMarket' %}</a>
 
 
 

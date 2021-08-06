@@ -5,10 +5,10 @@
 {% block title %}Sign Up{% endblock title %}
 
 {% block content %}
-<h2>{% translate 'SignUp' %}</h2>
+<h2>{% translate 'SignUp_Title' %}</h2>
 <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
-    <button class="btn btn-primary" type="submit">{% translate 'SignUp' %}</button>
+    <button class="btn btn-primary" type="submit">{% translate 'SignUp_Title' %}</button>
 </form>
 {% endblock content %}

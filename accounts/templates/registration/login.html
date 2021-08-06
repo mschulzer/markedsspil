@@ -5,11 +5,11 @@
 {% block title %}Log In{% endblock title %}
 
 {% block content %}
-<h2>{% translate 'LogIn' %}</h2>
+<h2>{% translate 'LogIn_Title' %}</h2>
 <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
-    <button class="btn btn-primary" type="submit">{% translate 'LogIn' %}</button>
+    <button class="btn btn-primary" type="submit">{% translate 'LogIn_Title' %}</button>
 </form>
 <br>
 <p>{% translate 'ForgotPassword' %} <a href="{% url 'password_reset' %}">{% translate 'ResetPassword' %}</a></p>
