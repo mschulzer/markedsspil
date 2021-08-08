@@ -27,8 +27,8 @@
                                 <span class="sr-only">({% translate 'Current' %})</span>
                             </a>
                         </li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'market:join' %}">Join</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'market:create'%}">Create</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'market:join' %}">{% translate 'Join' %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'market:create'%}">{% translate 'Create' %}</a></li>
                         {% if user.is_authenticated %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"

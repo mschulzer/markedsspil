@@ -29,17 +29,17 @@ with the trader name
 <br><br>
 <p>{% translate 'JoinMarketOption' %}:</p>
 <form action="{% url 'market:join' %}" method="GET">
-    <input type="submit" value="Join Market" class="btn btn-primary">
+    <input type="submit" value="{% translate 'JoinMarket' %}" class="btn btn-primary">
 </form>
 <br>
 <p>{% translate 'CreateMarketOption' %}:</p>
 <form action="{% url 'market:create' %}" method="GET">
-    <input type="submit" value="Create Market" class="btn btn-secondary">
+    <input type="submit" value="{% translate 'CreateMarket' %}" class="btn btn-secondary">
 </form>
 <br>
 <p>{% translate 'RevisitMarketOption' %}:</p>
 <form action="{% url 'market:my_markets' %}" method="GET">
-    <input type="submit" value="My Markets" class="btn btn-warning">
+    <input type="submit" value="{% translate 'MyMarkets' %}" class="btn btn-warning">
 </form>
 
 

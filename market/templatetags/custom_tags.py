@@ -1,12 +1,25 @@
 from django import template
+from django.utils.translation import gettext as _
 
 register = template.Library()
 
 def field_name_to_label(value):
-    if value == "balance_after":
-        value= 'Balance'
-    else: 
-        value = value.replace('_', ' ')
+    if value == "profit":
+        value=_("FieldName_Profit")
+    elif value == "balance_after":
+        value=_("FieldName_BalanceAfter")
+    elif value == "unit_price":
+        value=_("FieldName_UnitPrice")
+    elif value == "unit_amount":
+        value=_("FieldName_UnitAmount")
+    elif value == "demand":
+        value=_("FieldName_Demand")
+    elif value == "units_sold":
+        value=_("FieldName_UnitsSold")
+    elif value == "was_forced":
+        value=_("FieldName_WasForced")
+    else:
+        value="N/A"
     return value.title()
 
 def get_attribute(value, arg): 

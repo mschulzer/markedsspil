@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
+from django.utils.translation import gettext as _
 
 @login_required
 def market_edit(request, market_id):
@@ -26,7 +27,7 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, "You succesfully updated the market. Changes will take effect from this round forward.")
+                request, _("SuccessfulUpdate"))
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
     
     else: # request.method = 'GET'
@@ -99,7 +100,8 @@ def join(request):
                 for round_num in range(market.round):
                     create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
-                request, f"Hi {form.cleaned_data['name']}! You're now ready to trade on the {market.product_name_singular} market {market.market_id}.")
+                request,
+                (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'],market.product_name_singular,market.market_id))
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -219,10 +221,10 @@ def play(request):
 
         if context['wait']:
             messages.success(
-            request, f"You made a decision! Your {market.product_name_plural} will be produced and put up for sale when the market host finishes round {market.round}.")
+            request, _("You made a decision! Your {0} will be produced and put up for sale when the market host finishes round {1}.").format(market.product_name_plural,market.round))
         elif market.round > 0:
             messages.success(
-                request, f"You are now ready for round {market.round}!")
+                request, _("You are now ready for round {0}!").format(market.round))
 
         return render(request, 'market/play.html', context)
 

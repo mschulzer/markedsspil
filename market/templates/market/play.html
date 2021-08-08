@@ -47,7 +47,7 @@
                 {{ form|crispy }}
             </form>
             <div class="d-flex justify-content-center mt-4 mb-4">
-                <input type="submit" value="Make Trade!" class="btn btn-outline-primary" form="trade_form">
+                <input type="submit" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" form="trade_form">
             </div>
 
             <div class="d-flex justify-content-center">
@@ -144,20 +144,20 @@
     unitsCanvas = document.getElementById('unitsCanvas')
 
     var dataDemand = {
-        label: "Demand",
+        label: "{% translate 'Label_Demand' %}",
         data: JSON.parse("{{data_demand_json}}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataSold = {
-        label: "Sold",
+        label: "{% translate 'Label_Sold' %}",
         data: JSON.parse("{{data_sold_json}}"),
         borderColor: 'rgb(0, 153, 255)',
     };
 
     var dataProduced = {
-        label: "Produced",
+        label: "{% translate 'Label_Produced' %}",
         data: JSON.parse("{{data_produced_json}}"),
         borderColor: 'rgb(255, 153, 0)',
     };
@@ -175,7 +175,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Units History',
+                        text: "{% translate 'Graph_UnitsHistory' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -192,20 +192,20 @@
     priceCanvas = document.getElementById('priceCanvas')
 
     var dataYourPrice = {
-        label: "Your price",
+        label: "{% translate 'Label_YourPrice' %}",
         data: JSON.parse("{{ data_price_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataMarketAvgPrice = {
-        label: "Market avg. price",
+        label: "{% translate 'Label_MarketAvgPrice' %}",
         data: JSON.parse("{{ data_market_avg_price_json }}"),
         borderColor: 'rgb(0, 153, 255)',
     };
 
     var dataProdCost = {
-        label: "Your costs pr unit (fixed)",
+        label: "{% translate 'Label_CostPerUnitFixed' %}",
         data: JSON.parse("{{ data_prod_cost_json }}"),
         borderColor: 'rgb(255, 153, 0)',
     };
@@ -223,7 +223,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Price History',
+                        text: "{% translate 'Graph_PriceHistory' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -240,7 +240,7 @@
     balanceCanvas = document.getElementById('balanceCanvas')
 
     var dataBalance = {
-        label: "Your balance",
+        label: "{% translate 'Label_YourBalance' %}",
         data: JSON.parse("{{ data_balance_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
@@ -259,7 +259,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Balance History',
+                        text: "{% translate 'Graph_BalanceHistory' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -296,12 +296,12 @@
     const show_formula_breakpoint = 490;
 
   function set_price_label(){
-	  console.log(price_label.innerHTML);
-        //price_label.innerHTML = "Unit Price: " + price_slider.value + " kr."; 
+	  price_label.innerHTML = "{% translate 'Price' %}: " + price_slider.value;
+        //price_label.innerHTML = "Unit Price: "  + " kr."; 
     }
     
   function set_amount_label(){
-	  console.log(price_label.innerHTML);
+	  amount_label.innerHTML = "{% translate 'Amount' %}: " + amount_slider.value;
         //amount_label.innerHTML = "Amount: " + amount_slider.value;
     }
     
