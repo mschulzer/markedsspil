@@ -2,7 +2,7 @@
 
 {% if traders|length == 0 %}
     <i>
-        {% translate 'WaitingForPlayer' %}
+        {% translate 'Waiting for the first trader to join the market...' %}
     </i>
 
 {% else %}
@@ -10,10 +10,10 @@
         <thead id="trader_status_thead">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">{% translate 'TraderTable_Name' %}</th>
-                <th scope="col">{% translate 'TraderTable_Ready' %}</th>
-                <th scope="col">{% translate 'TraderTable_ProdCost' %}</th>
-                <th scope="col">{% translate 'TraderTable_Balance' %}</th>
+                <th scope="col">{% translate 'Trader name' %}</th>
+                <th scope="col">{% translate 'Ready' %}</th>
+                <th scope="col">{% translate 'Production cost' %}</th>
+                <th scope="col">{% translate 'Balance' %}</th>
             </tr>
         </thead>
         <tbody>
@@ -34,19 +34,19 @@
     </table>
     {% if num_ready_traders == 0 %}
         <button type="button" class="btn btn-primary" disabled>
-            {% translate 'FinishRound' %}
+            {% translate 'Finish round' %}
         </button>
     {% else %}
         {% if num_ready_traders < traders|length %}       
             <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
-                {% translate 'FinishRound' %}
+                {% translate 'Finish round' %}
             </button>
          
         {% else %}
             <!-- all traders area ready so show a submit button with no confirmation required -->
             <button type="button" class="btn btn-success" onclick="next_round()">
-                {% translate 'FinishRound' %}
+                {% translate 'Finish round' %}
             </button>
         {% endif %}
     {% endif %}

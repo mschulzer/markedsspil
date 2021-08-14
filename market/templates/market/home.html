@@ -2,11 +2,11 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-{% block title %}{% translate 'Title_Home' %}{% endblock %}
+{% block title %}{% translate 'Home' %}{% endblock %}
 
 {% block content %}
 
-<h2>{% translate 'Greetings' %}</h2>
+<h2>{% translate 'Welcome to the Market Simulator!' %}</h2>
 
 <br><br>
 {% if request.session.trader_id %}
@@ -18,8 +18,8 @@ with the trader name
 <b>{{ username }}</b>.
 {% endblocktranslate %}
 <br>
-{% translate 'ReturnToMarket1' %}
-<a href="{% url 'market:play' %}">{% translate 'ReturnToMarket2' %}</a>
+{% translate 'Return to this market?' %}
+<a href="{% url 'market:play' %}">{% translate 'Continue' %}</a>
 </p>
 
 </span>
@@ -27,19 +27,19 @@ with the trader name
 {% endif %}
 
 <br><br>
-<p>{% translate 'JoinMarketOption' %}:</p>
+<p>{% translate 'Join a market' %}:</p>
 <form action="{% url 'market:join' %}" method="GET">
-    <input type="submit" value="{% translate 'JoinMarket' %}" class="btn btn-primary">
+    <input type="submit" value="{% translate 'Join' %}" class="btn btn-primary">
 </form>
 <br>
-<p>{% translate 'CreateMarketOption' %}:</p>
+<p>{% translate 'Create a new market' %}:</p>
 <form action="{% url 'market:create' %}" method="GET">
-    <input type="submit" value="{% translate 'CreateMarket' %}" class="btn btn-secondary">
+    <input type="submit" value="{% translate 'Create' %}" class="btn btn-secondary">
 </form>
 <br>
-<p>{% translate 'RevisitMarketOption' %}:</p>
+<p>{% translate 'Return to one of your previous markets' %}:</p>
 <form action="{% url 'market:my_markets' %}" method="GET">
-    <input type="submit" value="{% translate 'MyMarkets' %}" class="btn btn-warning">
+    <input type="submit" value="{% translate 'My markets' %}" class="btn btn-warning">
 </form>
 
 

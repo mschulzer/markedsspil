@@ -9,24 +9,24 @@ class MarketForm(forms.ModelForm):
         model = Market
         fields = ['product_name_singular', 'product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
-            'product_name_singular': _("Singular_MarketFormDesc"),
-            'product_name_plural': _("Plural_MarketFormDesc"),
-            'initial_balance': _("InitBalance_MarketFormDesc"),
-            'alpha': _("Alpha_MarketFormDesc"),
-            'beta': _("Beta_MarketFormDesc"),
-            'theta': _("Theta_MarketFormDesc"),
-            'min_cost': _("MinCost_MarketFormDesc"),
-            'max_cost': _("MaxCost_MarketFormDesc")
+            'product_name_singular': _("The name of the product in singular form (e.g 'baguette')."),
+            'product_name_plural': _("The name of the product in plural form (e.g. 'baguettes')."),
+            'initial_balance': _("What balance should the traders start with?"),
+            'alpha': _("How much should the product demand be if all traders set their price to 0?"),
+            'beta': _("How much should the demand of a single trader's product be reduced if they increase their price per unit by 1?"),
+            'theta': _("How much should the demand of a single trader's product be increased if the average market price increases by 1?"),
+            'min_cost': _("What is the lowest production cost a trader can have?"),
+            'max_cost': _("What is the highest production cost a trader can have?")
         }
         labels = {
-            'product_name_singular': _('Singular_MarketFormLabel'),
-            'product_name_plural': _('Plural_MarketFormLabel'),
-            'initial_balance': _('InitBalance_MarketFormLabel'),
-            'alpha': _('Alpha_MarketFormLabel'),
-            'beta': _('Beta_MarketFormLabel'),
-            'theta': _('Theta_MarketFormLabel'),
-            'min_cost': _('MinCost_MarketFormLabel'),
-            'max_cost': _('MaxCost_MarketFormLabel')
+            'product_name_singular': _('Product name (singular)'),
+            'product_name_plural': _('Product name (plural)'),
+            'initial_balance': _('Initial balance'),
+            'alpha': _('Alpha'),
+            'beta': _('Beta'),
+            'theta': _('Theta'),
+            'min_cost': _('Min. prod. cost'),
+            'max_cost': _('Max. prod. cost')
         }
 
     def clean(self):
@@ -89,16 +89,16 @@ class MarketUpdateForm(MarketForm):
         fields = ['product_name_singular','product_name_plural', 'alpha', 'beta', 'theta']
  
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label=_("MarketUpdateForm_MarketID"), help_text=_('MarketUpdateForm_MarketIDDesc'))
+    market_id = forms.CharField(max_length=16, label=_("Market ID"), help_text=_('The ID of the market you want to join.'))
 
     class Meta:
         model = Trader
         fields = ['name']
         labels = {
-            'name': _('MarketUpdateForm_Name'),
+            'name': _('Name'),
         }
         help_texts = {
-            'name': _('MarketUpdateForm_NameDesc'),
+            'name': _('The name you choose will be visible to other traders on the market.'),
         }
 
     def clean_market_id(self):
@@ -106,7 +106,7 @@ class TraderForm(forms.ModelForm):
         market_id = self.cleaned_data['market_id'].upper()
 
         if not Market.objects.filter(pk=market_id).exists():
-            raise forms.ValidationError('There is no market with this ID')
+            raise forms.ValidationError(_('There is no market with this ID'))
         return market_id
 
     def clean(self):
@@ -121,7 +121,7 @@ class TraderForm(forms.ModelForm):
             market = Market.objects.get(market_id = cleaned_market_id)
             if Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
-                    'There is already a trader with this name on the requested market. Please select another name')
+                    _('There is already a trader with this name on the requested market. Please select another name'))
         return cleaned_data
         
 

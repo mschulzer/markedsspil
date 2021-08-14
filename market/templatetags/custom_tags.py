@@ -5,19 +5,19 @@ register = template.Library()
 
 def field_name_to_label(value):
     if value == "profit":
-        value=_("FieldName_Profit")
+        value=_("Profit")
     elif value == "balance_after":
-        value=_("FieldName_BalanceAfter")
+        value=_("Balance")
     elif value == "unit_price":
-        value=_("FieldName_UnitPrice")
+        value=_("Price per unit")
     elif value == "unit_amount":
-        value=_("FieldName_UnitAmount")
+        value=_("Unit amount")
     elif value == "demand":
-        value=_("FieldName_Demand")
+        value=_("Demand")
     elif value == "units_sold":
-        value=_("FieldName_UnitsSold")
+        value=_("Units sold")
     elif value == "was_forced":
-        value=_("FieldName_WasForced")
+        value=_("Was forced")
     else:
         value="N/A"
     return value.title()

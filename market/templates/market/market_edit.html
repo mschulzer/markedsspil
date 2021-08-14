@@ -1,16 +1,16 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{% translate 'Title_Edit' %}{% endblock %}
+{% block title %}{% translate 'Edit' %}{% endblock %}
 
 {% block content %}
 
 <h2 class="mb-4">
-    {% translate 'ChangeMarketParams' %}
+    {% translate 'Change market parameters' %}
 </h2>
 
 <p>
-    {% translate 'EditParamsBelow' %}<b>{{ market.market_id }}</b><br>
+    {% translate 'You can edit the market parameters below' %}<b>{{ market.market_id }}</b><br>
 </p>
 
 
@@ -19,7 +19,7 @@
     {{ form|crispy }}
     <div class="d-flex justify-content-between">
         <a href="{% url 'market:monitor' market.market_id %}" class="btn btn-primary">Cancel</a>
-        <button class="btn btn-warning" type="submit">{% translate 'UpdateParams' %}</button>
+        <button class="btn btn-warning" type="submit">{% translate 'Update' %}</button>
     </div>
 </form>
 

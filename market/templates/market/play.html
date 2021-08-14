@@ -3,7 +3,7 @@
 {% load custom_tags %}
 {% load i18n %}
 
-{% block title %}{% translate 'Title_Play' %}{% endblock %}
+{% block title %}{% translate 'Play' %}{% endblock %}
 
 {% block content %}
     <style>
@@ -39,7 +39,7 @@
 {% if not wait %}
     <div class="card mb-4">
         <div class="card-header">
-         {% translate 'MakeNextTrade' %}
+         {% translate 'Make your next trade' %}
         </div>
         <div class="card-body">
             <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>
@@ -53,18 +53,18 @@
             <div class="d-flex justify-content-center">
                 <ul class="text-secondary">
                     <li>
-                        {% translate 'Play_TotalProdCost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
+                        {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
                     </li>
                     <li>
-                        {% translate 'Play_BalanceAfterProd' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
+                        {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
                     </li>
                     <li>
-                        {% translate 'Play_IncomeAllSold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
+                        {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
                     </li>
                     <li>
-                        {% translate 'Play_ProfitAllSold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
+                        {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
                     </li>
-                    <li>{% translate 'Play_ProfitNoneSold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
+                    <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
                     </li>
                 </ul>
             </div>
@@ -81,7 +81,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                         data-target="#collapsePrice" aria-expanded="false" aria-controls="collapseOne">
-                        {% translate 'PriceHistoryGraph' %}
+                        {% translate 'Price history' %}
                     </button>
                 </h2>
             </div>
@@ -99,7 +99,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
                         data-target="#collapseProduction" aria-expanded="true" aria-controls="collapseTwo">
-                        {% translate 'ProductionHistoryGraph' %}
+                        {% translate 'Production history' %}
                     </button>
                 </h2>
             </div>
@@ -117,7 +117,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                         data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseOne">
-                        {% translate 'BalanceHistoryGraph' %}
+                        {% translate 'Balance history' %}
                     </button>
                 </h2>
             </div>
@@ -144,20 +144,20 @@
     unitsCanvas = document.getElementById('unitsCanvas')
 
     var dataDemand = {
-        label: "{% translate 'Label_Demand' %}",
+        label: "{% translate 'Demand' %}",
         data: JSON.parse("{{data_demand_json}}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataSold = {
-        label: "{% translate 'Label_Sold' %}",
+        label: "{% translate 'Sold' %}",
         data: JSON.parse("{{data_sold_json}}"),
         borderColor: 'rgb(0, 153, 255)',
     };
 
     var dataProduced = {
-        label: "{% translate 'Label_Produced' %}",
+        label: "{% translate 'Produced' %}",
         data: JSON.parse("{{data_produced_json}}"),
         borderColor: 'rgb(255, 153, 0)',
     };
@@ -175,7 +175,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: "{% translate 'Graph_UnitsHistory' %}",
+                        text: "{% translate 'Units produced' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -192,20 +192,20 @@
     priceCanvas = document.getElementById('priceCanvas')
 
     var dataYourPrice = {
-        label: "{% translate 'Label_YourPrice' %}",
+        label: "{% translate 'Your price' %}",
         data: JSON.parse("{{ data_price_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataMarketAvgPrice = {
-        label: "{% translate 'Label_MarketAvgPrice' %}",
+        label: "{% translate 'Market average price' %}",
         data: JSON.parse("{{ data_market_avg_price_json }}"),
         borderColor: 'rgb(0, 153, 255)',
     };
 
     var dataProdCost = {
-        label: "{% translate 'Label_CostPerUnitFixed' %}",
+        label: "{% translate 'Cost per unit (fixed)' %}",
         data: JSON.parse("{{ data_prod_cost_json }}"),
         borderColor: 'rgb(255, 153, 0)',
     };
@@ -223,7 +223,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: "{% translate 'Graph_PriceHistory' %}",
+                        text: "{% translate 'Price history' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -240,7 +240,7 @@
     balanceCanvas = document.getElementById('balanceCanvas')
 
     var dataBalance = {
-        label: "{% translate 'Label_YourBalance' %}",
+        label: "{% translate 'Your balance' %}",
         data: JSON.parse("{{ data_balance_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
@@ -259,7 +259,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: "{% translate 'Graph_BalanceHistory' %}",
+                        text: "{% translate 'Balance history' %}",
                         padding: {
                             top: 5,
                             bottom: 10

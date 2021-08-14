@@ -2,20 +2,20 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-{% block title %}{% translate 'Title_Create' %}{% endblock %}
+{% block title %}{% translate 'Create a new market' %}{% endblock %}
 
 {% block content %}
 
-<h3>{% translate 'CreateMarketTitle' %}</h3>
-<h6 class="mb-3">{% translate 'ChooseMarketCreation' %}</h6>
+<h3>{% translate 'Create a new market' %}</h3>
+<h6 class="mb-3">{% translate 'Choose a predefined scenario, or create a market with custom settings.' %}</h6>
 
 <div class="card mb-3">
 	<div class="card-header">
-		{% translate 'PredefinedScenarios'%}
+		{% translate 'Predefined scenarios'%}
 	</div>
 	<div class="card-body">
 		<form id='market_radio_form'>
-			<h5 class="card-title">{% translate 'SelectScenario' %}</h5>
+			<h5 class="card-title">{% translate 'Select scenario (view/edit settings below)' %}</h5>
 			<div class="pl-3 mb-2">
 				{% for scenario in scenarios %}
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
@@ -26,20 +26,20 @@
 		</form>
 
 		<div class="d-flex justify-content-center">
-		<input type="submit" value="{% translate "CreateMarket" %}" class="btn btn-primary my-2" form="create-market-form">
+		<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-2" form="create-market-form">
 		</div>
 	</div>
 </div>
 <div class="card mb-3">
 	<div class="card-header">
-		{% translate 'MarketDetails' %}
+		{% translate 'Market details' %}
 	</div>
 	<div class="card-body">
 		<form action="" id="create-market-form" method="post">{% csrf_token %}
 			{{ form|crispy }}
 		</form>
 		<div class="d-flex justify-content-center">
-			<input type="submit" value="{% translate "CreateMarket" %}" class="btn btn-primary my-4" form="create-market-form">
+			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-4" form="create-market-form">
 		</div>
 	</div>
 </div>
