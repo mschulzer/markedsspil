@@ -13,7 +13,6 @@
             }
         }
     </style>
-
     <p class="pt-3 p-2" >
       {% if show_last_round_data %}
 	    {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.price lastRoundAvgPrice=round_stats.all.last.avg_price %}
@@ -273,6 +272,7 @@
 
 {% if not wait %}
 <script>
+
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
     var amount_label = labels[1]
@@ -284,8 +284,8 @@
         price_slider.value = "{{ trades.last.unit_price }}"
     {% endif %}
 
-    var balance = parseInt("{{ trader.balance }}")
-    var unit_prod_cost = parseInt("{{ trader.prod_cost }}")
+    var balance = parseFloat("{{ trader.balance }}".replace(',', '.'))
+    var unit_prod_cost = parseFloat("{{ trader.prod_cost }}".replace(',', '.'))
     var total_cost = document.getElementById('total_cost');
     var income_best_case = document.getElementById('income_best_case');
     var balance_after_production = document.getElementById('balance_after_production');
@@ -297,7 +297,6 @@
 
   function set_price_label(){
 	  price_label.innerHTML = "{% translate 'Price' %}: " + price_slider.value;
-        //price_label.innerHTML = "Unit Price: "  + " kr."; 
     }
     
   function set_amount_label(){
@@ -307,33 +306,33 @@
     
     function set_total_cost(){
         amount = amount_slider.value; 
-        total_prod_cost.innerHTML = amount * unit_prod_cost;
+        total_prod_cost.innerHTML = (amount * unit_prod_cost).toFixed(2);
         if ($(window).width() > show_formula_breakpoint) {
             formula = document.getElementById('total_prod_cost_formula')
-            formula.innerHTML = `${amount} * ${unit_prod_cost} = `;
+            formula.innerHTML = `${amount} * ${unit_prod_cost.toFixed(2)} = `;
         } 
     }
 
     
     function set_potential_income(){
         amount = amount_slider.value;
-        price = price_slider.value;
-        income_best_case.innerHTML = amount*price;
+        price = parseFloat(price_slider.value);
+        income_best_case.innerHTML = (amount*price).toFixed(2);
         
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('income_best_case_formula')
-            formula.innerHTML = `${amount} * ${price} = `; 
+            formula.innerHTML = `${amount} * ${price.toFixed(2)} = `; 
         }
     }
 
     function set_balance_after_production(){
         amount = amount_slider.value;
         costs = amount * unit_prod_cost;
-        balance_after_production.innerHTML = balance - costs;
+        balance_after_production.innerHTML = (balance - costs).toFixed(2);
 
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('balance_after_production_formula')
-            formula.innerHTML = `${balance} - ${costs} = `;
+            formula.innerHTML = `${balance.toFixed(2)} - ${costs.toFixed(2)} = `;
         } 
     }
 
@@ -357,12 +356,12 @@
         } else{
             profit_worst_case.style.color = 'green'
         }
-        profit_best_case.innerHTML = best_case_profit;
-        profit_worst_case.innerHTML = - expences;
+        profit_best_case.innerHTML = best_case_profit.toFixed(2);
+        profit_worst_case.innerHTML = (-expences).toFixed(2);
 
         if ($(window).width() > show_formula_breakpoint) { 
-            document.getElementById('profit_best_case_formula').innerHTML = `${best_case_income} - ${expences} = `;
-            document.getElementById('profit_worst_case_formula').innerHTML = `0 - ${expences} = `;
+            document.getElementById('profit_best_case_formula').innerHTML = `${best_case_income.toFixed(2)} - ${expences.toFixed(2)} = `;
+            document.getElementById('profit_worst_case_formula').innerHTML = `0.00 - ${expences.toFixed(2)} = `;
         }     
     }
 

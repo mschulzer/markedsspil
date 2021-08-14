@@ -3,8 +3,10 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse, resolve
-from .forms import CustomUserCreationForm
-from .views import SignupPageView
+from ..forms import CustomUserCreationForm
+from ..views import SignupPageView
+#from .factories import RandomUserFactory
+
 
 class CustomUserTests(TestCase):
 
@@ -15,7 +17,7 @@ class CustomUserTests(TestCase):
             email='kris@email.com',
             password='testpass123'
         )
-        self.assertEqual(user.username, 'kris')
+        self.assertEqual(user.username, 'krist')
         self.assertEqual(user.email, 'kris@email.com')
         self.assertTrue(user.is_active)
         self.assertFalse(user.is_staff)
@@ -70,3 +72,4 @@ class LoginPageTests(TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertTemplateUsed(self.response, 'registration/login.html')
         self.assertContains(self.response, 'Log In')
+
