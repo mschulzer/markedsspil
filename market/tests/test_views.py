@@ -327,7 +327,7 @@ class MonitorViewGETRequestsTest(TestCase):
         response = self.client.get(
             reverse('market:monitor', args=(market.market_id,)))
         html = response.content.decode('utf8')
-        self.assertIn("Unit Price", html)
+        self.assertIn("Pris Pr. Enhed", html)
         self.assertNotIn("unit_price", html)
 
 
@@ -583,7 +583,7 @@ class PlayViewGetRequestTest(TestCase):
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "You made a decision" in message.message)
+            "Du har lavet din handel" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn('last round', html)

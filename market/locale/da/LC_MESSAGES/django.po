@@ -521,7 +521,7 @@ msgid "Profit"
 msgstr "Udbytte"
 
 #: templatetags/custom_tags.py:12
-msgid "Price per unit"
+msgid "Unit price"
 msgstr "Pris pr. enhed"
 
 #: templatetags/custom_tags.py:14

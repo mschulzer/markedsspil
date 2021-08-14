@@ -9,7 +9,7 @@ def field_name_to_label(value):
     elif value == "balance_after":
         value=_("Balance")
     elif value == "unit_price":
-        value=_("Price per unit")
+        value=_("Unit price")
     elif value == "unit_amount":
         value=_("Unit amount")
     elif value == "demand":
