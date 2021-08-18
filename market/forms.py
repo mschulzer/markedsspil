@@ -3,19 +3,18 @@ from .models import Market, Trade, Trader
 from django.core.exceptions import ValidationError
 from math import floor
 
+
 class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
-        fields = ['product_name_singular','product_name_plural', 'initial_balance', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
-        widgets = {
-            'initial_balance': forms.NumberInput(attrs={'step': 1}),
-            'min_cost': forms.NumberInput(attrs={'step': 1}),
-            'max_cost': forms.NumberInput(attrs={'step': 1})
-        }
+        fields = ['product_name_singular', 'product_name_plural', 'initial_balance',
+                  'max_rounds', 'endless', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
             'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
             'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
             'initial_balance': ("How much money should the participants start out with?"),
+            'max_rounds': ("How many rounds should the game last for?"),
+            'endless': ("Should the game last until manually stopped?"),
             'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
             'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
             'theta': ("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
@@ -32,14 +31,26 @@ class MarketForm(forms.ModelForm):
             if min_cost > max_cost:
                 raise ValidationError("Min cost can't be bigger than max cost")
         return cleaned_data
-    
+
+    def clean_max_rounds(self):
+        """Form is invalid if max_rounds < 1"""
+        max_rounds = self.cleaned_data['max_rounds']
+
+        if max_rounds < 1:
+            raise forms.ValidationError('There must be at least 1 round')
+        return max_rounds
+
+
 class MarketUpdateForm(MarketForm):
-    
+
     class Meta(MarketForm.Meta):
-        fields = ['product_name_singular','product_name_plural', 'alpha', 'beta', 'theta']
- 
+        fields = ['product_name_singular',
+                  'product_name_plural', 'alpha', 'beta', 'theta']
+
+
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label="Market ID", help_text='Enter the ID of the market you want to join') 
+    market_id = forms.CharField(max_length=16, label="Market ID",
+                                help_text='Enter the ID of the market you want to join')
 
     class Meta:
         model = Trader
@@ -65,20 +76,20 @@ class TraderForm(forms.ModelForm):
         cleaned_name = cleaned_data.get("name")
         cleaned_market_id = cleaned_data.get('market_id')
         if cleaned_name and cleaned_market_id:
-            market = Market.objects.get(market_id = cleaned_market_id)
+            market = Market.objects.get(market_id=cleaned_market_id)
             if Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
                     'There is already a trader with this name on the requested market. Please select another name')
         return cleaned_data
-        
+
 
 class TradeForm(forms.ModelForm):
     class Meta:
         model = Trade
         fields = ['unit_price', 'unit_amount']
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':0.1}),
-            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min':0, 'class':'slider', 'step':1}),
+            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class': 'slider', 'step': 0.1}),
+            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class': 'slider', 'step': 1}),
         }
         labels = {
             'unit_price': ('Price: '),
@@ -94,14 +105,15 @@ class TradeForm(forms.ModelForm):
         if trader:
             # traders can set the price of a product up to 5 times market's maximal prod cost
             self.fields['unit_price'].widget.attrs['max'] = 5 * \
-                trader.market.max_cost  
+                trader.market.max_cost
 
             # make sure, trader can't choose to produce an amount of units, he can't afford
-            if trader.prod_cost > 0:  
+            if trader.prod_cost > 0:
                 max_unit_amount = floor((trader.balance/trader.prod_cost))
-            else:  # if prod_cost is 0 (this is currently not allowed to happen) 
+            else:  # if prod_cost is 0 (this is currently not allowed to happen)
                 max_unit_amount = 10000  # this number is arbitrary
 
-            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount 
-            self.fields['unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost})"
+            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount
+            self.fields[
+                'unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost})"
             self.fields['unit_amount'].help_text = f"How many {trader.market.product_name_plural} do you want to produce?"
