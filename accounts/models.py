@@ -7,4 +7,6 @@ class CustomUser(AbstractUser):
     It is considered best practice to make it an extension of the default user model, as
     we might want to customize it later on (by adding fields and so on). 
     """
-    pass
+
+    def __str__(self):
+        return f"{self.username} {self.email}"

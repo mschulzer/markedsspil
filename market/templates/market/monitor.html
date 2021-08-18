@@ -110,7 +110,11 @@
                     <tr>
                         <th></th>
                         {% for round in rounds %}
-                        <th scope="col">Round {{ round }}</th>
+						<th scope="col" id="{{field|field_name_to_label}}_{{round}}">Round </th>
+                        <script>
+						  var col = document.getElementById("{{field|field_name_to_label}}_{{round}}");
+						  col.innerHTML += parseInt("{{round}}")+1;
+						</script>
                         {% endfor %}
                     </tr>
                 <thead>
@@ -139,7 +143,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  var roundnums = [];
+  var roundnums = [0];
   var tradernames = [];
   var balancedata = [];
   var tradernum = 0;
@@ -148,7 +152,7 @@
   {% if market.round > 0 %}
     {% for round in rounds %}
     <script>
-   	  roundnums.push("{{round}}");
+   	  roundnums.push(parseInt("{{round}}")+1);
     </script>
     {% endfor %}
     {% for trader in traders %}
@@ -161,11 +165,11 @@
 	  balancedata.push({ label: "{{trader.name}}",
 						 backgroundColor: 'rgb('+red+','+green+','+blue+')',
 						 borderColor: 'rgb('+red+','+green+','+blue+')',
-						 data: [],
+						 data: [parseInt("{{market.initial_balance}}")],
 					   });
 	</script>
 	  {% for trade in trader.trade_set.all %}
-    <script>
+      <script>
    	    balancedata[balancedata.length-1].data.push(parseInt("{{trade.balance_after}}"));
       </script>
 	  {% endfor %}
@@ -188,6 +192,7 @@
 	  labels: roundnums,
 	  datasets: balancedata
   };
+  
   const config = {
 	  type: 'line',
 	  data,
