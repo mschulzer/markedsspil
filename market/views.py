@@ -37,18 +37,11 @@ def market_edit(request, market_id):
 
     return render(request, "market/market_edit.html", context)
 
-# @login_required
-
 
 @require_GET
 def trader_table(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     traders = Trader.objects.filter(market=market).order_by('-balance')
-
-    # only the user who created the market has permission to see it
-    # if not request.user == market.created_by:
-    #   return HttpResponseRedirect(reverse('market:home'))
-
     num_ready_traders = filter_trades(
         market=market, round=market.round).count()
     context = {
