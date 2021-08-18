@@ -28,7 +28,9 @@ class TwoPlayerGame(TestCase):
             'beta': 44.2,
             'theta': 2.0105, 
             'min_cost': 11, 
-            'max_cost': 144}
+            'max_cost': 144,
+            'max_rounds': 15,
+            'endless': False}
         self.client.post(
             reverse('market:create'), 
             post_data
