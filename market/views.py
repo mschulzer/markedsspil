@@ -4,7 +4,6 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonRespons
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
-from random import randint
 from .models import Market, Trader, Trade, RoundStat
 from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade
@@ -12,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
+from decimal import Decimal
+
 
 @login_required
 def market_edit(request, market_id):
@@ -26,67 +27,78 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, "You succesfully updated the market. Changes will take effect from this round forward.")
+                request, "You successfully updated the market. Changes will take effect from this round forward.")
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
-    
-    else: # request.method = 'GET'
+
+    else:  # request.method = 'GET'
         form = MarketUpdateForm(instance=market)
 
-    context = {"form":form, "market":market}
+    context = {"form": form, "market": market}
 
     return render(request, "market/market_edit.html", context)
+
 
 @login_required
 @require_GET
 def trader_table(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
-    traders = Trader.objects.filter(market=market)
+    traders = Trader.objects.filter(market=market).order_by('-balance')
+
+    # only the user who created the market has permission to see it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+
     num_ready_traders = filter_trades(
         market=market, round=market.round).count()
     context = {
-        'market':market,
+        'market': market,
         'traders': traders,
         'num_ready_traders': num_ready_traders,
     }
     return render(request, 'market/trader-table.html', context)
 
+
 @require_GET
 def home(request):
     return render(request, 'market/home.html')
 
+
 @login_required
 @require_GET
 def my_markets(request):
-    markets = Market.objects.filter(created_by=request.user).order_by('-created_at')
-    return render(request, 'market/my_markets.html', { 'markets': markets})
+    markets = Market.objects.filter(
+        created_by=request.user).order_by('-created_at')
+    return render(request, 'market/my_markets.html', {'markets': markets})
+
 
 @login_required
 def create(request):
-   
+
     if request.method == 'POST':
         form = MarketForm(request.POST)
         if form.is_valid():
             new_market = form.save(commit=False)
-            new_market.created_by = request.user  
+            new_market.created_by = request.user
             new_market.save()
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
     elif request.method == 'GET':
         form = MarketForm()
-    
+
     context = {'form': form, 'scenarios': SCENARIOS,
                'scenarios_json': json.dumps(SCENARIOS)}
 
     return render(request, 'market/create.html', context)
 
+
 def join(request):
     if request.method == 'POST':
         form = TraderForm(request.POST)
         if form.is_valid():
-            market = Market.objects.get(market_id=form.cleaned_data['market_id'])
+            market = Market.objects.get(
+                market_id=form.cleaned_data['market_id'])
 
             new_trader = form.save(commit=False)
             new_trader.market = market
-            new_trader.prod_cost = randint(market.min_cost, market.max_cost)
             new_trader.balance = market.initial_balance
             new_trader.save()
 
@@ -97,7 +109,8 @@ def join(request):
             # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1
             if market.round > 0:
                 for round_num in range(market.round):
-                    create_forced_trade(trader=new_trader, round_num=round_num, is_new_trader=True)
+                    create_forced_trade(
+                        trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
                 request, f"Hi {form.cleaned_data['name']}! You're now ready to trade on the {market.product_name_singular} market {market.market_id}.")
             return redirect(reverse('market:play'))
@@ -108,21 +121,26 @@ def join(request):
                 initial={'market_id': request.GET['market_id']})
         else:
             form = TraderForm()
-    return render(request, 'market/join.html', {'form':form})
+    return render(request, 'market/join.html', {'form': form})
 
 
-
+@login_required
 def monitor(request, market_id):
-
     market = get_object_or_404(Market, market_id=market_id)
-    traders = Trader.objects.filter(market=market)
+
+    # only the user how created the market has permission to monitor it
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+
+    traders = Trader.objects.filter(market=market).order_by('-balance')
+
     context = {
         'market': market,
         'traders': traders,
-        'num_ready_traders':filter_trades(market=market, round=market.round).count(),
+        'num_ready_traders': filter_trades(market=market, round=market.round).count(),
         'rounds': range(market.round),
-        'show_stats_fields':['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
-        'initial_balance':market.initial_balance
+        'show_stats_fields': ['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
+        'initial_balance': market.initial_balance
     }
 
     if request.method == "GET":
@@ -131,23 +149,29 @@ def monitor(request, market_id):
     if request.method == "POST":
 
         real_trades = filter_trades(market=market, round=market.round)
-        
+
         for trade in real_trades:
             assert(trade.was_forced is False), "Forced trade in 'real trades'"
-        assert(len(real_trades) > 0), "No trades in market this round. Can't calculate avg. price."
+        assert(len(real_trades) >
+               0), "No trades in market this round. Can't calculate avg. price."
 
-        avg_price = sum([trade.unit_price for trade in real_trades]) / len(real_trades)
-      
-        for trade in real_trades: 
+        avg_price = sum(
+            [trade.unit_price for trade in real_trades]) / len(real_trades)
+
+        for trade in real_trades:
             process_trade(market, trade, avg_price)
 
         for trader in traders:
-            traders_number_of_real_trades_this_round = filter_trades(market=market, round=market.round).filter(trader=trader).count()
+            traders_number_of_real_trades_this_round = filter_trades(
+                market=market, round=market.round).filter(trader=trader).count()
             if traders_number_of_real_trades_this_round == 0:
-                create_forced_trade(trader=trader, round_num=market.round, is_new_trader=False)       
-        all_trades_this_round = filter_trades(market=market, round=market.round)        
-        assert(len(all_trades_this_round) == len(traders)), f"Number of trades in this round does not equal num traders ."
-        
+                create_forced_trade(
+                    trader=trader, round_num=market.round, is_new_trader=False)
+        all_trades_this_round = filter_trades(
+            market=market, round=market.round)
+        assert(len(all_trades_this_round) == len(traders)
+               ), f"Number of trades in this round does not equal num traders ."
+
         RoundStat.objects.create(
             market=market, round=market.round, avg_price=avg_price)
 
@@ -180,46 +204,46 @@ def play(request):
         form = TradeForm(trader)
         trades = Trade.objects.filter(trader=trader)
         round_stats = RoundStat.objects.filter(market=market)
+
         context = {
             'market': market,
-            'trader':trader,
-            'form':form,
-            'rounds':range(1,market.round+1),
+            'trader': trader,
+            'form': form,
+            'rounds': range(1, market.round+1),
             'round_stats': round_stats,
-            'trades':trades,
-            'wait':False,
-            'show_last_round_data':False,
+            'trades': trades,
+            'wait': False,
+            'show_last_round_data': False,
 
             # labels for unit and price charts
-            'rounds_json': json.dumps(list(range(1,market.round+1))),
+            'rounds_json': json.dumps(list(range(1, market.round+1))),
 
-            # context for units graph
+            # # context for units graph
             'data_demand_json': json.dumps([trade.demand for trade in trades]),
             'data_sold_json': json.dumps([trade.units_sold for trade in trades]),
             'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
 
             # context for price graph
-            'data_price_json': json.dumps([trade.unit_price for trade in trades]),
-            'data_prod_cost_json': json.dumps([trader.prod_cost for _ in trades]),
+            'data_price_json': json.dumps([float(trade.unit_price) if trade.unit_price else None for trade in trades]),
+            'data_prod_cost_json': json.dumps([float(trader.prod_cost) for _ in trades]),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
- 
-            #context for balance graph
-            'balance_labels' : json.dumps(list(range(market.round+1))),
-            'data_balance_json': json.dumps([trader.market.initial_balance] + [trade.balance_after for trade in trades]),
+
+            # # context for balance graph
+            'balance_labels': json.dumps(list(range(market.round+1))),
+            'data_balance_json': json.dumps([float(trader.market.initial_balance)] + [float(trade.balance_after) if trade.balance_after else None for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():
             context['wait'] = True
 
         elif market.round > 0:
-            last_trade = trades.get(round=market.round -1)
-            if type(last_trade.profit) is int:
+            last_trade = trades.get(round=market.round - 1)
+            if type(last_trade.profit) is Decimal:
                 context['show_last_round_data'] = True
-
 
         if context['wait']:
             messages.success(
-            request, f"You made a decision! Your {market.product_name_plural} will be produced and put up for sale when the market host finishes round {market.round}.")
+                request, f"You made a decision! Your {market.product_name_plural} will be produced and put up for sale when the market host finishes round {market.round}.")
         elif market.round > 0:
             messages.success(
                 request, f"You are now ready for round {market.round}!")
@@ -231,9 +255,10 @@ def play(request):
 def current_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     data = {
-        'round':market.round
+        'round': market.round
     }
     return JsonResponse(data)
+
 
 """
 def download(request, market_id):
