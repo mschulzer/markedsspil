@@ -123,7 +123,8 @@ def monitor(request, market_id):
     if not request.user == market.created_by:
         return HttpResponseRedirect(reverse('market:home'))
     
-    traders = Trader.objects.filter(market=market)
+    traders = Trader.objects.filter(market=market).order_by('-balance')
+    
     context = {
         'market': market,
         'traders': traders,
