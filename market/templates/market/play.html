@@ -155,7 +155,9 @@
 
     var unitsData = {
         labels: JSON.parse("{{rounds_json}}"), // labels on x-axis
-        datasets: [dataDemand, dataSold, dataProduced]
+        datasets: [dataDemand,
+				   dataSold,
+				   dataProduced]
     };
 
     var lineChart = new Chart(
