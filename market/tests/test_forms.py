@@ -20,7 +20,9 @@ class MarketFormTest(TestCase):
             'beta': 5.0334,
             'theta': 3.4432, 
             'min_cost': 3, 
-            'max_cost': 6
+            'max_cost': 6,
+            'max_rounds': 15,
+            'endless': False
         }
         
 
