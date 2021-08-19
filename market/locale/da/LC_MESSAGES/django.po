@@ -19,46 +19,46 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: forms.py:12
-msgid "The name of the product in singular form (e.g 'baguette')."
+msgid "The name of the product being traded in singular form (e.g 'baguette')."
 msgstr "Navnet på produktet i ental (f.eks. 'baguette')."
 
 #: forms.py:13
-msgid "The name of the product in plural form (e.g. 'baguettes')."
+msgid "The name of the product being traded in plural form (e.g. 'baguettes')."
 msgstr "Navnet på produktet i flertal (f.eks. 'baguetter')."
 
 #: forms.py:14
-msgid "What balance should the traders start with?"
-msgstr "Hvilken saldo skal deltagerne starte med?"
+msgid "How much money should the participants start out with?"
+msgstr "Hvor mange penge skal deltagerne starte med?"
 
 #: forms.py:15
 msgid ""
-"How much should the product demand be if all traders set their price to 0?"
+"How big should the demand for a trader's product be, if all traders set their price to 0?"
 msgstr ""
 "Hvor stor skal efterspørgslen på produktet være, hvis alle forhandlere "
 "sætter prisen til 0?"
 
 #: forms.py:16
 msgid ""
-"How much should the demand of a single trader's product be reduced if they "
-"increase their price per unit by 1?"
+"How much should the demand of a single trader's product be reduced, "
+"when she/he raises their unit price by one?"
 msgstr ""
 "Hvor meget skal efterspørgslen på en forhandlers produkt mindskes, hvis de "
-"øger prisen pr. stk. med 1?"
+"øger prisen pr. stk. med en?"
 
 #: forms.py:17
 msgid ""
-"How much should the demand of a single trader's product be increased if the "
-"average market price increases by 1?"
+"How much should the demand of a single trader's product increase, "
+"when the market's average price goes up by one?"
 msgstr ""
 "Hvor meget skal efterspørgslen på en forhandlers produkt øges, hvis den "
 "gennemsnitlige markedspris stiger med 1?"
 
 #: forms.py:18
-msgid "What is the lowest production cost a trader can have?"
+msgid "What is the lowest production cost for one unit of the product?"
 msgstr "Hvad er den laveste produktionspris en forhandler kan tildeles?"
 
 #: forms.py:19
-msgid "What is the highest production cost a trader can have?"
+msgid "What is the highest production cost for one unit of the product?"
 msgstr "Hvad er den højeste produktionspris en forhandler kan tildeles?"
 
 #: forms.py:22
@@ -104,8 +104,8 @@ msgid "Market ID"
 msgstr "Markeds-ID"
 
 #: forms.py:92
-msgid "The ID of the market you want to join."
-msgstr "ID-et for det marked, du gerne vil tilslutte dig."
+msgid "Enter the ID of the market you want to join."
+msgstr "Indtast ID'et for det markedsspil, du gerne vil deltage i."
 
 #: forms.py:98
 msgid "Name"
