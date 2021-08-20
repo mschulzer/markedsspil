@@ -375,7 +375,6 @@ msgid "Revisit"
 msgstr "Besøg"
 
 #: templates/market/my_markets.html:48
-#, fuzzy
 msgid "You have not yet created a market."
 msgstr "Du har endnu ikke oprettet nogen markeder."
 
