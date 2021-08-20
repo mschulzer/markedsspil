@@ -29,7 +29,9 @@ class MarketForm(forms.ModelForm):
             'beta': _('Beta'),
             'theta': _('Theta'),
             'min_cost': _('Min. prod. cost'),
-            'max_cost': _('Max. prod. cost')
+            'max_cost': _('Max. prod. cost'),
+            'endless': _('Endless'),
+            'max_rounds': _('Max rounds'),
         }
         widgets = {
             'initial_balance': forms.NumberInput(attrs={'step': 1}),

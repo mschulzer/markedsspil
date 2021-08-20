@@ -99,6 +99,16 @@ msgstr "Min. produktionsomkostning"
 msgid "Max. prod. cost"
 msgstr "Max. produktionsomkostning"
 
+#: forms.py:30 templates/market/monitor.html:26
+#: templates/market/my_markets.html:24
+msgid "Endless"
+msgstr "Uendelig"
+
+#: forms.py:31 templates/market/monitor.html:27
+#: templates/market/my_markets.html:25
+msgid "Max rounds"
+msgstr "Antal runder"
+
 #: forms.py:92
 msgid "Market ID"
 msgstr "Markeds-ID"
