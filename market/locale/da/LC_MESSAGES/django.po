@@ -198,6 +198,11 @@ msgstr "Deltag"
 msgid "Create"
 msgstr "Opret"
 
+
+#: templates/market/base.html:41 
+msgid "Log Out"
+msgstr "Log ud"
+
 #: templates/market/base.html:40 templates/market/home.html:42
 #: templates/market/my_markets.html:2
 msgid "My markets"
