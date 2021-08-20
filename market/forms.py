@@ -1,25 +1,42 @@
 from django import forms
 from .models import Market, Trade, Trader
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 from math import floor
 
 
 class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
+
         fields = ['product_name_singular', 'product_name_plural', 'initial_balance',
                   'max_rounds', 'endless', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
-            'product_name_singular': ("The singular form of the product being sold (e.g. 'baguette')"),
-            'product_name_plural': ("The plural form of the product being sold (e.g. 'baguettes')"),
-            'initial_balance': ("How much money should the participants start out with?"),
-            'max_rounds': ("How many rounds should the game last for?"),
-            'endless': ("Should the game last until manually stopped?"),
-            'alpha': ("How big should the demand for a trader's product be, if all traders set the price to zero?"),
-            'beta': ("How much should the demand for a trader's product decrease, when (s)he raises the unit price by one?"),
-            'theta': ("How much should the demand for a trader's product increase, when the market's average price goes up by one?"),
-            'min_cost': ("What are the minimal production costs for one unit of the product?"),
-            'max_cost': ("What are the maximal production costs for one unit of the product?")
+            'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')."),
+            'product_name_plural': _("The name of the product being traded in plural form (e.g. 'baguettes')."),
+            'initial_balance': _("How much money should the participants start out with?"),
+            'alpha': _("How big should the demand for a trader's product be, if all traders set their price to 0?"),
+            'beta': _("How much should the demand of a single trader's product be reduced, when she/he raises their unit price by one?"),
+            'theta': _("How much should the demand of a single trader's product increase, when the market's average price goes up by one?"),
+            'min_cost': _("What is the lowest production cost for one unit of the product?"),
+            'max_cost': _("What is the highest production cost for one unit of the product?")
+        }
+        labels = {
+            'product_name_singular': _('Product name (singular)'),
+            'product_name_plural': _('Product name (plural)'),
+            'initial_balance': _('Initial balance'),
+            'alpha': _('Alpha'),
+            'beta': _('Beta'),
+            'theta': _('Theta'),
+            'min_cost': _('Min. prod. cost'),
+            'max_cost': _('Max. prod. cost'),
+            'endless': _('Endless'),
+            'max_rounds': _('Max rounds'),
+        }
+        widgets = {
+            'initial_balance': forms.NumberInput(attrs={'step': 1}),
+            'min_cost': forms.NumberInput(attrs={'step': 1}),
+            'max_cost': forms.NumberInput(attrs={'step': 1})
         }
 
     def clean(self):
@@ -49,14 +66,16 @@ class MarketUpdateForm(MarketForm):
 
 
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label="Market ID",
-                                help_text='Enter the ID of the market you want to join')
+    market_id = forms.CharField(max_length=16, label=_("Market ID"), help_text=_('Enter the ID of the market you want to join.'))
 
     class Meta:
         model = Trader
         fields = ['name']
         labels = {
-            'name': ('Name'),
+            'name': _('Name'),
+        }
+        help_texts = {
+            'name': _('The name you choose will be visible to other traders on the market.'),
         }
 
     def clean_market_id(self):
@@ -64,7 +83,7 @@ class TraderForm(forms.ModelForm):
         market_id = self.cleaned_data['market_id'].upper()
 
         if not Market.objects.filter(pk=market_id).exists():
-            raise forms.ValidationError('There is no market with this ID')
+            raise forms.ValidationError(_('There is no market with this ID'))
         return market_id
 
     def clean(self):
@@ -79,21 +98,21 @@ class TraderForm(forms.ModelForm):
             market = Market.objects.get(market_id=cleaned_market_id)
             if Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
-                    'There is already a trader with this name on the requested market. Please select another name')
+                    _('There is already a trader with this name on the requested market. Please select another name'))
         return cleaned_data
 
 
 class TradeForm(forms.ModelForm):
     class Meta:
         model = Trade
-        fields = ['unit_price', 'unit_amount']
+        fields = ('unit_price', 'unit_amount')
         widgets = {
             'unit_price': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class': 'slider', 'step': 0.1}),
             'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class': 'slider', 'step': 1}),
         }
         labels = {
-            'unit_price': ('Price: '),
-            'unit_amount': ('Amount: ')
+            'unit_price': _('Price')+': ',
+            'unit_amount': _('Amount')+': '
         }
         help_texts = {
             'unit_amount': ('How many units do you want to produce?'),
@@ -113,7 +132,7 @@ class TradeForm(forms.ModelForm):
             else:  # if prod_cost is 0 (this is currently not allowed to happen)
                 max_unit_amount = 10000  # this number is arbitrary
 
-            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount
-            self.fields[
-                'unit_price'].help_text = f"Set a price for one {trader.market.product_name_singular} (your costs pr. {trader.market.product_name_singular} are  {trader.prod_cost})"
-            self.fields['unit_amount'].help_text = f"How many {trader.market.product_name_plural} do you want to produce?"
+            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount 
+            self.fields['unit_price'].help_text = (_("Set a price for one {0} (your costs pr. {0} are {1} kr.)")).format(trader.market.product_name_singular, trader.prod_cost)
+            self.fields['unit_amount'].help_text = (_("How many {0} do you want to produce?")).format(trader.market.product_name_plural)
+

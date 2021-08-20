@@ -1,6 +1,8 @@
+{% load i18n %}
+
 {% if traders|length == 0 %}
     <i>
-        Waiting for the first player to join the market ... 
+        {% translate 'Waiting for the first trader to join the market...' %}
     </i>
 
 {% else %}
@@ -8,12 +10,12 @@
         <thead id="trader_status_thead">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Name</th>
-				{% if not market.game_over%}
-                  <th scope="col">Ready</th>
-				{% endif %}
-                <th scope="col">Prod Cost</th>
-                <th scope="col">Current Balance</th>
+                <th scope="col">{% translate 'Trader name' %}</th>
+                                {% if not market.game_over%}
+                <th scope="col">{% translate 'Ready' %}</th>
+                                {% endif %}
+                <th scope="col">{% translate 'Production cost' %}</th>
+                <th scope="col">{% translate 'Balance' %}</th>
             </tr>
         </thead>
         <tbody>
@@ -37,19 +39,19 @@
 	{% if not market.game_over%}
         {% if num_ready_traders == 0 %}
             <button type="button" class="btn btn-primary" disabled>
-                Finish Round
+                {% translate 'Finish round' %}
             </button>
         {% else %}
             {% if num_ready_traders < traders|length %}       
                 <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
-                    Finish Round
+                    {% translate 'Finish round' %}
                 </button>
              
             {% else %}
                 <!-- all traders area ready so show a submit button with no confirmation required -->
                 <button type="button" class="btn btn-success" onclick="next_round()">
-                    Finish Round
+                    {% translate 'Finish round' %}
                 </button>
             {% endif %}
         {% endif %}

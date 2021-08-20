@@ -1,8 +1,9 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
 {% load custom_tags %}
+{% load i18n %}
 
-{% block title %}Play{% endblock %}
+{% block title %}{% translate 'Play' %}{% endblock %}
 
 {% block content %}
     <style>
@@ -12,25 +13,32 @@
             }
         }
     </style>
-   
-    <p class="pt-3 p-2" >    
-        {% if show_last_round_data %}
-            Last round you produced <b>{{ trades.last.unit_amount }}</b> and sold
-            <b>{{ trades.last.units_sold }}</b>
-           {{ market.product_name_plural}}. The demand was <b>{{ trades.last.demand }}</b>. Your price was
-           <b>{{ trades.last.unit_price}} </b> and the
+    <p class="pt-3 p-2" >
+      {% if show_last_round_data %}
+	    {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+            Last round you produced <b>{{ lastRoundUnits }}</b> and sold
+            <b>{{ lastRoundSold }}</b>
+           {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
+           <b>{{ lastRoundPrice }} </b>kr. and the
             market
-            average price was <b>{{ round_stats.all.last.avg_price | floatformat:2 }}</b>.<br class="hide-when-small">
-            Your profit was {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b>. 
+           average price was <b>{{ lastRoundAvgPrice | floatformat:1 }}</b> kr.<br class="hide-when-small">
+		   {% endblocktranslate %}
+		   {% blocktranslate %}
+           Your profit was
+		   {% endblocktranslate %}
+		   {% if trades.last.profit < 0 %} <b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
         {% endif %}
-            Your current balance is <b style="color:green">{{ trader.balance }}</b>.
-        <br>
+
+	  {% blocktranslate with balance=trader.balance %}
+		Your current balance is <b style="color:green">{{ balance }}</b> kr.
+	  {% endblocktranslate %}
+	   <br>
     </p>
 
 {% if not wait %}
     <div class="card mb-4">
         <div class="card-header">
-        Make your next trade
+         {% translate 'Make your next trade' %}
         </div>
         <div class="card-body">
             <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>
@@ -38,24 +46,24 @@
                 {{ form|crispy }}
             </form>
             <div class="d-flex justify-content-center mt-4 mb-4">
-                <input type="submit" value="Make Trade!" class="btn btn-outline-primary" form="trade_form">
+                <input type="submit" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" form="trade_form">
             </div>
 
             <div class="d-flex justify-content-center">
                 <ul class="text-secondary">
                     <li>
-                        Total production costs: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
+                        {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
                     </li>
                     <li>
-                        Balance after production: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
+                        {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
                     </li>
                     <li>
-                        Income (all units sold): <span id="income_best_case_formula"></span><b id="income_best_case"></b>
+                        {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
                     </li>
                     <li>
-                        Profit (all units sold): <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
+                        {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
                     </li>
-                    <li>Profit (no units sold): <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
+                    <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
                     </li>
                 </ul>
             </div>
@@ -72,7 +80,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                         data-target="#collapsePrice" aria-expanded="false" aria-controls="collapseOne">
-                        Price History Graph
+                        {% translate 'Price history' %}
                     </button>
                 </h2>
             </div>
@@ -90,7 +98,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
                         data-target="#collapseProduction" aria-expanded="true" aria-controls="collapseTwo">
-                        Production History Graph
+                        {% translate 'Production history' %}
                     </button>
                 </h2>
             </div>
@@ -108,7 +116,7 @@
                 <h2 class="mb-0">
                     <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                         data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseOne">
-                        Balance History Graph
+                        {% translate 'Balance history' %}
                     </button>
                 </h2>
             </div>
@@ -135,20 +143,20 @@
     unitsCanvas = document.getElementById('unitsCanvas')
 
     var dataDemand = {
-        label: "Demand",
+        label: "{% translate 'Demand' %}",
         data: JSON.parse("{{data_demand_json}}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataSold = {
-        label: "Sold",
+        label: "{% translate 'Sold' %}",
         data: JSON.parse("{{data_sold_json}}"),
         borderColor: 'rgb(0, 153, 255)',
     };
 
     var dataProduced = {
-        label: "Produced",
+        label: "{% translate 'Produced' %}",
         data: JSON.parse("{{data_produced_json}}"),
         borderColor: 'rgb(255, 153, 0)',
     };
@@ -168,7 +176,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Units History',
+                        text: "{% translate 'Units produced' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -185,20 +193,20 @@
     priceCanvas = document.getElementById('priceCanvas')
 
     var dataYourPrice = {
-        label: "Your price",
+        label: "{% translate 'Your price' %}",
         data: JSON.parse("{{ data_price_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
     };
 
     var dataMarketAvgPrice = {
-        label: "Market avg. price",
+        label: "{% translate 'Market average price' %}",
         data: JSON.parse("{{ data_market_avg_price_json }}"),
         borderColor: 'rgb(0, 153, 255)',
     };
 
     var dataProdCost = {
-        label: "Your costs pr unit (fixed)",
+        label: "{% translate 'Cost per unit (fixed)' %}",
         data: JSON.parse("{{ data_prod_cost_json }}"),
         borderColor: 'rgb(255, 153, 0)',
     };
@@ -216,7 +224,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Price History',
+                        text: "{% translate 'Price history' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -233,7 +241,7 @@
     balanceCanvas = document.getElementById('balanceCanvas')
 
     var dataBalance = {
-        label: "Your balance",
+        label: "{% translate 'Your balance' %}",
         data: JSON.parse("{{ data_balance_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192)',
@@ -252,7 +260,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Balance History',
+                        text: "{% translate 'Balance history' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -265,15 +273,14 @@
 </script>
 
 {% if not wait %}
+<script>
 
-<script>    
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
     var amount_label = labels[1]
     
     var amount_slider = document.getElementById("id_unit_amount");
     var price_slider = document.getElementById("id_unit_price");
-
     {% if show_last_round_data %}
         amount_slider.value = "{{ trades.last.unit_amount }}"
         price_slider.value = "{{ trades.last.unit_price }}"
@@ -290,12 +297,13 @@
     // only show calculations when screen width is bigger than this number
     const show_formula_breakpoint = 490;
 
-    function set_price_label(){
-        price_label.innerHTML = "Unit Price: " + parseFloat(price_slider.value).toFixed(2); 
+  function set_price_label(){
+	  price_label.innerHTML = "{% translate 'Price' %}: " + price_slider.value;
     }
     
-    function set_amount_label(){
-        amount_label.innerHTML = "Amount: " + amount_slider.value;
+  function set_amount_label(){
+	  amount_label.innerHTML = "{% translate 'Amount' %}: " + amount_slider.value;
+        //amount_label.innerHTML = "Amount: " + amount_slider.value;
     }
     
     function set_total_cost(){

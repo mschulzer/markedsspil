@@ -565,7 +565,7 @@ class PlayViewGetRequestTest(TestCase):
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "You made a decision" in message.message)
+            "Du har lavet din handel" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn('last round', html)
@@ -782,7 +782,8 @@ class MyMarketsTest(TestCase):
         market = MarketFactory()  # some market created by anouther user
         response = self.client.get(reverse('market:my_markets'))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'You have not created any markets yet')
+        self.assertContains(
+            response, 'Du har endnu ikke oprettet nogen markeder')
         self.assertNotContains(response, market.market_id)
 
     def test_user_has_created_a_market(self):
@@ -791,7 +792,7 @@ class MyMarketsTest(TestCase):
         response = self.client.get(reverse('market:my_markets'))
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(
-            response, 'You have not created any markets yet')
+            response, 'Du har endnu ikke oprettet nogen markeder')
         self.assertContains(response, market.market_id)
         #html = response.content.decode('utf8')
 

@@ -1,34 +1,36 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
-{% block title %}Join{% endblock %}
+{% block title %}{% translate 'Join' %}{% endblock %}
 
 {% block content %}
 
 
-<h4>Choose a name and join a market:</h4>
+<h4>{% translate 'Choose a username and join a market' %}:</h4>
 
 <form action="" method="post">{% csrf_token %}
 	{{ form|crispy }}
-	<input type="submit" value="Join Market" class="btn btn-primary">
+	<input type="submit" value="{% translate 'Join' %}" class="btn btn-primary">
 </form>
 
 <br>
 <br>
 
 {% if request.session.trader_id %}
-	<h5><i>Please Note</i></h5>
-	<p>You've already joined the market 
-		<b>{{ request.session.market_id }}</b>
-		with the username 
-		<b>{{ request.session.username }}</b>. 
-		If you use the above form, you will loose access to your data from this market... </p>
-	
-	<p>Keep playing on <b>{{ request.session.market_id }}</b>? 
-		<a href="{% url 'market:play' %}">
-			Return to play  
-		</a>
-	</p>
+<h5><i>{% translate 'Please note' %}</i></h5>
+{% blocktranslate with market_id=request.session.market_id username=request.session.username %}
+<p>
+You've already joined the market
+<b>{{ market_id }}</b>
+with the username
+<b>{{ username }}</b>.
+If you use the above form, you will loose access to your data from this market...
+</p>
+<p>Keep playing on<b>{{ market_id }}</b>?
+{% endblocktranslate %}
+<a href="{% url 'market:play' %}">{% translate 'Keep playing' %}</a>
+</p>
 {% endif %}
 
 
