@@ -266,7 +266,7 @@ msgstr "Vend tilbage til et af dine tidligere markeder"
 
 #: templates/market/join.html:10
 msgid "Choose a trader name and join a market"
-msgstr "Vælg et forhandlernavn og tilslut dig et marked"
+msgstr "Tilslut dig et marked"
 
 #: templates/market/join.html:21
 msgid "Please note"
