@@ -127,7 +127,7 @@ def join(request):
                 market_id=request.session['market_id'])
 
             messages.warning(request, mark_safe(
-                f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet med ID = {market.market_id}. Hvis du indsender formularen nedenfor, mister du adgang til dette marked. Vil du tilbage til dit marked? <a href='/play'>Tilbage til mit marked</a>"))
+                f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet med ID'et {market.market_id}. Hvis du indsender formularen nedenfor, mister du adgang til dette marked. Vil du tilbage til dit marked?<a href='/play'> Tilbage til mit marked </a>"))
 
     return render(request, 'market/join.html', {'form': form})
 
