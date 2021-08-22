@@ -109,7 +109,7 @@ def join(request):
                         trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
                 request,
-                (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'],market.product_name_singular,market.market_id))
+                (_("Hi {0}! You're now ready to trade on the {1} market (id = {2}).")).format(form.cleaned_data['name'], market.product_name_singular, market.market_id))
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':

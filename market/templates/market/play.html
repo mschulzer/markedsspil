@@ -6,6 +6,7 @@
 {% block title %}{% translate 'Play' %}{% endblock %}
 
 {% block content %}
+
     <style>
         @media screen and (max-width: 575px) {
             .hide-when-small {
@@ -13,15 +14,16 @@
             }
         }
     </style>
+
     <p class="pt-3 p-2" >
       {% if show_last_round_data %}
-	    {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+	    {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
             Last round you produced <b>{{ lastRoundUnits }}</b> and sold
             <b>{{ lastRoundSold }}</b>
            {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
            <b>{{ lastRoundPrice }} </b>kr. and the
             market
-           average price was <b>{{ lastRoundAvgPrice | floatformat:1 }}</b> kr.<br class="hide-when-small">
+           average price was <b>{{ lastRoundAvgPrice }}</b> kr.<br class="hide-when-small">
 		   {% endblocktranslate %}
 		   {% blocktranslate %}
            Your profit was
