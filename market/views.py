@@ -1,3 +1,4 @@
+from django.utils.safestring import mark_safe
 import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
@@ -87,6 +88,7 @@ def create(request):
 
 
 def join(request):
+
     if request.method == 'POST':
         form = TraderForm(request.POST)
         if form.is_valid():
@@ -109,7 +111,8 @@ def join(request):
                         trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
                 request,
-                (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'],market.product_name_singular,market.market_id))
+                (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'], market.product_name_singular, market.market_id))
+
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -118,6 +121,14 @@ def join(request):
                 initial={'market_id': request.GET['market_id']})
         else:
             form = TraderForm()
+
+        if 'market_id' in request.session:
+            market = Market.objects.get(
+                market_id=request.session['market_id'])
+
+            messages.warning(request, mark_safe(
+                f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet med ID = {market.market_id}. Hvis du indsender formularen nedenfor, mister du adgang til dette marked. Vil du tilbage til dit marked? <a href='/play'>Tilbage til mit marked</a>"))
+
     return render(request, 'market/join.html', {'form': form})
 
 
@@ -257,7 +268,7 @@ def play(request):
             return render(request, 'market/play.html', context)
 
 
-@require_GET
+@ require_GET
 def current_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     data = {
@@ -297,14 +308,18 @@ def download(request, market_id):
     for r in range(total_rounds):
         data += str(r) + ","
         round_stats = Stats.objects.filter(round=r, market=market)
-        avg_price = sum([trader.price for trader in round_stats]) / len(round_stats)
+        avg_price = sum(
+            [trader.price for trader in round_stats]) / len(round_stats)
         data += str(avg_price) + ","
-        avg_amount = sum([trader.amount for trader in round_stats]) / len(round_stats)
+        avg_amount = sum(
+            [trader.amount for trader in round_stats]) / len(round_stats)
         data += str(avg_amount) + ","
-        avg_profit = sum([trader.profit for trader in round_stats]) / len(round_stats)
+        avg_profit = sum(
+            [trader.profit for trader in round_stats]) / len(round_stats)
         data += str(avg_profit) + ","
         for trader in market_traders:
-            trader_stats = Stats.objects.get(round=r, market=market, trader=trader)
+            trader_stats = Stats.objects.get(
+                round=r, market=market, trader=trader)
             data += str(trader_stats.balance) + ","
         data += "<br>"
     output = open(market.market_id + "_stats.csv", "w")
