@@ -251,10 +251,10 @@ def play(request):
         elif not market.game_over:
             if market.endless:
                 messages.success(
-                    request, _("Hi {0}! You are now ready for round {1} on the {2}-market.").format(request.session["username"], market.round + 1, market.product_name_singular))
+                    request, _("Hi {0}! You are now ready for round {1} on the {2} market.").format(request.session["username"], market.round + 1, market.product_name_singular))
             else:
                 messages.success(
-                    request, _("Hi {0}! You are now ready for round {1}/{2} on the {3}-market.").format(request.session["username"], market.round + 1, market.max_rounds, market.product_name_singular))
+                    request, _("Hi {0}! You are now ready for round {1}/{2} on the {3} market.").format(request.session["username"], market.round + 1, market.max_rounds, market.product_name_singular))
 
         if market.game_over:
             messages.info(request,  mark_safe(
