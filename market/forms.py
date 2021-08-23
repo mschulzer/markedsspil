@@ -19,7 +19,9 @@ class MarketForm(forms.ModelForm):
             'beta': _("How much should the demand of a single trader's product be reduced, when she/he raises their unit price by one?"),
             'theta': _("How much should the demand of a single trader's product increase, when the market's average price goes up by one?"),
             'min_cost': _("What is the lowest production cost for one unit of the product?"),
-            'max_cost': _("What is the highest production cost for one unit of the product?")
+            'max_cost': _("What is the highest production cost for one unit of the product?"),
+            'max_rounds': _("How many rounds should be played before the game ends?"),
+            'endless': _("The game does not have a fixed number of rounds"),
         }
         labels = {
             'product_name_singular': _('Product name (singular)'),
