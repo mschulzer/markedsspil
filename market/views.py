@@ -259,7 +259,7 @@ def play(request):
 
         if market.game_over:
             messages.info(request,  mark_safe(
-                f"You made your last trade! The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/game_over' target='_blank'> Åbn til markedsoversigt</a>."))
+                f"You made your last trade! The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/game_over' target='_blank'> Åbn markedsoversigt</a>."))
 
         return render(request, 'market/play.html', context)
 

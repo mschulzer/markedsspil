@@ -37,7 +37,7 @@
 
         {% if wait %}
             Du har valgt at producere <b>{{ trades.last.unit_amount }}</b> 
-            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk. Vi venter nu på, at værten afslutter runde {{ market.round|add:1 }}. 
+            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk. Vi venter nu på, at værten afslutter runde <b>{{ market.round|add:1 }}</b>. 
         
         {% else %}
         {% blocktranslate with balance=trader.balance %}
