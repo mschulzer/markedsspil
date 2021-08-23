@@ -12,8 +12,8 @@ class MarketForm(forms.ModelForm):
         fields = ['product_name_singular', 'product_name_plural', 'initial_balance',
                   'max_rounds', 'endless', 'alpha', 'beta', 'theta', 'min_cost', 'max_cost']
         help_texts = {
-            'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')."),
-            'product_name_plural': _("The name of the product being traded in plural form (e.g. 'baguettes')."),
+            'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')"),
+            'product_name_plural': _("The name of the product being traded in plural form (e.g. 'baguettes')"),
             'initial_balance': _("How much money should the participants start out with?"),
             'alpha': _("How big should the demand for a trader's product be, if all traders set their price to 0?"),
             'beta': _("How much should the demand of a single trader's product be reduced, when she/he raises their unit price by one?"),
