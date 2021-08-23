@@ -225,7 +225,7 @@ def play(request):
             'traders': Trader.objects.filter(market=market).order_by('-balance'),
 
 
-            # labels for unit and price charts
+            # labels for x-axis on charts
             'rounds_json': json.dumps(list(range(1, market.round + 2))),
 
             # context for units graph
@@ -239,7 +239,6 @@ def play(request):
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 
             # context for balance graph
-            'balance_labels': json.dumps(list(range(market.round+1))),
             'data_balance_json': json.dumps([float(trader.market.initial_balance)] + [float(trade.balance_after) if trade.balance_after else None for trade in trades]),
         }
 
