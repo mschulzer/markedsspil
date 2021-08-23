@@ -15,6 +15,7 @@ SCENARIOS = [
         "theta": 14.58,
         "min_cost": 8,
         "max_cost": 8,
+        "max_rounds": 15,
     },
     {
         "description": _("Scenario 2. Traders are assigned different production costs at random, giving some traders an advantage over others."),
@@ -25,7 +26,10 @@ SCENARIOS = [
         "beta": 17.5,
         "theta": 14.58,
         "min_cost": 5,
-        "max_cost": 15
+        "max_cost": 15,
+        "max_rounds": 15,
+        "endless": False
+
     },
     {
         "description": _("Custom scenario. Create a market with parameters of your choice."),
@@ -36,6 +40,8 @@ SCENARIOS = [
         "beta": "",
         "theta": "",
         "min_cost": "",
-        "max_cost": ""
+        "max_cost": "",
+        "max_rounds": "",
+        "endless": False
     }
 ]

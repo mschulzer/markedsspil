@@ -46,6 +46,8 @@ class TestMarketFactory(TestCase):
         self.assertIsInstance(self.market.max_cost, Decimal)
         self.assertIsInstance(self.market.min_cost, Decimal)
         self.assertIsInstance(self.market.round, int)
+        self.assertIsInstance(self.market.max_rounds, int)
+        self.assertIsInstance(self.market.endless, bool)
 
     def test_factory_with_provided_values(self):
         market = MarketFactory(
@@ -58,7 +60,8 @@ class TestMarketFactory(TestCase):
             max_cost=Decimal('6.30'),
             initial_balance = Decimal('4000.00'),
             created_by = UserFactory(username='egon'),
-            round=74
+            round=74,
+            endless=True
         )
         self.assertEqual(market.alpha, Decimal('102.2034'))
         self.assertEqual(market.beta, Decimal('304.5003'))
@@ -70,6 +73,7 @@ class TestMarketFactory(TestCase):
         self.assertEqual(market.min_cost, Decimal('4.00'))
         self.assertEqual(market.created_by.username, 'egon')
         self.assertEqual(market.round, 74)
+        self.assertEqual(market.endless, True)
 
         # object name
         expected_object_name = f"{market.market_id}[74]:102.2034,304.5003,14.1234"
@@ -84,6 +88,15 @@ class TestMarketFactory(TestCase):
         self.assertEqual(expected_num_markets, actual_num_markets )
         self.assertEqual(expected_market_id, market.market_id)
  
+    def test_game_over_method_1(self):
+        market = MarketFactory(round=5, max_rounds=5)
+        self.assertTrue(market.game_over())
+
+    def test_game_over_method_2(self):
+        market = MarketFactory(round=5, max_rounds=6)
+        self.assertFalse(market.game_over())
+
+
 class TestTraderFactory(TestCase):
     
     def test_default_trader_factory_with_default_values(self):

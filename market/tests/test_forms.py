@@ -112,7 +112,7 @@ class MarketFormTest(TestCase):
 
 
     def test_blank_field_is_invalid(self):
-        """ host has too fill in all values when creating a market """
+        """ host has too fill in all most values when creating a market """
         data = {}
         form = MarketForm(data=data)
 
@@ -127,6 +127,7 @@ class MarketFormTest(TestCase):
         self.assertTrue('min_cost' in form.errors)
         self.assertTrue('max_cost' in form.errors)
         self.assertTrue('initial_balance' in form.errors)
+        self.assertTrue('max_rounds' in form.errors)
 
     def test_alpha_negative_is_invalid(self):
         """ alpha can't be negative """
@@ -153,15 +154,36 @@ class MarketFormTest(TestCase):
 
     def test_theta_negative_is_invalid(self):
         """ theta can't be negative """
-        data = {'product_name_singular': 'baguette', 'product_name_plural': 'baguettes', 'alpha': 0, 'beta': 3, 'theta': -1234,
-                'min_cost': 3, 'max_cost': 13}
+        self.data['theta'] = -1234,
 
-        form = MarketForm(data=data)
+        form = MarketForm(data=self.data)
 
         is_valid = form.is_valid()
 
         self.assertFalse(is_valid)
         self.assertTrue('theta' in form.errors)
+
+    def test_max_rounds_cant_be_zero(self):
+        """ max_rounds can't less than 1, in particular not 0 """
+        self.data['max_rounds'] = 0
+
+        form = MarketForm(data=self.data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('max_rounds' in form.errors)
+
+    def test_max_rounds_cant_non_integer(self):
+        """ max_rounds has to be an integer """
+        self.data['max_rounds'] = 3.54
+
+        form = MarketForm(data=self.data)
+
+        is_valid = form.is_valid()
+
+        self.assertFalse(is_valid)
+        self.assertTrue('max_rounds' in form.errors)
 
 
 class TraderFormTest(TestCase):

@@ -6,6 +6,7 @@
 
 {% block content %}
 
+
 <h3>{% translate 'Create a new market' %}</h3>
 <h6 class="mb-3">{% translate 'Choose a predefined scenario, or create a market with custom settings.' %}</h6>
 
@@ -43,6 +44,7 @@
 		</div>
 	</div>
 </div>
+
 {% endblock content %}
 
 {% block javascript %}
@@ -59,13 +61,31 @@
 		document.getElementById('id_theta').value=scenario.theta
 		document.getElementById('id_min_cost').value=scenario.min_cost
 		document.getElementById('id_max_cost').value=scenario.max_cost
+		document.getElementById('id_max_rounds').value=scenario.max_rounds
+		document.getElementById('id_endless').value=scenario.endless
 	}
-	
-	fill_form(scenarios[0])
+
+	/* We should NOT fill out form with predefined scenarios after an unsuccesful post-attempt */
+	/* Instead, the form will be filled out with the posted values + error messages */
+	{% if not form.errors %}fill_form(scenarios[0]){% endif %}
+
 	
 	document.getElementById('market_radio_form').addEventListener('change', function() {
 		scenario_number = document.querySelector('input[name="scenario"]:checked').value
 			fill_form(scenarios[scenario_number]);
+	}); 
+
+	document.getElementById('div_id_endless').addEventListener('change', function() {
+		max_rounds_field = document.getElementById('div_id_max_rounds')
+		endless_checked = document.getElementById('id_endless').checked
+		if (endless_checked){
+			max_rounds_field.style.visibility = "hidden";
+   		    document.getElementById('id_max_rounds').value = 1; /*Fill cannot be blank. The value chosen will be disregarded when endless = True */ 
+			
+		}
+		else{
+			max_rounds_field.style.visibility = "";
+		}
 	}); 
 
 </script>

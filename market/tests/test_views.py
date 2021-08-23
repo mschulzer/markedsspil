@@ -150,6 +150,19 @@ class CreateMarketViewPOSTRequestTests(TestCase):
         self.assertContains(response,
                             "Denne værdi skal være større end eller lig 0.01.")
 
+    def test_if_user_chooses_negative_max_rounds_he_gets_a_good_error_message(self):
+        """ 
+        Max_rounds must be an integer >= 1. 
+        """
+
+        self.data['max_rounds'] = -4
+
+        response = self.client.post(
+            reverse('market:create'), self.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "There must be at least 1 round")
+
 
 class JoinViewTestGETRequests(TestCase):
 
@@ -690,6 +703,25 @@ class PlayViewGetRequestTest(TestCase):
         self.assertIn('max="50"', str(form))
         self.assertNotIn('max="53"', str(form))
 
+    # def test_game_over_when_rounds_equals_max_round(self):
+    #     """
+    #     When game is over, user should be notified
+    #     """
+    #     market = MarketFactory(round=4, max_rounds=4)
+
+    #     # a user has joined properly
+    #     trader = TraderFactory(market=market, balance=101, prod_cost=2)
+    #     session = self.client.session
+    #     session['trader_id'] = trader.pk
+    #     session['username'] = 'Hans'
+    #     session.save()
+
+    #     # user goes to play url
+    #     response = self.client.get(reverse('market:play'))
+    #     self.assertContains(
+    #         response, '.... ')
+    #
+    #  ......Just realized that this test will not work before merge of previous commit....
 
 class PlayViewPOSTRequestTest(TestCase):
 

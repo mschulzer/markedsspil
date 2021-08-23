@@ -55,7 +55,7 @@ class MarketForm(forms.ModelForm):
         """Form is invalid if max_rounds < 1"""
         max_rounds = self.cleaned_data['max_rounds']
 
-        if max_rounds < 1:
+        if not (max_rounds is None) and max_rounds < 1:
             raise forms.ValidationError('There must be at least 1 round')
         return max_rounds
 
@@ -68,7 +68,8 @@ class MarketUpdateForm(MarketForm):
 
 
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label=_("Market ID"), help_text=_('Enter the ID of the market you want to join.'))
+    market_id = forms.CharField(max_length=16, label=_("Market ID"), help_text=_(
+        'Enter the ID of the market you want to join.'))
 
     class Meta:
         model = Trader
@@ -134,7 +135,8 @@ class TradeForm(forms.ModelForm):
             else:  # if prod_cost is 0 (this is currently not allowed to happen)
                 max_unit_amount = 10000  # this number is arbitrary
 
-            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount 
-            self.fields['unit_price'].help_text = (_("Set a price for one {0} (your costs pr. {0} are {1} kr.)")).format(trader.market.product_name_singular, trader.prod_cost)
-            self.fields['unit_amount'].help_text = (_("How many {0} do you want to produce?")).format(trader.market.product_name_plural)
-
+            self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount
+            self.fields['unit_price'].help_text = (_("Set a price for one {0} (your costs pr. {0} are {1} kr.)")).format(
+                trader.market.product_name_singular, trader.prod_cost)
+            self.fields['unit_amount'].help_text = (
+                _("How many {0} do you want to produce?")).format(trader.market.product_name_plural)

@@ -48,11 +48,14 @@ class Market(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))])
 
     round = models.IntegerField(default=0)
-    max_rounds = models.IntegerField(default=15)
-    endless = models.BooleanField(default=False)
-    game_over = models.BooleanField(default=False)
+    max_rounds = models.IntegerField()
+    endless = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)
+
+    def game_over(self):
+        if self.round == self.max_rounds:
+            return True
 
     def save(self, *args, **kwargs):
         """

@@ -77,6 +77,7 @@ def create(request):
             new_market.created_by = request.user
             new_market.save()
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
+
     elif request.method == 'GET':
         form = MarketForm()
 
@@ -109,7 +110,7 @@ def join(request):
                         trader=new_trader, round_num=round_num, is_new_trader=True)
             messages.success(
                 request,
-                (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'],market.product_name_singular,market.market_id))
+                (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'], market.product_name_singular, market.market_id))
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -173,11 +174,9 @@ def monitor(request, market_id):
             market=market, round=market.round, avg_price=avg_price)
 
         market.round += 1
-        if market.round == market.max_rounds:
-            market.game_over = True
         market.save()
 
-        if market.game_over:
+        if market.game_over():
             return redirect(reverse('market:game_over', args=(market.market_id,)))
         else:
             return redirect(reverse('market:monitor', args=(market.market_id,)))
@@ -251,7 +250,7 @@ def play(request):
             messages.success(
                 request, _("You are now ready for round {0}!").format(market.round))
 
-        if market.game_over:
+        if market.game_over():
             return redirect(reverse('market:game_over', args=(market.market_id,)))
         else:
             return render(request, 'market/play.html', context)
@@ -266,7 +265,7 @@ def current_round(request, market_id):
     return JsonResponse(data)
 
 
-def game_over(request, market_id):
+def game_over_view(request, market_id):
 
     market = get_object_or_404(Market, market_id=market_id)
     traders = Trader.objects.filter(market=market)

@@ -30,7 +30,8 @@ class MarketFactory(factory.django.DjangoModelFactory):
     min_cost = Decimal('8.00')
     max_cost = Decimal('8.00')
     created_by = factory.SubFactory(UserFactory)
-
+    max_rounds = 15
+    endless = False
 
 
 class TraderFactory(factory.django.DjangoModelFactory):
