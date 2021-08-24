@@ -65,8 +65,8 @@
 		document.getElementById('id_endless').value=scenario.endless
 	}
 
-	/* We should NOT fill out form with predefined scenarios after an unsuccesful post-attempt */
-	/* Instead, the form will be filled out with the posted values + error messages */
+	/* We should NOT fill out form with predefined scenario values after an unsuccesful post-attempt.
+	   Instead, the form will be filled out with the posted values + error messages */
 	{% if not form.errors %}fill_form(scenarios[0]){% endif %}
 
 	
@@ -80,8 +80,14 @@
 		endless_checked = document.getElementById('id_endless').checked
 		if (endless_checked){
 			max_rounds_field.style.visibility = "hidden";
-   		    document.getElementById('id_max_rounds').value = 1; /*Fill cannot be blank. The value chosen will be disregarded when endless = True */ 
-			
+			/* max_rounds has to be a non-blank positive integer, even if game is endless.
+			If user has typed an invalid max_rounds value, we have to change this. 
+			The value chosen will be disregarded when market.endless = true */	
+			max_rounds = document.getElementById('id_max_rounds')
+			max_rounds.value = parseInt(max_rounds.value)
+			if (max_rounds.value < 1){			
+				max_rounds.value = 15; 
+			}
 		}
 		else{
 			max_rounds_field.style.visibility = "";

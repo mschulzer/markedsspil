@@ -48,6 +48,9 @@ class Market(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))])
 
     round = models.IntegerField(default=0)
+
+    # If endless is false, the game will stop after the number of rounds specified in max_rounds.
+    # If endless is true, any value of max_rounds will be disregarded.
     max_rounds = models.IntegerField()
     endless = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True, null=True)

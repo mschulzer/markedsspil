@@ -13,7 +13,6 @@ urlpatterns = [
     path('<market_id>/monitor/', views.monitor, name='monitor'),
     path('<market_id>/monitor/trader-table/', views.trader_table, name='trader_table'),
     path('<market_id>/market_edit/', views.market_edit, name='market_edit'),
-    path('<market_id>/game_over_view/', views.game_over_view, name='game_over'),
     path('my_markets/', views.my_markets, name='my_markets'),
 
     # APIs

@@ -9,6 +9,16 @@
     {% translate 'Monitoring market' %}: {{ market.market_id }}
 </h2>
 
+{% if market.game_over %}
+<h2 class="mb-4">
+    Game over!
+</h2>
+{% endif %}
+
+<h3 id="round_counter">
+  Game ended after {{market.round}} rounds.
+</h3>
+
 {% if market.endless == False %}
 <h3 id="round_counter">
   Round {{market.round}} / {{market.max_rounds}}
