@@ -110,6 +110,7 @@ def join(request):
             new_trader = form.save(commit=False)
             new_trader.market = market
             new_trader.balance = market.initial_balance
+            new_trader.round_joined = market.round
             new_trader.save()
 
             request.session['trader_id'] = new_trader.pk
@@ -121,9 +122,7 @@ def join(request):
                 for round_num in range(market.round):
                     create_forced_trade(
                         trader=new_trader, round_num=round_num, is_new_trader=True)
-            # messages.success(
-            #    request,
-            #    (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'], market.product_name_singular, market.market_id))
+
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -138,7 +137,8 @@ def join(request):
                 market_id=request.session['market_id'])
 
             messages.warning(request, mark_safe(
-                f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet med ID'et {market.market_id}. Hvis du indsender formularen nedenfor, mister du adgang til dette marked. Vil du tilbage til dit marked?<a href='/play'> Tilbage til mit marked </a>"))
+                f"Hi {request.session['username']}! You've already joined the {market.product_name_singular}-markedet {market.market_id}. If you submit the form below, you will permanenly lose access to this market. Do you want to return to your current market?<a href='/play'> Return to market </a>"))
+            # f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet {market.market_id}. Hvis du indsender formularen nedenfor, mister du permanent adgang til dette marked. Vil du tilbage til dit marked?<a href='/play'> Tilbage til mit marked </a>"))
 
     return render(request, 'market/join.html', {'form': form})
 
@@ -220,9 +220,10 @@ def play(request):
             return redirect(reverse('market:play'))
 
         # Get requests only :
+
         form = TradeForm(trader)
-        trades = Trade.objects.filter(trader=trader)
         round_stats = RoundStat.objects.filter(market=market)
+        trades = Trade.objects.filter(trader=trader)
 
         context = {
             'market': market,
@@ -248,28 +249,41 @@ def play(request):
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 
             # context for balance graph
-            'data_balance_json': json.dumps([float(trader.market.initial_balance)] + [float(trade.balance_after) if trade.balance_after else None for trade in trades]),
+            'data_balance_json': json.dumps([float(market.initial_balance) if trader.round_joined == 0 else None] + [float(trade.balance_after) if trade.balance_after else None for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():
             context['wait'] = True
             messages.success(
                 request,
-                _("You made a trade!").format(market.product_name_plural, market.round))
+                _("You made a trade, {0}!").format(trader.name))
 
-        elif not market.game_over:
-            if market.endless:
-                messages.success(
-                    request, _("Hi {0}! You are now ready for round {1} on the {2} market.").format(request.session["username"], market.round + 1, market.product_name_singular))
-            else:
-                messages.success(
-                    request, _("Hi {0}! You are now ready for round {1}/{2} on the {3} market.").format(request.session["username"], market.round + 1, market.max_rounds, market.product_name_singular))
+        else:  # player should not be waiting
 
-    if market.game_over():
-        messages.info(request,  mark_safe(
-            f"You made your last trade! The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/game_over' target='_blank'> Åbn markedsoversigt</a>."))
+            if market.game_over():
+                messages.info(request,  mark_safe(
+                    f"You made your last trade! The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/game_over' target='_blank'> Åbn markedsoversigt</a>."))
 
-    return render(request, 'market/play.html', context)
+            else:  # game is not over
+                if market.round == trader.round_joined:
+                    # a verbose & enthusiastic message welcoming new traders
+                    if market.endless:
+                        messages.success(
+                            request, _("Hi {0}! You are now ready for round {1} on the {2} market {3}.").format(trader.name, market.round + 1, market.product_name_singular, market.market_id))
+                    else:
+                        messages.success(
+                            request, _("Hi {0}! You are now ready for round {1} out of {2} on the {3} market {4}.").format(trader.name, market.round + 1, market.max_rounds, market.product_name_singular, market.market_id))
+                else:
+                    # a less verbose and less enthusiastic message for other traders
+                    if market.endless:
+                        messages.success(
+                            request, _("Hi {0}. You are now ready for round {1}.").format(request.session["username"], market.round + 1))
+                    else:
+                        if not messages.get_messages(request):
+                            messages.success(
+                                request, _("Hi {0}. You are now ready for round {1} out of {2}.").format(request.session["username"], market.round + 1, market.max_rounds))
+
+        return render(request, 'market/play.html', context)
 
 
 @ require_GET

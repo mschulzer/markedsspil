@@ -90,11 +90,19 @@ class TestMarketFactory(TestCase):
         self.assertEqual(expected_market_id, market.market_id)
 
     def test_game_over_method_1(self):
-        market = MarketFactory(round=5, max_rounds=5)
+        market = MarketFactory(round=5, max_rounds=5, endless=False)
         self.assertTrue(market.game_over())
 
     def test_game_over_method_2(self):
-        market = MarketFactory(round=5, max_rounds=6)
+        market = MarketFactory(round=5, max_rounds=5, endless=True)
+        self.assertFalse(market.game_over())
+
+    def test_game_over_method_3(self):
+        market = MarketFactory(round=5, max_rounds=6, endless=False)
+        self.assertFalse(market.game_over())
+
+    def test_game_over_method_4(self):
+        market = MarketFactory(round=5, max_rounds=6, endless=True)
         self.assertFalse(market.game_over())
 
 
@@ -110,19 +118,21 @@ class TestTraderFactory(TestCase):
         self.assertIsInstance(trader.balance, Decimal)
         self.assertIsInstance(trader.prod_cost, Decimal)
 
-    def test_trader_factory_ith_provided_values(self):
+    def test_trader_factory_with_provided_values(self):
         market = MarketFactory(round=17)
         trader = TraderFactory(
             market=market,
             prod_cost=Decimal('4.30'),
             balance=Decimal('8.00'),
-            name='John'
+            name='John',
+            round_joined=20
         )
         self.assertEqual(trader.name, 'John')
         self.assertEqual(trader.balance, Decimal('8.00'))
         self.assertEqual(trader.prod_cost, Decimal('4.30'))
         self.assertEqual(trader.market.round, 17)
         self.assertEqual(str(trader), f"John [{market.market_id}] - $8.00")
+        self.assertEqual(trader.round_joined, 20)
 
     def test_trader_is_ready(self):
         """ A trader is ready if (and only if) he has made a trade in current round """

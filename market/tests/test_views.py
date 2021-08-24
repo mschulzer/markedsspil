@@ -253,6 +253,7 @@ class JoinViewTestPOSTRequests(TestCase):
                                     'name': 'Hanne', 'market_id': market.market_id})
         self.assertEqual(Trader.objects.all().count(), 1)
         new_trader = Trader.objects.first()
+        self.assertTrue(new_trader.round_joined == 0)
         self.assertEqual(new_trader.market, market)
         self.assertEqual(new_trader.balance, market.initial_balance)
         self.assertTrue('trader_id' in self.client.session)
@@ -269,6 +270,9 @@ class JoinViewTestPOSTRequests(TestCase):
 
         # the trader hanne was created
         hanne = Trader.objects.get(name='Hanne')
+
+        # it is registered, that Hanne joined in round 3
+        self.assertTrue(hanne.round_joined == 3)
 
         # when hanne joined, 3 forced trades was made for her in previous rounds
         hannes_trades = hanne.trade_set.all()
@@ -578,7 +582,7 @@ class PlayViewGetRequestTest(TestCase):
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "Din beslutning er modtaget." in message.message)
+            "You made a trade," in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn(

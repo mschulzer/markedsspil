@@ -57,7 +57,7 @@ class Market(models.Model):
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)
 
     def game_over(self):
-        if self.round == self.max_rounds:
+        if not self.endless and (self.round == self.max_rounds):
             return True
 
     def save(self, *args, **kwargs):
@@ -85,6 +85,8 @@ class Trader(models.Model):
         max_digits=12,
         decimal_places=2,
     )
+    round_joined = models.IntegerField(default=0)
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
