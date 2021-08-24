@@ -19,7 +19,8 @@ class TestUserFactory(TestCase):
         self.assertTrue('john' in self.user.username)
 
     def test_can_log_in(self):
-        is_logged_in = self.client.login(username=self.user.username, password='defaultpassword')
+        is_logged_in = self.client.login(
+            username=self.user.username, password='defaultpassword')
         self.assertTrue(is_logged_in)
 
 
@@ -28,7 +29,7 @@ class TestMarketFactory(TestCase):
     def setUpTestData(cls):
         # Set up non-modified objects used by multiple test methods in class
         cls.market = MarketFactory()
-    
+
     def test_default_round_is_zero(self):
         self.assertEqual(self.market.round, 0)
 
@@ -51,15 +52,15 @@ class TestMarketFactory(TestCase):
 
     def test_factory_with_provided_values(self):
         market = MarketFactory(
-            alpha=Decimal('102.2034'), 
-            beta=Decimal('304.5003'), 
+            alpha=Decimal('102.2034'),
+            beta=Decimal('304.5003'),
             theta=Decimal('14.1234'),
-            product_name_singular ='cake',
-            product_name_plural = 'cakes',
+            product_name_singular='cake',
+            product_name_plural='cakes',
             min_cost=Decimal('4.00'),
             max_cost=Decimal('6.30'),
-            initial_balance = Decimal('4000.00'),
-            created_by = UserFactory(username='egon'),
+            initial_balance=Decimal('4000.00'),
+            created_by=UserFactory(username='egon'),
             round=74,
             endless=True
         )
@@ -78,16 +79,16 @@ class TestMarketFactory(TestCase):
         # object name
         expected_object_name = f"{market.market_id}[74]:102.2034,304.5003,14.1234"
         self.assertEqual(str(market), expected_object_name)
-    
+
     def test_saving_existing_market_does_not_create_new_market_or_new_market_id(self):
         market = MarketFactory()
         expected_market_id = market.market_id
         expected_num_markets = Market.objects.all().count()
         market.save()
-        actual_num_markets = Market.objects.all().count() 
-        self.assertEqual(expected_num_markets, actual_num_markets )
+        actual_num_markets = Market.objects.all().count()
+        self.assertEqual(expected_num_markets, actual_num_markets)
         self.assertEqual(expected_market_id, market.market_id)
- 
+
     def test_game_over_method_1(self):
         market = MarketFactory(round=5, max_rounds=5)
         self.assertTrue(market.game_over())
@@ -98,23 +99,23 @@ class TestMarketFactory(TestCase):
 
 
 class TestTraderFactory(TestCase):
-    
+
     def test_default_trader_factory_with_default_values(self):
         trader = TraderFactory()
         self.assertIsInstance(trader, Trader)
         self.assertTrue('eva' in trader.name)
         self.assertIsInstance(trader.market, Market)
-        self.assertFalse(trader.is_ready()) # trader has not made a trade in current round, so is not "ready"
+        # trader has not made a trade in current round, so is not "ready"
+        self.assertFalse(trader.is_ready())
         self.assertIsInstance(trader.balance, Decimal)
         self.assertIsInstance(trader.prod_cost, Decimal)
-
 
     def test_trader_factory_ith_provided_values(self):
         market = MarketFactory(round=17)
         trader = TraderFactory(
             market=market,
-            prod_cost=Decimal('4.30'), 
-            balance=Decimal('8.00'), 
+            prod_cost=Decimal('4.30'),
+            balance=Decimal('8.00'),
             name='John'
         )
         self.assertEqual(trader.name, 'John')
@@ -128,7 +129,7 @@ class TestTraderFactory(TestCase):
         trader = TraderFactory()
         trader.market.round = 19
         self.assertFalse(trader.is_ready())
-        
+
         TradeFactory(trader=trader, round=17)
         self.assertFalse(trader.is_ready())
 
@@ -149,12 +150,15 @@ class TestTradeFactory(TestCase):
         self.assertIsInstance(self.trade.trader, Trader)
         self.assertIsInstance(self.trade.profit, Decimal)
         self.assertFalse(self.trade.was_forced)
-    
+
     def test_trade_factory_with_provided_values(self):
-        trader=TraderFactory(name='bobby')
-        trade = TradeFactory(trader=trader, round=3, unit_price=Decimal('4.50'), unit_amount=17)
-        self.assertEqual(trade.round,3)
-        self.assertEqual(str(trade), f"bobby $4.50 x 17 [{trader.market.market_id}][3]")
+        trader = TraderFactory(name='bobby')
+        trade = TradeFactory(trader=trader, round=3,
+                             unit_price=Decimal('4.50'), unit_amount=17)
+        self.assertEqual(trade.round, 3)
+        self.assertEqual(
+            str(trade), f"bobby $4.50 x 17 [{trader.market.market_id}][3]")
+
 
 class TestUnProcessedTradeFactory(TestCase):
 
@@ -163,12 +167,12 @@ class TestUnProcessedTradeFactory(TestCase):
         # Set up non-modified objects used by multiple test methods in class
         cls.trade = UnProcessedTradeFactory()
         market = cls.trade.trader.market
-      
- 
+
     def test_basics(self):
         self.assertIsInstance(self.trade, Trade)
         self.assertEqual(self.trade.unit_amount, 13)
         self.assertEqual(self.trade.profit, None)
+
 
 class TestForcedTradeFactory(TestCase):
 
@@ -183,4 +187,3 @@ class TestForcedTradeFactory(TestCase):
         self.assertEqual(self.trade.unit_amount, None)
         self.assertEqual(self.trade.unit_price, None)
         self.assertEqual(self.trade.profit, None)
-

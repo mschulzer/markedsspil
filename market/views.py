@@ -1,3 +1,4 @@
+from django.utils.safestring import mark_safe
 import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
@@ -13,6 +14,7 @@ import json
 from .market_settings import SCENARIOS
 from django.utils.translation import gettext as _
 from decimal import Decimal
+from django.utils.safestring import mark_safe
 
 
 @login_required
@@ -55,6 +57,16 @@ def trader_table(request, market_id):
 
 
 @require_GET
+def small_trader_table(request, market_id):
+    market = get_object_or_404(Market, market_id=market_id)
+    traders = Trader.objects.filter(market=market).order_by('-balance')
+    context = {
+        'traders': traders,
+    }
+    return render(request, 'market/small-trader-table.html', context)
+
+
+@require_GET
 def home(request):
     return render(request, 'market/home.html')
 
@@ -88,6 +100,7 @@ def create(request):
 
 
 def join(request):
+
     if request.method == 'POST':
         form = TraderForm(request.POST)
         if form.is_valid():
@@ -108,9 +121,9 @@ def join(request):
                 for round_num in range(market.round):
                     create_forced_trade(
                         trader=new_trader, round_num=round_num, is_new_trader=True)
-            messages.success(
-                request,
-                (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'], market.product_name_singular, market.market_id))
+            # messages.success(
+            #    request,
+            #    (_("Hi {0}! You're now ready to trade on the {1} market {2}.")).format(form.cleaned_data['name'], market.product_name_singular, market.market_id))
             return redirect(reverse('market:play'))
 
     elif request.method == 'GET':
@@ -119,6 +132,14 @@ def join(request):
                 initial={'market_id': request.GET['market_id']})
         else:
             form = TraderForm()
+
+        if 'market_id' in request.session:
+            market = Market.objects.get(
+                market_id=request.session['market_id'])
+
+            messages.warning(request, mark_safe(
+                f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet med ID'et {market.market_id}. Hvis du indsender formularen nedenfor, mister du adgang til dette marked. Vil du tilbage til dit marked?<a href='/play'> Tilbage til mit marked </a>"))
+
     return render(request, 'market/join.html', {'form': form})
 
 
@@ -207,16 +228,16 @@ def play(request):
             'market': market,
             'trader': trader,
             'form': form,
-            'rounds': range(1, market.round+1),
             'round_stats': round_stats,
             'trades': trades,
             'wait': False,
-            'show_last_round_data': False,
+            'traders': Trader.objects.filter(market=market).order_by('-balance'),
 
-            # labels for unit and price charts
-            'rounds_json': json.dumps(list(range(1, market.round+1))),
 
-            # # context for units graph
+            # labels for x-axis on charts
+            'rounds_json': json.dumps(list(range(1, market.round + 2))),
+
+            # context for units graph
             'data_demand_json': json.dumps([trade.demand for trade in trades]),
             'data_sold_json': json.dumps([trade.units_sold for trade in trades]),
             'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
@@ -226,35 +247,36 @@ def play(request):
             'data_prod_cost_json': json.dumps([float(trader.prod_cost) for _ in trades]),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 
-            # # context for balance graph
-            'balance_labels': json.dumps(list(range(market.round+1))),
+            # context for balance graph
             'data_balance_json': json.dumps([float(trader.market.initial_balance)] + [float(trade.balance_after) if trade.balance_after else None for trade in trades]),
         }
 
         if trades.filter(round=market.round).exists():
             context['wait'] = True
-
-        elif market.round > 0:
-            last_trade = trades.get(round=market.round - 1)
-            if type(last_trade.profit) is Decimal:
-                context['show_last_round_data'] = True
-
-        if context['wait']:
             messages.success(
                 request,
-                _("You made a decision! Your {0} will be produced and put up for sale when the market host finishes round {1}.").format(market.product_name_plural, market.round))
-        elif market.round > 0:
-            messages.success(
-                request, _("You are now ready for round {0}!").format(market.round))
+                _("You made a trade!").format(market.product_name_plural, market.round))
 
-        return render(request, 'market/play.html', context)
+        elif not market.game_over:
+            if market.endless:
+                messages.success(
+                    request, _("Hi {0}! You are now ready for round {1} on the {2} market.").format(request.session["username"], market.round + 1, market.product_name_singular))
+            else:
+                messages.success(
+                    request, _("Hi {0}! You are now ready for round {1}/{2} on the {3} market.").format(request.session["username"], market.round + 1, market.max_rounds, market.product_name_singular))
+
+    if market.game_over():
+        messages.info(request,  mark_safe(
+            f"You made your last trade! The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/game_over' target='_blank'> Åbn markedsoversigt</a>."))
+
+    return render(request, 'market/play.html', context)
 
 
-@require_GET
+@ require_GET
 def current_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     data = {
-        'round': market.round
+        'round': market.round,
     }
     return JsonResponse(data)
 
@@ -274,14 +296,18 @@ def download(request, market_id):
     for r in range(total_rounds):
         data += str(r) + ","
         round_stats = Stats.objects.filter(round=r, market=market)
-        avg_price = sum([trader.price for trader in round_stats]) / len(round_stats)
+        avg_price = sum(
+            [trader.price for trader in round_stats]) / len(round_stats)
         data += str(avg_price) + ","
-        avg_amount = sum([trader.amount for trader in round_stats]) / len(round_stats)
+        avg_amount = sum(
+            [trader.amount for trader in round_stats]) / len(round_stats)
         data += str(avg_amount) + ","
-        avg_profit = sum([trader.profit for trader in round_stats]) / len(round_stats)
+        avg_profit = sum(
+            [trader.profit for trader in round_stats]) / len(round_stats)
         data += str(avg_profit) + ","
         for trader in market_traders:
-            trader_stats = Stats.objects.get(round=r, market=market, trader=trader)
+            trader_stats = Stats.objects.get(
+                round=r, market=market, trader=trader)
             data += str(trader_stats.balance) + ","
         data += "<br>"
     output = open(market.market_id + "_stats.csv", "w")

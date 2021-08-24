@@ -187,7 +187,7 @@ class JoinViewTestGETRequests(TestCase):
         market = MarketFactory()
         session = self.client.session
         session['trader_id'] = 3
-        session['market_id'] = 'ABCDEF'
+        session['market_id'] = market.market_id
         session['username'] = 'Alberte'
         session.save()
 
@@ -196,7 +196,7 @@ class JoinViewTestGETRequests(TestCase):
 
         html = response.content.decode('utf8')
         # user should somehow be informed, that he has already joined the market with this id
-        self.assertIn("ABCDEF", html)
+        self.assertIn(market.market_id, html)
         self.assertIn("Alberte", html)
 
 
@@ -578,17 +578,11 @@ class PlayViewGetRequestTest(TestCase):
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "Du har lavet din handel" in message.message)
+            "Din beslutning er modtaget." in message.message)
 
         # This is round 0, so no data from last round should be shown
-        self.assertNotIn('last round', html)
-        self.assertNotIn('Last round', html)
-        self.assertFalse(response.context.get('show_last_round_data'))
-
-        # --- no trade history should not be shown either
-        self.assertNotIn('Trade History', html)
-        self.assertNotIn('Previous History', html)
-        self.assertNotIn('Record', html)
+        self.assertNotIn(
+            'Text with info about last round choices and results', html)
 
         # Template should not contain a submit button
         self.assertNotIn('submit', html)
@@ -631,9 +625,6 @@ class PlayViewGetRequestTest(TestCase):
         html = response.content.decode('utf8')
         self.assertIn("submit", html)
 
-        # player did make a trade in the last round and hence show_last_round_data should be true
-        self.assertTrue(response.context.get('show_last_round_data'))
-
     def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(self):
         """
         User is in round 4. He traded in round 2, but not in round 3, and not yet in round 4. 
@@ -665,11 +656,11 @@ class PlayViewGetRequestTest(TestCase):
 
         # template should not contain the words wait or Wait
         html = response.content.decode('utf8')
-        self.assertNotIn("wait", html)
-        self.assertNotIn("Wait", html)
+        self.assertNotIn("venter", html)
+        self.assertNotIn("Venter", html)
 
-        # player did not make a trade in the last round and hence show_last_round_data should be false
-        self.assertFalse(response.context.get('show_last_round_data'))
+        # Spilleren skal have at vide, at han ikke handlede i sidste runde
+        self.assertIn("Du handlede ikke i sidste runde.", html)
 
         # template should contain a submit button
         self.assertIn("submit", html)

@@ -67,15 +67,16 @@
 
 <h3>{% blocktranslate with round=market.round %}Trader Status Round #{{round}}{% endblocktranslate %}</h3>
 
+
+<div id="trader_table" class="mb-5">
+    {% include 'market/trader-table.html' %}
+</div>
+
 <div 
     hx-get="{% url 'market:trader_table' market.market_id %}"
     hx-trigger="every 2s"
     hx-target="#trader_table">
  </div>
-
-<div id="trader_table" class="mb-5">
-    {% include 'market/trader-table.html' %}
-</div>
 
 <!-- Pop-up confirmation -->
 <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"

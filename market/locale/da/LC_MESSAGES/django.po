@@ -119,12 +119,12 @@ msgstr "Indtast ID'et for det markedsspil, du gerne vil deltage i."
 
 #: forms.py:98
 msgid "Name"
-msgstr "Navn"
+msgstr "Forhandlernavn"
 
 #: forms.py:101
 msgid "The name you choose will be visible to other traders on the market."
 msgstr ""
-"Navnet, du vælger her, vil være synligt for de andre forhandlere på markedet."
+"Navnet, du vælger her, vil være synligt for de andre deltagere på markedet."
 
 #: forms.py:109
 msgid "There is no market with this ID"
@@ -138,7 +138,7 @@ msgstr ""
 
 #: forms.py:137 templates/market/play.html:299
 msgid "Price"
-msgstr "Pris"
+msgstr "Pris (kr.)"
 
 #: forms.py:138 templates/market/play.html:304
 msgid "Amount"
@@ -265,8 +265,8 @@ msgid "Return to one of your previous markets"
 msgstr "Vend tilbage til et af dine tidligere markeder"
 
 #: templates/market/join.html:10
-msgid "Choose a username and join a market"
-msgstr "Vælg et brugernavn og tilslut dig et marked"
+msgid "Choose a trader name and join a market"
+msgstr "Tilslut dig et marked"
 
 #: templates/market/join.html:21
 msgid "Please note"
@@ -435,7 +435,7 @@ msgstr ""
 
 #: templates/market/play.html:42
 msgid "Make your next trade"
-msgstr "Lav din næste handel"
+msgstr "Din næste handel"
 
 #: templates/market/play.html:50
 msgid "Make Trade!"
@@ -463,15 +463,15 @@ msgstr "Udbytte hvis intet sælges"
 
 #: templates/market/play.html:84 templates/market/play.html:226
 msgid "Price history"
-msgstr "Prishistorik over tid"
+msgstr "Prisudvikling over tid"
 
 #: templates/market/play.html:102
 msgid "Production history"
-msgstr "Produktionsantal over tid"
+msgstr "Dine produktionstal over tid    "
 
 #: templates/market/play.html:120 templates/market/play.html:262
 msgid "Balance history"
-msgstr "Saldo over tid"
+msgstr "Din saldo over tid"
 
 #: templates/market/play.html:147 templatetags/custom_tags.py:16
 msgid "Demand"
@@ -489,6 +489,10 @@ msgstr "Antal produceret"
 msgid "Units produced"
 msgstr "Produktionsantal"
 
+# templates/market/play.html
+msgid "Score Board"
+msgstr "Dine konkurrenter"
+
 #: templates/market/play.html:195
 msgid "Your price"
 msgstr "Din pris"
@@ -503,7 +507,7 @@ msgstr "Produktionsomkostning (fast)"
 
 #: templates/market/play.html:243
 msgid "Your balance"
-msgstr "Din saldo"
+msgstr "Din saldo før runden"
 
 #: templates/market/trader-table.html:5
 msgid "Waiting for the first trader to join the market..."
@@ -556,17 +560,15 @@ msgstr "Opdatering lykkedes"
 
 #: views.py:104
 #, python-brace-format
-msgid "Hi {0}! You're now ready to trade on the {1} market {2}."
-msgstr "Hej {0}! Du er nu klar til at forhandle på {1}markedet {2}."
+msgid "Hi {0}! You're now ready to trade on the {1} market (id = {2})."
+msgstr "Hej {0}! Du er nu klar til at forhandle på {1}-markedet (id = {2})."
 
 #: views.py:224
 #, python-brace-format
 msgid ""
-"You made a decision! Your {0} will be produced and put up for sale when the "
-"market host finishes round {1}."
+"You made a trade!"
 msgstr ""
-"Du har lavet din handel! Dine {0} vil blive produceret og sat til salg når "
-"værten afslutter runde {1}."
+"Din beslutning er modtaget."
 
 #: views.py:227
 #, python-brace-format

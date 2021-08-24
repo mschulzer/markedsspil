@@ -14,7 +14,7 @@ class SignupPageView(generic.CreateView):
     def form_valid(self, form):
         """ Override. If the form is valid do these extra things before default behavior """
         messages.success(
-            self.request, f'Your account was created!')
+            self.request, f'Du har nu en brugerkonto!')
         
         return super().form_valid(form)
     
