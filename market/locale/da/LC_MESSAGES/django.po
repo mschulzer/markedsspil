@@ -466,7 +466,7 @@ msgstr "Udbytte hvis intet sælges"
 
 #: templates/market/play.html:84 templates/market/play.html:226
 msgid "Price history"
-msgstr "Pris over tid"
+msgstr "Prishistorik"
 
 #: templates/market/play.html:102
 msgid "Production history"

@@ -37,12 +37,12 @@
 
         {% if wait %}
             You chose to produce <b>{{ trades.last.unit_amount }}</b>  
-            {{ market.product_name_plural }}. You decided to sell them for <b>{{  trades.last.unit_price }}</b> kr. each. We are now waiting for the host to finish round <b>{{ market.round|add:1 }}</b>. 
+            {{ market.product_name_plural }}. You decided to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
             
             {% comment %} 
             Suggested translation:
             Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
-            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk. Vi venter nu på, at værten afslutter runde <b>{{ market.round|add:1 }}</b>.  
+            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
             {% endcomment %}
                    
         {% else %}
@@ -92,6 +92,23 @@
 {% endif %}
 
 <div class="accordion mb-5" id="accordionCharts">
+
+    <!-- ScoreBoard -->
+    <div class="card">
+        <div class="card-header" id="headingFour">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
+                    data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
+                    {% translate 'Score Board' %}
+                </button>
+            </h2>
+        </div>
+        <div id="collapseScoreBoard" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+            <div class="card-body pt-0 mt-0" id="card_body">
+            {% include 'market/small-trader-table.html' %}
+            </div>
+        </div>
+    </div>
     <!-- Price chart-->
     <div class="card">
         <div class="card-header" id="headingOne">
@@ -146,22 +163,6 @@
         </div>
     </div>
 
-    <!-- ScoreBoard -->
-    <div class="card">
-        <div class="card-header" id="headingFour">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
-                    {% translate 'Score Board' %}
-                </button>
-            </h2>
-        </div>
-        <div id="collapseScoreBoard" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
-            <div class="card-body" id="card_body">
-               {% include 'market/small-trader-table.html' %}
-            </div>
-        </div>
-    </div>
 </div>
 
 <div 

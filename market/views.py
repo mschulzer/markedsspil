@@ -256,7 +256,7 @@ def play(request):
             context['wait'] = True
             messages.success(
                 request,
-                _("You made a trade, {0}!").format(trader.name))
+                _("You made a trade, {0}! We are now waiting for the host to finish round {1}...").format(trader.name, market.round + 1))
 
         else:  # player should not be waiting
 
