@@ -58,7 +58,7 @@ class TestMarketFactory(TestCase):
             max_cost=Decimal('6.30'),
             initial_balance = Decimal('4000.00'),
             created_by = UserFactory(username='egon'),
-            round=74
+            round=74,
         )
         self.assertEqual(market.alpha, Decimal('102.2034'))
         self.assertEqual(market.beta, Decimal('304.5003'))
