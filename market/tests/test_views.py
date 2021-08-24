@@ -174,7 +174,7 @@ class JoinViewTestGETRequests(TestCase):
         market = MarketFactory()
         session = self.client.session
         session['trader_id'] = 3
-        session['market_id'] = 'ABCDEF'
+        session['market_id'] = market.market_id
         session['username'] = 'Alberte'
         session.save()
 
@@ -183,7 +183,7 @@ class JoinViewTestGETRequests(TestCase):
 
         html = response.content.decode('utf8')
         # user should somehow be informed, that he has already joined the market with this id
-        self.assertIn("ABCDEF", html)
+        self.assertIn(market.market_id, html)
         self.assertIn("Alberte", html)
 
 

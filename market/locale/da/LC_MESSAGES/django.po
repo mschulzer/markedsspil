@@ -119,12 +119,12 @@ msgstr "Indtast ID'et for det markedsspil, du gerne vil deltage i."
 
 #: forms.py:98
 msgid "Name"
-msgstr "Navn"
+msgstr "Forhandlernavn"
 
 #: forms.py:101
 msgid "The name you choose will be visible to other traders on the market."
 msgstr ""
-"Navnet, du vælger her, vil være synligt for de andre forhandlere på markedet."
+"Navnet, du vælger her, vil være synligt for de andre deltagere på markedet."
 
 #: forms.py:109
 msgid "There is no market with this ID"
@@ -265,8 +265,8 @@ msgid "Return to one of your previous markets"
 msgstr "Vend tilbage til et af dine tidligere markeder"
 
 #: templates/market/join.html:10
-msgid "Choose a username and join a market"
-msgstr "Vælg et brugernavn og tilslut dig et marked"
+msgid "Choose a trader name and join a market"
+msgstr "Tilslut dig et marked"
 
 #: templates/market/join.html:21
 msgid "Please note"

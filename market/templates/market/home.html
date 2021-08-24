@@ -6,25 +6,7 @@
 
 {% block content %}
 
-<h2>{% translate 'Welcome to the Market Simulator!' %}</h2>
-
-<br><br>
-{% if request.session.trader_id %}
-<p style="border: 2px solid black; padding:2em">
-{% blocktranslate with market_id=request.session.market_id username=request.session.username %}
-You are currently participating in the market
-<b>{{ market_id }}</b>
-with the trader name
-<b>{{ username }}</b>.
-{% endblocktranslate %}
-<br>
-{% translate 'Return to this market?' %}
-<a href="{% url 'market:play' %}">{% translate 'Continue' %}</a>
-</p>
-
-</span>
-
-{% endif %}
+<h3>{% translate 'Welcome to the Market Simulator!' %}</h3>
 
 <br><br>
 <p>{% translate 'Join a market' %}:</p>
