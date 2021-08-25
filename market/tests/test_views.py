@@ -309,10 +309,43 @@ class MonitorViewGETRequestsTest(TestCase):
                           password='defaultpassword')
 
     def test_view_url_exists_at_proper_name_and_uses_proper_template(self):
+        """ The user who created the marked can access the monitor view"""
         response = self.client.get(
             reverse('market:monitor', args=(self.market.market_id,)))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/monitor.html'),
+
+    def test_user_not_logged_has_no_access(self):
+        """ Other users (e.g. traders) can't in general access the monitor view"""
+        self.client.logout()
+        other_user = UserFactory(username="olebole")
+        self.client.login(username=other_user.username,
+                          password='defaultpassword')
+        response = self.client.get(
+            reverse('market:monitor', args=(self.market.market_id,)))
+        # redirect as no access
+        self.assertEqual(response.status_code, 302)
+
+    def test_user_not_logged_has_no_access(self):
+        """ client who did not create the market only has access to monitor view when the game is over"""
+        self.client.logout()
+        other_user = UserFactory(username="olebole")
+        self.client.login(username=other_user.username,
+                          password='defaultpassword')
+        response = self.client.get(
+            reverse('market:monitor', args=(self.market.market_id,)))
+        # redirect as no access
+        self.assertEqual(response.status_code, 302)
+
+        # we set game state to game over
+        self.market.round = self.market.max_rounds
+        self.assertTrue(self.market.game_over())
+        self.market.save()
+
+        # visitor should now have access to the monitor page
+        response = self.client.get(
+            reverse('market:monitor', args=(self.market.market_id,)))
+        self.assertEqual(response.status_code, 200)
 
     def test_market_is_in_context(self):
         response = self.client.get(
@@ -591,7 +624,7 @@ class PlayViewGetRequestTest(TestCase):
         # Template should not contain a submit button
         self.assertNotIn('submit', html)
 
-    def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_round(self):
+    def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_the_previous_round(self):
         """
         User has traded in round 4, and in round 3.
         """
@@ -628,6 +661,9 @@ class PlayViewGetRequestTest(TestCase):
         # template should contain a submit button
         html = response.content.decode('utf8')
         self.assertIn("submit", html)
+
+        # template should not contain a link to the monitor view, since game is not over
+        self.assertNotIn(f"/{market.market_id}/monitor", html)
 
     def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(self):
         """
@@ -669,6 +705,9 @@ class PlayViewGetRequestTest(TestCase):
         # template should contain a submit button
         self.assertIn("submit", html)
 
+        # template should not contain a link to the monitor view, since game is not over
+        self.assertNotIn(f"/{market.market_id}/monitor", html)
+
     def test_form_attributes_are_set_correctly(self):
         """
         The form fields should have their max values determined by the market and traders
@@ -698,25 +737,33 @@ class PlayViewGetRequestTest(TestCase):
         self.assertIn('max="50"', str(form))
         self.assertNotIn('max="53"', str(form))
 
-    # def test_game_over_when_rounds_equals_max_round(self):
-    #     """
-    #     When game is over, user should be notified
-    #     """
-    #     market = MarketFactory(round=4, max_rounds=4)
+    def test_game_over_when_rounds_equal_max_round(self):
+        """
+        When game is over, the user should be notified about this
+        """
+        market = MarketFactory(round=4, max_rounds=4, endless=False)
 
-    #     # a user has joined properly
-    #     trader = TraderFactory(market=market, balance=101, prod_cost=2)
-    #     session = self.client.session
-    #     session['trader_id'] = trader.pk
-    #     session['username'] = 'Hans'
-    #     session.save()
+        # a user has joined properly
+        trader = TraderFactory(market=market, balance=101, prod_cost=2)
+        session = self.client.session
+        session['trader_id'] = trader.pk
+        session['username'] = 'Hans'
+        session.save()
 
-    #     # user goes to play url
-    #     response = self.client.get(reverse('market:play'))
-    #     self.assertContains(
-    #         response, '.... ')
-    #
-    #  ......Just realized that this test will not work before merge of previous commit....
+        # user goes to play url
+        response = self.client.get(reverse('market:play'))
+
+        # user is informed about the game state
+        self.assertContains(
+            response, "The game has ended")
+
+        # the player interface does not contain a submit button
+        html = response.content.decode('utf8')
+        self.assertNotIn('submit', html)
+
+        # the player interface contains a link to the monitor view
+        self.assertIn(f"/{market.market_id}/monitor", html)
+
 
 class PlayViewPOSTRequestTest(TestCase):
 

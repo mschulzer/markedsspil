@@ -143,13 +143,13 @@ def join(request):
     return render(request, 'market/join.html', {'form': form})
 
 
-@login_required
 def monitor(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
     # only the user how created the market has permission to monitor it
     if not request.user == market.created_by:
-        return HttpResponseRedirect(reverse('market:home'))
+        if not market.game_over():
+            return HttpResponseRedirect(reverse('market:home'))
 
     traders = Trader.objects.filter(market=market).order_by('-balance')
 
@@ -262,7 +262,7 @@ def play(request):
 
             if market.game_over():
                 messages.info(request,  mark_safe(
-                    f"You made your last trade! The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/game_over' target='_blank'> Åbn markedsoversigt</a>."))
+                    f"Hi {trader.name}. The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/monitor' target='_blank'> Åbn markedsoversigt</a>."))
 
             else:  # game is not over
                 if market.round == trader.round_joined:
