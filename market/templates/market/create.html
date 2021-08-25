@@ -14,23 +14,26 @@
 	<div class="card-header">
 		{% translate 'Predefined scenarios'%}
 	</div>
+	
 	<div class="card-body">
 		<form id='market_radio_form'>
-			<h5 class="card-title">{% translate 'Select scenario (view/edit settings below)' %}</h5>
+			<h5 class="card-title">{% translate 'Select scenario' %}<span class="text-muted text" style="font-size:18px"> (view/edit settings below)</span></h5>
 			<div class="pl-3 mb-2">
 				{% for scenario in scenarios %}
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
 						{% if forloop.counter0 == 0 %}checked{% endif%}>
-					<label for="scenario_{{ forloop.counter0 }}">{{ scenario.description }}</label><br>
+					<label for="scenario_{{ forloop.counter0 }}" class="mb-0 pb-0">{{ scenario.title }}</label>
+					<p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p>
 				{% endfor %}
 			</div>
-		</form>
-
+		</form> 
 		<div class="d-flex justify-content-center">
-		<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-2" form="create-market-form">
-		</div>
+			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-2" form="create-market-form">
+		</div> 
 	</div>
 </div>
+</div>
+
 <div class="card mb-3">
 	<div class="card-header">
 		{% translate 'Market details' %}
