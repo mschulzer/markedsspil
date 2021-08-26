@@ -160,6 +160,36 @@ def join(request):
     return render(request, 'market/join.html', {'form': form})
 
 
+def generate_balance_list(trader):
+    """
+    Generates a list of floats consisting of the balance history of a single trader.
+    The i'th entry of the list is the balance before/during each round, not the
+    balance after the round.  
+
+    For a trader, who joins the game in the first round, the resulting list
+    should loook something like this
+    [5000, 405, 405, 410, 49] 
+
+    For a trader who joins the game in "round 3" (market.round=2), 
+    the list should look something like this: 
+    [None, None, 5000, 405, 405, 410, 49] 
+
+    The function is a bit ugly because of the way we store data in the database.
+    """
+    trades = Trade.objects.filter(trader=trader)
+    initial_balance = float(trader.market.initial_balance)
+
+    balance_list = [initial_balance] + \
+        [float(trade.balance_after)
+         if trade.balance_after else None for trade in trades]
+
+    if trader.round_joined > 0:
+        for roundnum in range(trader.round_joined):
+            balance_list[roundnum] = None
+        balance_list[trader.round_joined] = initial_balance
+    return balance_list
+
+
 def monitor(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
@@ -177,6 +207,7 @@ def monitor(request, market_id):
         'rounds': range(1, market.round + 1),
         'show_stats_fields': ['balance_after', 'unit_price', 'profit', 'unit_amount', 'demand', 'units_sold'],
         'initial_balance': market.initial_balance
+
     }
 
     if request.method == "GET":
@@ -184,14 +215,52 @@ def monitor(request, market_id):
             messages.info(request, mark_safe(
                 "The game has ended after {0} rounds.".format(market.round)
             ))
-
-        # Labels for x-axis for graphs
+        # Labels for x-axes of graphs
         if market.endless:
             round_labels = list(range(1, market.round + 2))
         else:
             round_labels = list(range(1, market.max_rounds + 1))
         context['round_labels_json'] = json.dumps(round_labels)
 
+        # Data for balance graph
+        def generate_price_list(trader):
+            trades = Trade.objects.filter(trader=trader)
+            return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
+
+        def trader_color(i):
+            red = (100 + i*100) % 255
+            green = (50 + int((i/3)*100)) % 255
+            blue = (0 + int((i/2)*100)) % 255
+            return f"rgb({red},{green},{blue}, 0.7)"
+
+        balanceDataSet = [{
+            'label': trader.name,
+            'backgroundColor': trader_color(i),
+            'borderColor': trader_color(i),
+            'data': generate_balance_list(trader)
+        }
+            for i, trader in enumerate(traders)
+        ]
+
+        priceDataSet = [{
+            'label': trader.name,
+            'backgroundColor': trader_color(i),
+            'borderColor': trader_color(i),
+            'data': generate_price_list(trader)
+        }
+            for i, trader in enumerate(traders)
+        ]
+        rs = RoundStat.objects.filter(market=market).order_by('round')
+        avg_prices = [float(round.avg_price) for round in rs]
+        priceDataSet.append({
+            'label': 'Avg. price',
+            'backgroundColor': trader_color(1000),
+            'borderColor': trader_color(1000),
+            'data': avg_prices
+        })
+
+        context['balanceDataSet'] = json.dumps(balanceDataSet)
+        context['priceDataSet'] = json.dumps(priceDataSet)
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
@@ -215,6 +284,7 @@ def monitor(request, market_id):
             if traders_number_of_real_trades_this_round == 0:
                 create_forced_trade(
                     trader=trader, round_num=market.round, is_new_trader=False)
+
         all_trades_this_round = filter_trades(
             market=market, round=market.round)
         assert(len(all_trades_this_round) == len(traders)
@@ -260,15 +330,6 @@ def play(request):
         else:
             round_labels = list(range(1, market.max_rounds + 1))
 
-        # Set data for balance graph
-        data_balance = [float(market.initial_balance)] + \
-            [float(trade.balance_after)
-             if trade.balance_after else None for trade in trades]
-        if trader.round_joined > 0:
-            for i in range(trader.round_joined-1):
-                data_balance[i] = None
-            data_balance[trader.round_joined] = float(market.initial_balance)
-
         context = {
             'market': market,
             'trader': trader,
@@ -292,7 +353,7 @@ def play(request):
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 
             # data for balance graph
-            'data_balance_json': json.dumps(data_balance)
+            'trader_balance_json': json.dumps(generate_balance_list(trader)),
         }
 
         if trades.filter(round=market.round).exists():

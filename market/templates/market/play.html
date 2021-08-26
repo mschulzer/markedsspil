@@ -293,19 +293,19 @@
 <script>
     balanceCanvas = document.getElementById('balanceCanvas')
 
-    var balanceDataSet = {
-        label: "{% translate 'Your balance after each round' %}",
-        data: JSON.parse("{{ data_balance_json }}"),
+    var traderBalanceDataSet = {
+        label: "{% translate 'Your balance during each round' %}",
+        data: JSON.parse("{{ trader_balance_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192, 0.5)',
     };
 
     var balanceData = {
         labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
-        datasets: [balanceDataSet]
+        datasets: [traderBalanceDataSet]
     };
 
-    balanceData.labels.unshift('')
+    balanceData.labels.push('Final')
     
     var lineChart = new Chart(balanceCanvas, {
             type: 'line',
@@ -315,7 +315,7 @@
                     y: {
                             beginAtZero: true
                         }
-                    
+
                 },  
                 plugins: {
                     title: {

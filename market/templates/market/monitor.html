@@ -134,14 +134,14 @@
         </div>
     </div>
     <div class="card">
-        <div class="card-header" id="heading_balance">
+        <div class="card-header" id="heading_price">
             <h5 class="mb-0">
-                <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_balance" aria-expanded="true" aria-controls="collapse_balance">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_price" aria-expanded="true" aria-controls="collapse_price">
                     Price 
                 </button>
             </h5>
         </div>
-        <div id="collapse_balance" class="collapse" aria-labelledby="heading_balance" data-parent="#accordion">
+        <div id="collapse_price" class="collapse" aria-labelledby="heading_price" data-parent="#accordion">
             <div class="card-body">
                 <div class="mb-5">
                     <canvas id="priceCanvas"></canvas>
@@ -220,48 +220,16 @@
         link_text.setSelectionRange(0, link_text.value.length);
         document.execCommand("copy")
     }
-
-    // Generation of data for graphs 
-    // (would be nice to do this with python in view function instead)
-    var tradernames = [];
-    var balanceDataSet = [];
-    var priceDataSet = [];
-    var tradernum = 0;
-
-    {% for trader in traders %}
-        tradernum++;
-        var red = (100 + tradernum*100) % 255;
-        var green = (50 + Math.floor(tradernum/3)*100) % 255;
-        var blue = (0 + Math.floor(tradernum/2)*100) % 255;
-        tradernames.push("{{ trader.name }}");
-        balanceDataSet.push({ label: "{{ trader.name }}",
-                            backgroundColor: 'rgb('+red+','+green+','+blue+')',
-                            borderColor: 'rgb('+red+','+green+','+blue+')',
-                            data: [parseInt("{{ market.initial_balance }}")],
-                        });
-        priceDataSet.push({ label: "{{ trader.name }}",
-                            backgroundColor: 'rgb('+red+','+green+','+blue+')',
-                            borderColor: 'rgb('+red+','+green+','+blue+')',
-                            data: [],
-                        });
-                                                            
-        {% for trade in trader.trade_set.all %}
-            balanceDataSet[balanceDataSet.length-1].data.push(parseInt("{{ trade.balance_after }}"));
-            priceDataSet[priceDataSet.length-1].data.push(parseInt("{{ trade.unit_price }}"));
-	    {% endfor %}
-
-    {% endfor %}
-
+   
     const balanceData = {
         labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
-        datasets: balanceDataSet
-    };
-    balanceData.labels.unshift('')
-
+        datasets: {{ balanceDataSet|safe }}
+    }; 
+    balanceData.labels.push("Final")
 
     const priceData = {
         labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
-        datasets: priceDataSet
+        datasets: {{ priceDataSet|safe }}
     };
   
     const configBalance = {
@@ -271,13 +239,12 @@
             scales: {
                 y: {
                     beginAtZero: true
-                }
-                
+                }        
             },  
             plugins: {
                 title: {
                     display: true,
-                    text: "{% translate 'Balance after each round' %}",
+                    text: "{% translate 'Balance during each round' %}",
                     padding: {
                         top: 5,
                         bottom: 10
@@ -293,8 +260,7 @@
             scales: {
                 y: {
                     beginAtZero: true
-                }
-                
+                }         
             },  
             plugins: {
                 title: {
