@@ -610,12 +610,12 @@ class PlayViewGetRequestTest(TestCase):
         self.assertTemplateUsed(response, 'market/play.html'),
         self.assertTrue(response.context.get('wait'))
 
-        # there should now be a message saying that the user i waiting
+        # there should now be a message saying that the user is waiting
         html = response.content.decode('utf8')
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "You made a trade," in message.message)
+            "You made a trade" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn(
@@ -924,7 +924,8 @@ class MarketEditTest(TestCase):
 
     def test_valid_post_data_updates_market_and_redirects(self):
         data = {'product_name_singular': 'surdejsbolle',
-                'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 10, 'theta': 32}
+                'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 10, 'theta': 32, 'endless': True, 'initial_balance': 53, 'max_rounds': 12,
+                'min_cost': 35, 'max_cost': 3565}
 
         url = reverse('market:market_edit', args=(self.market.market_id,))
         response = self.client.post(url, data=data)
@@ -943,9 +944,9 @@ class MarketEditTest(TestCase):
         """
 
         self.client.login(username='somename', password='testpass123')
-
         data = {'product_name_singular': 'surdejsbolle',
-                'product_name_plural': 'surdejsboller', 'alpha': -3, 'beta': 10, 'theta': 32}
+                'product_name_plural': 'surdejsboller', 'alpha': -14, 'beta': 10, 'theta': 32, 'endless': True, 'initial_balance': 53, 'max_rounds': 12,
+                'min_cost': 35, 'max_cost': 3565}
 
         url = reverse('market:market_edit', args=(self.market.market_id,))
         response = self.client.post(url, data=data)

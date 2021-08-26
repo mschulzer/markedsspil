@@ -493,7 +493,7 @@ msgid "Units produced"
 msgstr "Produktionsantal"
 
 # templates/market/play.html
-msgid "Score Board"
+msgid "Scoreboard"
 msgstr "Dine konkurrenter"
 
 #: templates/market/play.html:195
@@ -509,8 +509,8 @@ msgid "Cost per unit (fixed)"
 msgstr "Din omkostning pr enhed"
 
 #: templates/market/play.html:243
-msgid "Your balance"
-msgstr "Din saldo før runden"
+msgid "Your balance (kr.)"
+msgstr "Din saldo (kr.)"
 
 #: templates/market/trader-table.html:5
 msgid "Waiting for the first trader to join the market..."
@@ -543,11 +543,11 @@ msgstr "Udbytte"
 
 #: templatetags/custom_tags.py:12
 msgid "Unit price"
-msgstr "Pris pr. enhed"
+msgstr "Enhedspris"
 
 #: templatetags/custom_tags.py:14
 msgid "Unit amount"
-msgstr "Mængde produceret"
+msgstr "Antal produceret"
 
 #: templatetags/custom_tags.py:18
 msgid "Units sold"

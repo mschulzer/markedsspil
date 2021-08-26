@@ -99,7 +99,7 @@
             <h2 class="mb-0">
                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                     data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
-                    {% translate 'Score Board' %}
+                    {% translate 'Scoreboard' %}
                 </button>
             </h2>
         </div>
@@ -214,10 +214,16 @@
             type: 'line',
             data: unitsData,
             options: {
+                scales: {
+                    y: {
+                            beginAtZero: true
+                        }
+                    
+                }, 
                 plugins: {
                     title: {
                         display: true,
-                        text: "{% translate 'Units produced' %}",
+                        text: "{% translate 'Production history' %}",
                         padding: {
                             top: 5,
                             bottom: 10
@@ -247,7 +253,7 @@
     };
 
     var dataProdCost = {
-        label: "{% translate 'Cost per unit (fixed)' %}",
+        label: "{% translate 'Your cost per unit' %}",
         data: JSON.parse("{{ data_prod_cost_json }}"),
         borderColor: 'rgb(255, 153, 0, 0.5)',
     };
@@ -271,7 +277,13 @@
                             bottom: 10
                         }
                     }
-                }
+                },
+                 scales: {
+                    y: {
+                            beginAtZero: true
+                        }
+                    
+                } 
             }
         }
     );
@@ -282,23 +294,29 @@
     balanceCanvas = document.getElementById('balanceCanvas')
 
     var dataBalance = {
-        label: "{% translate 'Your balance' %}",
+        label: "{% translate 'Your balance after each round' %}",
         data: JSON.parse("{{ data_balance_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192, 0.5)',
     };
-    console.log(dataBalance.data)
 
     var balanceData = {
         labels: JSON.parse("{{ rounds_json }}"), // labels on x-axis
         datasets: [dataBalance]
     };
 
-    var lineChart = new Chart(
-        balanceCanvas, {
+    balanceData.labels.unshift('')
+    
+    var lineChart = new Chart(balanceCanvas, {
             type: 'line',
             data: balanceData,
             options: {
+                scales: {
+                    y: {
+                            beginAtZero: true
+                        }
+                    
+                },  
                 plugins: {
                     title: {
                         display: true,
@@ -308,9 +326,10 @@
                             bottom: 10
                         }
                     }
-                }
+                },  
             }
         }
+            
     );
 </script>
 

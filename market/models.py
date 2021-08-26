@@ -51,7 +51,9 @@ class Market(models.Model):
 
     # If endless is false, the game will stop after the number of rounds specified in max_rounds.
     # If endless is true, any value of max_rounds will be disregarded.
-    max_rounds = models.IntegerField()
+    max_rounds = models.IntegerField(
+        validators=[MinValueValidator(1)])
+
     endless = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)

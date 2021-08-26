@@ -23,6 +23,7 @@
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
 						{% if forloop.counter0 == 0 %}checked{% endif%}>
 					<label for="scenario_{{ forloop.counter0 }}" class="mb-0 pb-0">{{ scenario.title }}</label>
+					{% comment %} <p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p> {% endcomment %}
 					<p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p>
 				{% endfor %}
 			</div>
@@ -31,7 +32,6 @@
 			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-2" form="create-market-form">
 		</div> 
 	</div>
-</div>
 </div>
 
 <div class="card mb-3">
@@ -52,36 +52,11 @@
 
 {% block javascript %}
 <script>
-
-	scenarios = {{ scenarios_json|safe }}
-
-	function fill_form(scenario){
-		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
-		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
-		document.getElementById('id_initial_balance').value=scenario.initial_balance
-		document.getElementById('id_alpha').value=scenario.alpha
-		document.getElementById('id_beta').value=scenario.beta
-		document.getElementById('id_theta').value=scenario.theta
-		document.getElementById('id_min_cost').value=scenario.min_cost
-		document.getElementById('id_max_cost').value=scenario.max_cost
-		document.getElementById('id_max_rounds').value=scenario.max_rounds
-		document.getElementById('id_endless').value=scenario.endless
-	}
-
-	/* We should NOT fill out form with predefined scenario values after an unsuccesful post-attempt.
-	   Instead, the form will be filled out with the posted values + error messages */
-	{% if not form.errors %}fill_form(scenarios[0]){% endif %}
-
-	
-	document.getElementById('market_radio_form').addEventListener('change', function() {
-		scenario_number = document.querySelector('input[name="scenario"]:checked').value
-			fill_form(scenarios[scenario_number]);
-	}); 
-
-	document.getElementById('div_id_endless').addEventListener('change', function() {
+	function adjust_max_round_field(){
+		// This function is also used by market edit template, so should be imported.
+		
 		max_rounds_field = document.getElementById('div_id_max_rounds')
-		endless_checked = document.getElementById('id_endless').checked
-		if (endless_checked){
+		if (document.getElementById('id_endless').checked){
 			max_rounds_field.style.visibility = "hidden";
 			/* max_rounds has to be a non-blank positive integer, even if game is endless.
 			If user has typed an invalid max_rounds value, we have to change this. 
@@ -95,7 +70,40 @@
 		else{
 			max_rounds_field.style.visibility = "";
 		}
+	}		
+   
+	scenarios = {{ scenarios_json|safe }}
+
+	function fill_form(scenario){
+		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
+		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
+		document.getElementById('id_initial_balance').value=scenario.initial_balance
+		document.getElementById('id_alpha').value=scenario.alpha
+		document.getElementById('id_beta').value=scenario.beta
+		document.getElementById('id_theta').value=scenario.theta
+		document.getElementById('id_min_cost').value=scenario.min_cost
+		document.getElementById('id_max_cost').value=scenario.max_cost
+		document.getElementById('id_max_rounds').value=scenario.max_rounds
+		document.getElementById('id_endless').checked=scenario.endless
+		adjust_max_round_field()
+	}
+
+	/* We should NOT fill out form with predefined scenario values after an unsuccesful post-attempt.
+	   Instead, the form will be filled out with the posted values + error messages */
+	{% if not form.errors %}fill_form(scenarios[0]){% endif %}
+
+	
+	document.getElementById('market_radio_form').addEventListener('change', function() {
+		scenario_number = document.querySelector('input[name="scenario"]:checked').value
+			fill_form(scenarios[scenario_number]);
 	}); 
 
+	document.getElementById('div_id_endless').addEventListener('change', function() {
+		adjust_max_round_field()
+	});
+
+	adjust_max_round_field()
+
 </script>
+
 {% endblock javascript %}

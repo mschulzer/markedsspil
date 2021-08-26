@@ -6,8 +6,8 @@ from django.utils.translation import gettext as _
 
 SCENARIOS = [
     {
-        "title": _("Scenario 1"),
-        "description": _("In this scenario, all traders have the same unit production costs. The game will end after 15 rounds. This scenario is a good place to start."),
+        "title": _("Scenario 1: All traders have equal costs"),
+        "description": _("In this scenario, all traders have the same unit production costs. This is a good place to start."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -17,10 +17,11 @@ SCENARIOS = [
         "min_cost": 8,
         "max_cost": 8,
         "max_rounds": 15,
+        "endless": False
     },
     {
-        "title": _("Scenario 2"),
-        "description": _("In this scenario, the traders are assigned different production costs at random, giving some traders an advantage over others. The game will end after 15 rounds."),
+        "title": _("Scenario 2: Some traders have an advantage"),
+        "description": _("In this scenario, the traders are assigned different production costs at random, giving some traders an advantage over others."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,

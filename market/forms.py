@@ -21,7 +21,7 @@ class MarketForm(forms.ModelForm):
             'min_cost': _("What is the lowest production cost for one unit of the product?"),
             'max_cost': _("What is the highest production cost for one unit of the product?"),
             'max_rounds': _("How many rounds should be played before the game ends?"),
-            'endless': _("The game does not have a fixed number of rounds"),
+            'endless': _("The game will go on for an indefinite number of rounds"),
         }
         labels = {
             'product_name_singular': _('Product name (singular)'),
@@ -63,9 +63,27 @@ class MarketForm(forms.ModelForm):
 class MarketUpdateForm(MarketForm):
 
     class Meta(MarketForm.Meta):
-        fields = ['product_name_singular',
-                  'product_name_plural', 'alpha', 'beta', 'theta']
+        # fields = ['product_name_singular',
+        #           'product_name_plural', 'alpha', 'beta', 'theta']
 
+        widgets = {
+            'initial_balance': forms.NumberInput(attrs={'readonly': True}),
+            'min_cost': forms.NumberInput(attrs={'readonly': True}),
+            'max_cost': forms.NumberInput(attrs={'readonly': True}),
+        }
+
+    def clean_max_rounds(self):
+        """ Choice of max rounds can't be smaller than current round """
+        cleaned_data = super().clean()
+        endless = cleaned_data.get("endless")
+        max_rounds = cleaned_data.get("max_rounds")
+        if not endless:
+            if max_rounds < self.instance.round:
+                raise forms.ValidationError(
+                    "Number of rounds can't be smaller than the current round of the market".format(
+                        self.instance.round + 1)
+                )
+        return max_rounds
 
 class TraderForm(forms.ModelForm):
     market_id = forms.CharField(max_length=16, label=_("Market ID"), help_text=_(

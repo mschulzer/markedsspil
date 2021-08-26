@@ -4,16 +4,16 @@
     <i>
         {% translate 'Waiting for the first trader to join the market...' %}
     </i>
-
 {% else %}
-    <table class="table table-sm table-striped" id="trader_status_table">
+    <p>All traders on the market, ordered by their currrent balance.</p>
+    <table class="table table-sm table-striped mb-4" id="trader_status_table">
         <thead id="trader_status_thead">
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">{% translate 'Trader name' %}</th>
-                                {% if not market.game_over%}
-                <th scope="col">{% translate 'Ready' %}</th>
-                                {% endif %}
+                {% if not market.game_over%}
+                <th scope="col">{% translate 'Ready for next round' %}</th>
+                {% endif %}
                 <th scope="col">{% translate 'Production cost' %}</th>
                 <th scope="col">{% translate 'Balance' %}</th>
             </tr>
@@ -36,34 +36,42 @@
             {% endfor %}
         </tbody>
     </table>
-	{% if not market.game_over%}
-        {% if num_ready_traders == 0 %}
-            <button type="button" class="btn btn-primary" disabled>
-                {% translate 'Finish round' %}
-            </button>
-        {% else %}
-            {% if num_ready_traders < traders|length %}       
-                <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
-                    {% translate 'Finish round' %}
-                </button>
-             
-            {% else %}
-                <!-- all traders area ready so show a submit button with no confirmation required -->
-                <button type="button" class="btn btn-success" onclick="next_round()">
-                    {% translate 'Finish round' %}
-                </button>
-            {% endif %}
-        {% endif %}
-	{% endif %}
-    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
-        {% csrf_token %}
-    </form>
 
+    {% if not market.game_over %}
+    <!-- The Finish Round button -->
+        <div class="d-flex justify-content-center">
+            {% if num_ready_traders == 0 %}
+                <button type="button" class="btn btn-primary" disabled>
+                    {% comment %} {% translate 'Finish round' %} {% endcomment %}
+                    Finish round {{ market.round|add:1 }}
+
+                </button>
+            {% else %}
+                {% if num_ready_traders < traders|length %}       
+                    <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
+                        {% comment %} {% translate 'Finish round' %} {% endcomment %}
+                        Finish round {{ market.round|add:1 }}
+
+                    </button>
+                
+                {% else %}
+                    <!-- all traders area ready so show a submit button with no confirmation required -->
+                    <button type="button" class="btn btn-success" onclick="next_round()">
+                        {% comment %} {% translate 'Finish round' %} {% endcomment %}
+                        Finish round {{ market.round|add:1 }}
+                    </button>
+                {% endif %}
+            {% endif %}
+        </div>
+        <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
+            {% csrf_token %}
+        </form>
     <script>
         function next_round() {
-            console.log("next round")
             document.getElementById("finish_round_form").submit();
         }
     </script>
+    {% endif %}
+
 {% endif %}

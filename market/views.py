@@ -21,7 +21,7 @@ from django.utils.safestring import mark_safe
 def market_edit(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
-    # only the user how created the market has permission to edit it
+    # only the user who created the market has permission to edit it
     if not request.user == market.created_by:
         return HttpResponseRedirect(reverse('market:home'))
 
@@ -30,9 +30,24 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, _("You successfully updated the market. Changes will take effect from this round forward."))
+                request, _(
+                    "You successfully updated the market. Changes will take effect from this round forward.")
+            )
 
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
+        # if form.is_valid():
+        #             # Some additional cleaning that I don't know how to do in forms.py
+        #             if not form.cleaned_data['endless']:
+        #                 if form.cleaned_data['max_rounds'] >= market.round:
+        #                     form.save()
+        #                     messages.success(
+        #                         request, _("You successfully updated the market. Changes will take effect from this round forward."))
+
+        #                     return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
+        #                 else:
+        #                     print(form.errors)
+        #                     #messages.error(
+        #                     #    request, _("Max rounds can't be less than current market round ({0}).".format(market.round)))
 
     else:  # request.method = 'GET'
         form = MarketUpdateForm(instance=market)
@@ -88,6 +103,8 @@ def create(request):
             new_market = form.save(commit=False)
             new_market.created_by = request.user
             new_market.save()
+            #messages.success(
+            #    request, _("You created a new market"))
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
 
     elif request.method == 'GET':
@@ -157,13 +174,31 @@ def monitor(request, market_id):
         'market': market,
         'traders': traders,
         'num_ready_traders': filter_trades(market=market, round=market.round).count(),
-        'rounds': range(market.round),
-        'show_stats_fields': ['profit', 'balance_after', 'unit_price', 'unit_amount', 'demand', 'units_sold', 'was_forced'],
+        'rounds': range(1, market.round + 1),
+        'show_stats_fields': ['balance_after', 'unit_price', 'profit', 'unit_amount', 'demand', 'units_sold'],
         'initial_balance': market.initial_balance
     }
 
     if request.method == "GET":
+        if market.game_over():
+            messages.info(request, mark_safe(
+                "The game has ended after {0} rounds.".format(market.round)
+            ))
+
+        if market.endless:
+            round_labels = list(range(1, market.round + 2))
+        else:
+            round_labels = list(range(1, market.max_rounds + 1))
+
+         # labels for x-axis on charts
+        context['rounds_json'] = json.dumps(round_labels)
+
+
+
         return render(request, 'market/monitor.html', context)
+
+
+
 
     if request.method == "POST":
 
@@ -225,6 +260,21 @@ def play(request):
         round_stats = RoundStat.objects.filter(market=market)
         trades = Trade.objects.filter(trader=trader)
 
+        # Set x-axis for graphs
+        if market.endless:
+            round_labels = list(range(1, market.round + 2))
+        else:
+            round_labels = list(range(1, market.max_rounds + 1))
+
+        # Set data for balance graph
+        data_balance = [float(market.initial_balance)] + \
+            [float(trade.balance_after)
+             if trade.balance_after else None for trade in trades]
+        if trader.round_joined > 0:
+            for i in range(trader.round_joined-1):
+                data_balance[i] = None
+            data_balance[trader.round_joined] = float(market.initial_balance)
+
         context = {
             'market': market,
             'trader': trader,
@@ -236,33 +286,35 @@ def play(request):
 
 
             # labels for x-axis on charts
-            'rounds_json': json.dumps(list(range(1, market.round + 2))),
+            'rounds_json': json.dumps(round_labels),
 
-            # context for units graph
+            # data for units graph
             'data_demand_json': json.dumps([trade.demand for trade in trades]),
             'data_sold_json': json.dumps([trade.units_sold for trade in trades]),
             'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
 
-            # context for price graph
+            # data for price graph
             'data_price_json': json.dumps([float(trade.unit_price) if trade.unit_price else None for trade in trades]),
             'data_prod_cost_json': json.dumps([float(trader.prod_cost) for _ in trades]),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 
-            # context for balance graph
-            'data_balance_json': json.dumps([float(market.initial_balance) if trader.round_joined == 0 else None] + [float(trade.balance_after) if trade.balance_after else None for trade in trades]),
+            # data for balance graph
+            'data_balance_json': json.dumps(data_balance)
         }
 
         if trades.filter(round=market.round).exists():
             context['wait'] = True
             messages.success(
                 request,
-                _("You made a trade, {0}! We are now waiting for the host to finish round {1}...").format(trader.name, market.round + 1))
+                _("You made a trade! We are now waiting for the host to finish round {0}...").format(
+                    market.round + 1)
+            )
 
         else:  # player should not be waiting
 
             if market.game_over():
                 messages.info(request,  mark_safe(
-                    f"Hi {trader.name}. The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/monitor' target='_blank'> Åbn markedsoversigt</a>."))
+                    f"The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/monitor' target='_blank'> Åbn markedsoversigt</a>."))
 
             else:  # game is not over
                 if market.round == trader.round_joined:
@@ -277,11 +329,11 @@ def play(request):
                     # a less verbose and less enthusiastic message for other traders
                     if market.endless:
                         messages.success(
-                            request, _("Hi {0}. You are now ready for round {1}.").format(request.session["username"], market.round + 1))
+                            request, _("You are now ready for round {0}.").format(market.round + 1))
                     else:
                         if not messages.get_messages(request):
                             messages.success(
-                                request, _("Hi {0}. You are now ready for round {1} out of {2}.").format(request.session["username"], market.round + 1, market.max_rounds))
+                                request, _("You are now ready for round {0} out of {1}.").format(market.round + 1, market.max_rounds))
 
         return render(request, 'market/play.html', context)
 
