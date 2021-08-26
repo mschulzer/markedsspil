@@ -128,7 +128,7 @@
         <div id="collapse_balance" class="collapse" aria-labelledby="heading_balance" data-parent="#accordion">
             <div class="card-body">  
                 <div class="mb-5">
-                    <canvas id="myChart"></canvas>
+                    <canvas id="balanceCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -144,7 +144,7 @@
         <div id="collapse_balance" class="collapse" aria-labelledby="heading_balance" data-parent="#accordion">
             <div class="card-body">
                 <div class="mb-5">
-                    <canvas id="myChart"></canvas>
+                    <canvas id="priceCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -196,6 +196,7 @@
     </div>
     {% endfor %}
 </div>
+
 <br><br>
 
 <div class="d-flex justify-content-center">
@@ -212,43 +213,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  var roundnums = [0];
-  var tradernames = [];
-  var balancedata = [];
-  var tradernum = 0;
-</script>
-
-    {% for round in rounds %}
-    <script>
-   	  roundnums.push(parseInt("{{round}}")+1);
-    </script>
-    {% endfor %}
-    <script>
-        console.log(roundnums)
-        console.log("{{ rounds }}")
-    </script>
-    {% for trader in traders %}
-	<script>
-	  tradernum++;
-	  var red = (100 + tradernum*100) % 255;
-	  var green = (50 + Math.floor(tradernum/3)*100) % 255;
-	  var blue = (0 + Math.floor(tradernum/2)*100) % 255;
-	  tradernames.push("{{trader.name}}");
-	  balancedata.push({ label: "{{trader.name}}",
-						 backgroundColor: 'rgb('+red+','+green+','+blue+')',
-						 borderColor: 'rgb('+red+','+green+','+blue+')',
-						 data: [parseInt("{{market.initial_balance}}")],
-					   });
-	</script>
-	  {% for trade in trader.trade_set.all %}
-      <script>
-   	    balancedata[balancedata.length-1].data.push(parseInt("{{trade.balance_after}}"));
-        console.log(balancedata)
-      </script>
-	  {% endfor %}
-    {% endfor %}
-
-<script>
     function copy_join_link() {
         // From w3schools
         var link_text = document.getElementById("join_link");
@@ -257,20 +221,107 @@
         document.execCommand("copy")
     }
 
-    const data = {
-        labels: roundnums,
-        datasets: balancedata
+    // Generation of data for graphs 
+    // (would be nice to do this with python in view function instead)
+    var tradernames = [];
+    var balanceDataSet = [];
+    var priceDataSet = [];
+    var tradernum = 0;
+
+    {% for trader in traders %}
+        tradernum++;
+        var red = (100 + tradernum*100) % 255;
+        var green = (50 + Math.floor(tradernum/3)*100) % 255;
+        var blue = (0 + Math.floor(tradernum/2)*100) % 255;
+        tradernames.push("{{ trader.name }}");
+        balanceDataSet.push({ label: "{{ trader.name }}",
+                            backgroundColor: 'rgb('+red+','+green+','+blue+')',
+                            borderColor: 'rgb('+red+','+green+','+blue+')',
+                            data: [parseInt("{{ market.initial_balance }}")],
+                        });
+        priceDataSet.push({ label: "{{ trader.name }}",
+                            backgroundColor: 'rgb('+red+','+green+','+blue+')',
+                            borderColor: 'rgb('+red+','+green+','+blue+')',
+                            data: [],
+                        });
+                                                            
+        {% for trade in trader.trade_set.all %}
+            balanceDataSet[balanceDataSet.length-1].data.push(parseInt("{{ trade.balance_after }}"));
+            priceDataSet[priceDataSet.length-1].data.push(parseInt("{{ trade.unit_price }}"));
+	    {% endfor %}
+
+    {% endfor %}
+
+    const balanceData = {
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+        datasets: balanceDataSet
+    };
+    balanceData.labels.unshift('')
+
+
+    const priceData = {
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+        datasets: priceDataSet
     };
   
-    const config = {
+    const configBalance = {
         type: 'line',
-        data,
-        options: {}
-    };
+        data: balanceData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+                
+            },  
+            plugins: {
+                title: {
+                    display: true,
+                    text: "{% translate 'Balance after each round' %}",
+                    padding: {
+                        top: 5,
+                        bottom: 10
+                    }
+                }
+            }
+        }     
+    }
+    const configPrice = {
+        type: 'line',
+        data: priceData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+                
+            },  
+            plugins: {
+                title: {
+                    display: true,
+                    text: "{% translate 'Unit price in each round' %}",
+                    padding: {
+                        top: 5,
+                        bottom: 10
+                    }
+                }
+            }
+        }     
+    }
+    balanceCanvas = document.getElementById('balanceCanvas')
+    priceCanvas = document.getElementById('priceCanvas')
+
     var myChart = new Chart(
-        document.getElementById('myChart'),
-        config
+        balanceCanvas,
+        configBalance
     );
+
+    var myChart = new Chart(
+        priceCanvas,
+        configPrice
+    );
+
+
 </script>
 
 

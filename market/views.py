@@ -103,7 +103,7 @@ def create(request):
             new_market = form.save(commit=False)
             new_market.created_by = request.user
             new_market.save()
-            #messages.success(
+            # messages.success(
             #    request, _("You created a new market"))
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
 
@@ -185,20 +185,14 @@ def monitor(request, market_id):
                 "The game has ended after {0} rounds.".format(market.round)
             ))
 
+        # Labels for x-axis for graphs
         if market.endless:
             round_labels = list(range(1, market.round + 2))
         else:
             round_labels = list(range(1, market.max_rounds + 1))
-
-         # labels for x-axis on charts
-        context['rounds_json'] = json.dumps(round_labels)
-
-
+        context['round_labels_json'] = json.dumps(round_labels)
 
         return render(request, 'market/monitor.html', context)
-
-
-
 
     if request.method == "POST":
 
@@ -284,9 +278,8 @@ def play(request):
             'wait': False,
             'traders': Trader.objects.filter(market=market).order_by('-balance'),
 
-
-            # labels for x-axis on charts
-            'rounds_json': json.dumps(round_labels),
+            # Labels for x-axis for graphs
+            'round_labels_json': json.dumps(round_labels),
 
             # data for units graph
             'data_demand_json': json.dumps([trade.demand for trade in trades]),

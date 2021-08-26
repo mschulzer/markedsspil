@@ -185,25 +185,25 @@
 
     var dataDemand = {
         label: "{% translate 'Demand' %}",
-        data: JSON.parse("{{data_demand_json}}"),
+        data: JSON.parse("{{ data_demand_json }}"),
         lineTension: 0,
         borderColor: 'rgb(75, 192, 192, 0.5)',
     };
 
     var dataSold = {
         label: "{% translate 'Sold' %}",
-        data: JSON.parse("{{data_sold_json}}"),
+        data: JSON.parse("{{ data_sold_json }}"),
         borderColor: 'rgb(0, 153, 255, 0.5)',
     };
 
     var dataProduced = {
         label: "{% translate 'Produced' %}",
-        data: JSON.parse("{{data_produced_json}}"),
+        data: JSON.parse("{{ data_produced_json }}"),
         borderColor: 'rgb(255, 153, 0, 0.5)',
     };
 
     var unitsData = {
-        labels: JSON.parse("{{rounds_json}}"), // labels on x-axis
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
         datasets: [dataDemand,
 				   dataSold,
 				   dataProduced]
@@ -259,7 +259,7 @@
     };
 
     var priceData = {
-        labels: JSON.parse("{{ rounds_json }}"), // labels on x-axis
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
         datasets: [dataYourPrice, dataMarketAvgPrice, dataProdCost]
     };
 
@@ -293,7 +293,7 @@
 <script>
     balanceCanvas = document.getElementById('balanceCanvas')
 
-    var dataBalance = {
+    var balanceDataSet = {
         label: "{% translate 'Your balance after each round' %}",
         data: JSON.parse("{{ data_balance_json }}"),
         lineTension: 0,
@@ -301,8 +301,8 @@
     };
 
     var balanceData = {
-        labels: JSON.parse("{{ rounds_json }}"), // labels on x-axis
-        datasets: [dataBalance]
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+        datasets: [balanceDataSet]
     };
 
     balanceData.labels.unshift('')
