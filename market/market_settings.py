@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 SCENARIOS = [
     {
         "title": _("Scenario 1: All traders have equal costs"),
-        "description": _("In this scenario, all traders have the same unit production costs. This is a good place to start."),
+        "description": _("In this scenario, all traders have the same unit production costs, so the traders compete on equal terms. This is a good place to start."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -32,7 +32,6 @@ SCENARIOS = [
         "max_cost": 15,
         "max_rounds": 15,
         "endless": False
-
     },
     {
         "title": _("Custom scenario"),

@@ -67,3 +67,49 @@ def filter_trades(market, round="all_rounds"):
     else:
         assert(type(round) == int)
         return trades_by_market.filter(round=round)
+
+
+def generate_balance_list(trader):
+    """
+    Generates a list of floats consisting of the balance history of a single trader.
+    The i'th entry of the list is the balance before/during each round, not the
+    balance after the round.  
+
+    For a trader, who joins the game in the first round, the resulting list
+    should loook something like this
+    [5000, 405, 405, 410, 49] 
+
+    For a trader who joins the game in "round 3" (market.round=2), 
+    the list should look something like this: 
+    [None, None, 5000, 405, 405, 410, 49] 
+
+    The function is a bit ugly because of the way we store data in the database.
+    """
+    trades = Trade.objects.filter(trader=trader)
+    initial_balance = float(trader.market.initial_balance)
+
+    balance_list = [initial_balance] + \
+        [float(trade.balance_after)
+         if trade.balance_after else None for trade in trades]
+
+    if trader.round_joined > 0:
+        for i in range(trader.round_joined):
+            balance_list[i] = None
+        balance_list[trader.round_joined] = initial_balance
+    return balance_list
+
+
+def generate_cost_list(trader):
+    """
+    Generates a list of floats consisting of the prod_cost of a single trader.
+    The i'th entry of the list is the prod_cost in the i'th round. It should be either None, 
+    if the trader has not joined yet, or equal to the trader's fixed prod. cost. 
+    """
+    prod_cost = float(trader.prod_cost)
+
+    prod_cost_list = [prod_cost for _ in range(trader.market.round + 1)]
+
+    if trader.round_joined > 0:
+        for i in range(trader.round_joined):
+            prod_cost_list[i] = None
+    return prod_cost_list

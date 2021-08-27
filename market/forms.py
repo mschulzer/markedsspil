@@ -72,6 +72,14 @@ class MarketUpdateForm(MarketForm):
             'max_cost': forms.NumberInput(attrs={'readonly': True}),
         }
 
+    def clean(self):
+        """ Can't update market when game over """
+        cleaned_data = super().clean()
+        if self.instance.game_over():
+            raise ValidationError(
+                "You can't edit a market that has ended (game over)")
+        return cleaned_data
+
     def clean_max_rounds(self):
         """ Choice of max rounds can't be smaller than current round """
         cleaned_data = super().clean()

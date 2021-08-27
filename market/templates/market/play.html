@@ -4,17 +4,7 @@
 {% load i18n %}
 
 {% block title %}{% translate 'Play' %}{% endblock %}
-
 {% block content %}
-
-    <style>
-        @media screen and (max-width: 575px) {
-            .hide-when-small {
-                display:none;
-            }
-        }
-    </style>
-
     <p class="pt-3 p-2" >
         {% if market.round > 0 and not wait and not trades.last.was_forced %}
             <!-- Text with info about last round choices and results.  -->
@@ -36,8 +26,8 @@
         {% endif %}
 
         {% if wait %}
-            You chose to produce <b>{{ trades.last.unit_amount }}</b>  
-            {{ market.product_name_plural }}. You decided to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
+            You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+            {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
             
             {% comment %} 
             Suggested translation:
@@ -187,19 +177,19 @@
         label: "{% translate 'Demand' %}",
         data: JSON.parse("{{ data_demand_json }}"),
         lineTension: 0,
-        borderColor: 'rgb(75, 192, 192, 0.5)',
+        borderColor: 'rgb(75, 192, 192, 0.6)',
     };
 
     var dataSold = {
         label: "{% translate 'Sold' %}",
         data: JSON.parse("{{ data_sold_json }}"),
-        borderColor: 'rgb(0, 153, 255, 0.5)',
+        borderColor: 'rgb(0, 153, 255, 0.6)',
     };
 
     var dataProduced = {
         label: "{% translate 'Produced' %}",
         data: JSON.parse("{{ data_produced_json }}"),
-        borderColor: 'rgb(255, 153, 0, 0.5)',
+        borderColor: 'rgb(255, 153, 0, 0.6)',
     };
 
     var unitsData = {
@@ -243,21 +233,20 @@
         label: "{% translate 'Your price' %}",
         data: JSON.parse("{{ data_price_json }}"),
         lineTension: 0,
-        borderColor: 'rgb(75, 192, 192, 0.5)',
+        borderColor: 'rgb(75, 192, 192, 0.6)',
     };
 
     var dataMarketAvgPrice = {
         label: "{% translate 'Market average price' %}",
         data: JSON.parse("{{ data_market_avg_price_json }}"),
-        borderColor: 'rgb(0, 153, 255, 0.5)',
+        borderColor: 'rgb(0, 153, 255, 0.6)',
     };
 
     var dataProdCost = {
         label: "{% translate 'Your cost per unit' %}",
         data: JSON.parse("{{ data_prod_cost_json }}"),
-        borderColor: 'rgb(255, 153, 0, 0.5)',
+        borderColor: 'rgb(255, 153, 0, 0.6)',
     };
-
     var priceData = {
         labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
         datasets: [dataYourPrice, dataMarketAvgPrice, dataProdCost]
@@ -297,7 +286,7 @@
         label: "{% translate 'Your balance during each round' %}",
         data: JSON.parse("{{ trader_balance_json }}"),
         lineTension: 0,
-        borderColor: 'rgb(75, 192, 192, 0.5)',
+        borderColor: 'rgb(75, 192, 192, 0.6)',
     };
 
     var balanceData = {

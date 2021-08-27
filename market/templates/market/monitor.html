@@ -6,7 +6,7 @@
 {% load custom_tags %}
 
 <!-- Page heading-->
-<h3 class="mb-3">{{ market.product_name_singular|title }} Market <span class="text-black-50">[{{ market.market_id }}]</span></h3>      
+<h2 class="mb-3">{{ market.product_name_singular|title }} Market <span class="text-black-50">[{{ market.market_id }}]</span></h2>      
 
 <!-- Buttons -->
 <div class="mb-3">
@@ -37,29 +37,25 @@
         <p>
             In this <b>{{ market.product_name_singular}}</b> market, all traders start out with an initial balance of <b>{{ market.initial_balance }}</b> kr. 
             {% if market.min_cost < market.max_cost %}
-            When joining the game, the traders are assigned different unit production costs at random, giving some traders an advantage over others. 
-            The trader's production cost per unit varies between a minimum of <b>{{ market.min_cost }}</b> kr. and maximum of <b>{{ market.max_cost }}</b> kr. 
+                When joining the game, the traders are assigned different unit production costs at random, giving some traders an advantage over others. 
+                The trader's production costs varies between a minimum of <b>{{ market.min_cost }}</b> kr. and maximum of <b>{{ market.max_cost }}</b> kr. pr unit. 
             {% else %}
-            All traders have the same production costs: <b>{{ market.min_cost}}</b> kr. per {{ market.product_name_singular }}, so no traders have a prior advantage over others.
-            {% if market.endless %}The game is <b>endless</b>, so it can go on for an indefinite number of rounds.{% endif%}
-
-        {% endif %}
+                All traders have the same production costs: <b>{{ market.min_cost}}</b> kr. per {{ market.product_name_singular }}, so no traders have a prior advantage over others.
+            {% endif %}
+            {% if market.endless %}The game is <b>endless</b>, so it can go on for an indefinite number of rounds.{% endif %} 
         </p>
+        {% if request.user == market.created_by %}
         <a href="{% url 'market:market_edit' market.market_id %}">{% translate 'More details' %}</a> 
+        {% endif %}
     </div>
 </div>
 
 {% comment %} <a class="btn btn-primary mb-5" href="{% url 'market:market_edit' market.market_id %}">{% translate 'Edit market' %}</a> {% endcomment %}
 {% comment %} <h3>{% blocktranslate with round=market.round %}Trader Status Round #{{ round }}{% endblocktranslate %}</h3> {% endcomment %}
 
-<br>
 <!-- Trader Status -->
 <h4 class="mt-5">
-    {% if market.game_over %}
-        Final Trader Status
-    {% else %}
-        Trader Status 
-    {% endif %}
+    Scoreboard
     <span class="text-black-50">
         {% if market.game_over %}
             [Game Over]
@@ -201,7 +197,7 @@
 
 <div class="d-flex justify-content-center">
     <button type="button" class="btn btn-primary mb-5" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
-        Download Tabular Data
+        Download Data
     </button>
 </div>
 

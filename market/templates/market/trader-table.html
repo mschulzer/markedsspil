@@ -42,24 +42,24 @@
         <div class="d-flex justify-content-center">
             {% if num_ready_traders == 0 %}
                 <button type="button" class="btn btn-primary" disabled>
-                    {% comment %} {% translate 'Finish round' %} {% endcomment %}
-                    Finish round {{ market.round|add:1 }}
+                    {% comment %} {% translate 'Finish Round' %} {% endcomment %}
+                    Finish Round {{ market.round|add:1 }}
 
                 </button>
             {% else %}
                 {% if num_ready_traders < traders|length %}       
                     <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
-                        {% comment %} {% translate 'Finish round' %} {% endcomment %}
-                        Finish round {{ market.round|add:1 }}
+                        {% comment %} {% translate 'Finish Round' %} {% endcomment %}
+                        Finish Round {{ market.round|add:1 }}
 
                     </button>
                 
                 {% else %}
                     <!-- all traders area ready so show a submit button with no confirmation required -->
                     <button type="button" class="btn btn-success" onclick="next_round()">
-                        {% comment %} {% translate 'Finish round' %} {% endcomment %}
-                        Finish round {{ market.round|add:1 }}
+                        {% comment %} {% translate 'Finish Round' %} {% endcomment %}
+                        Finish Round {{ market.round|add:1 }}
                     </button>
                 {% endif %}
             {% endif %}

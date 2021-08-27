@@ -7,7 +7,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
 from .models import Market, Trader, Trade, RoundStat
 from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
-from .helpers import create_forced_trade, filter_trades, process_trade
+from .helpers import create_forced_trade, filter_trades, process_trade, generate_balance_list, generate_cost_list
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
@@ -19,9 +19,10 @@ from django.utils.safestring import mark_safe
 
 @login_required
 def market_edit(request, market_id):
+    """ This both a details view and an edit view """
     market = get_object_or_404(Market, market_id=market_id)
 
-    # only the user who created the market has permission to edit it
+    # Only the user who created the market has access to this details/edit page
     if not request.user == market.created_by:
         return HttpResponseRedirect(reverse('market:home'))
 
@@ -31,23 +32,10 @@ def market_edit(request, market_id):
             form.save()
             messages.success(
                 request, _(
-                    "You successfully updated the market. Changes will take effect from this round forward.")
+                    "You updated the market.")
             )
 
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
-        # if form.is_valid():
-        #             # Some additional cleaning that I don't know how to do in forms.py
-        #             if not form.cleaned_data['endless']:
-        #                 if form.cleaned_data['max_rounds'] >= market.round:
-        #                     form.save()
-        #                     messages.success(
-        #                         request, _("You successfully updated the market. Changes will take effect from this round forward."))
-
-        #                     return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
-        #                 else:
-        #                     print(form.errors)
-        #                     #messages.error(
-        #                     #    request, _("Max rounds can't be less than current market round ({0}).".format(market.round)))
 
     else:  # request.method = 'GET'
         form = MarketUpdateForm(instance=market)
@@ -160,40 +148,10 @@ def join(request):
     return render(request, 'market/join.html', {'form': form})
 
 
-def generate_balance_list(trader):
-    """
-    Generates a list of floats consisting of the balance history of a single trader.
-    The i'th entry of the list is the balance before/during each round, not the
-    balance after the round.  
-
-    For a trader, who joins the game in the first round, the resulting list
-    should loook something like this
-    [5000, 405, 405, 410, 49] 
-
-    For a trader who joins the game in "round 3" (market.round=2), 
-    the list should look something like this: 
-    [None, None, 5000, 405, 405, 410, 49] 
-
-    The function is a bit ugly because of the way we store data in the database.
-    """
-    trades = Trade.objects.filter(trader=trader)
-    initial_balance = float(trader.market.initial_balance)
-
-    balance_list = [initial_balance] + \
-        [float(trade.balance_after)
-         if trade.balance_after else None for trade in trades]
-
-    if trader.round_joined > 0:
-        for roundnum in range(trader.round_joined):
-            balance_list[roundnum] = None
-        balance_list[trader.round_joined] = initial_balance
-    return balance_list
-
-
 def monitor(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
-    # only the user how created the market has permission to monitor it
+    # Unless game_over, only the user who created the market has permission to monitor page
     if not request.user == market.created_by:
         if not market.game_over():
             return HttpResponseRedirect(reverse('market:home'))
@@ -212,8 +170,8 @@ def monitor(request, market_id):
 
     if request.method == "GET":
         if market.game_over():
-            messages.info(request, mark_safe(
-                "The game has ended after {0} rounds.".format(market.round)
+            messages.success(request, mark_safe(
+                "The game has ended after {0} rounds!".format(market.round)
             ))
         # Labels for x-axes of graphs
         if market.endless:
@@ -349,7 +307,7 @@ def play(request):
 
             # data for price graph
             'data_price_json': json.dumps([float(trade.unit_price) if trade.unit_price else None for trade in trades]),
-            'data_prod_cost_json': json.dumps([float(trader.prod_cost) for _ in trades]),
+            'data_prod_cost_json': json.dumps(generate_cost_list(trader)),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 
             # data for balance graph
@@ -368,7 +326,7 @@ def play(request):
 
             if market.game_over():
                 messages.info(request,  mark_safe(
-                    f"The game has ended after {market.max_rounds} rounds. <a href='/{market.market_id}/monitor' target='_blank'> Åbn markedsoversigt</a>."))
+                    f"The game has ended after {market.max_rounds} rounds! <a href='/{market.market_id}/monitor' target='_blank'> Åbn markedsoversigt</a>."))
 
             else:  # game is not over
                 if market.round == trader.round_joined:
@@ -392,7 +350,7 @@ def play(request):
         return render(request, 'market/play.html', context)
 
 
-@ require_GET
+@require_GET
 def current_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
     data = {
@@ -401,37 +359,35 @@ def current_round(request, market_id):
     return JsonResponse(data)
 
 
-"""
-def download(request, market_id):
-    # not properly tested yet
-    # known issues:
-    # if trader_stats does not exist for all traders in all rounds script will crash.
-    market = get_object_or_404(Market, market_id=market_id)
-    market_traders = Trader.objects.filter(market=market)
-    total_rounds = market.round
-    data = "Round,Average price,Average amount,Average profit,"
-    for trader in market_traders:
-        data += trader.name + " balance,"
-    data += "<br>"
-    for r in range(total_rounds):
-        data += str(r) + ","
-        round_stats = Stats.objects.filter(round=r, market=market)
-        avg_price = sum(
-            [trader.price for trader in round_stats]) / len(round_stats)
-        data += str(avg_price) + ","
-        avg_amount = sum(
-            [trader.amount for trader in round_stats]) / len(round_stats)
-        data += str(avg_amount) + ","
-        avg_profit = sum(
-            [trader.profit for trader in round_stats]) / len(round_stats)
-        data += str(avg_profit) + ","
-        for trader in market_traders:
-            trader_stats = Stats.objects.get(
-                round=r, market=market, trader=trader)
-            data += str(trader_stats.balance) + ","
-        data += "<br>"
-    output = open(market.market_id + "_stats.csv", "w")
-    output.write(data)
-    output.close()
-    return HttpResponse(data)
-"""
+# def download(request, market_id):
+#     # not properly tested yet
+#     # known issues:
+#     # if trader_stats does not exist for all traders in all rounds script will crash.
+#     market = get_object_or_404(Market, market_id=market_id)
+#     market_traders = Trader.objects.filter(market=market)
+#     total_rounds = market.round
+#     data = "Round,Average price,Average amount,Average profit,"
+#     for trader in market_traders:
+#         data += trader.name + " balance,"
+#     data += "<br>"
+#     for r in range(total_rounds):
+#         data += str(r) + ","
+#         round_stats = Stats.objects.filter(round=r, market=market)
+#         avg_price = sum(
+#             [trader.price for trader in round_stats]) / len(round_stats)
+#         data += str(avg_price) + ","
+#         avg_amount = sum(
+#             [trader.amount for trader in round_stats]) / len(round_stats)
+#         data += str(avg_amount) + ","
+#         avg_profit = sum(
+#             [trader.profit for trader in round_stats]) / len(round_stats)
+#         data += str(avg_profit) + ","
+#         for trader in market_traders:
+#             trader_stats = Stats.objects.get(
+#                 round=r, market=market, trader=trader)
+#             data += str(trader_stats.balance) + ","
+#         data += "<br>"
+#     output = open(market.market_id + "_stats.csv", "w")
+#     output.write(data)
+#     output.close()
+#     return HttpResponse(data)
