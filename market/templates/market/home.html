@@ -6,23 +6,23 @@
 
 {% block content %}
 
-<h3>{% translate 'Welcome to the Market Simulator!' %}</h3>
-
-<br><br>
-<p>{% translate 'Join a market' %}:</p>
-<form action="{% url 'market:join' %}" method="GET">
-    <input type="submit" value="{% translate 'Join' %}" class="btn btn-primary">
-</form>
-<br>
-<p>{% translate 'Create a new market' %}:</p>
-<form action="{% url 'market:create' %}" method="GET">
-    <input type="submit" value="{% translate 'Create' %}" class="btn btn-secondary">
-</form>
-<br>
-<p>{% translate 'Return to one of your previous markets' %}:</p>
-<form action="{% url 'market:my_markets' %}" method="GET">
-    <input type="submit" value="{% translate 'My markets' %}" class="btn btn-warning">
-</form>
-
+<div class="container">
+    <h3>{% translate 'Welcome to the Market Simulator!' %}</h3>
+    <br><br>
+    <p>{% translate 'Join a market' %}:</p>
+    <form action="{% url 'market:join' %}" method="GET">
+        <input type="submit" value="{% translate 'Join' %}" class="btn btn-primary">
+    </form>
+    <br>
+    <p>{% translate 'Create a new market' %}:</p>
+    <form action="{% url 'market:create' %}" method="GET">
+        <input type="submit" value="{% translate 'Create' %}" class="btn btn-primary">
+    </form>
+    <br>
+    <p>{% translate 'Return to one of your previous markets' %}:</p>
+    <form action="{% url 'market:my_markets' %}" method="GET">
+        <input type="submit" value="{% translate 'My markets' %}" class="btn btn-primary">
+    </form>
+</div>
 
 {% endblock %}

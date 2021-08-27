@@ -19,7 +19,7 @@ from django.utils.safestring import mark_safe
 
 @login_required
 def market_edit(request, market_id):
-    """ This both a details view and an edit view """
+    """ This is both a details view and an edit view """
     market = get_object_or_404(Market, market_id=market_id)
 
     # Only the user who created the market has access to this details/edit page

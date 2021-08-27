@@ -13,9 +13,13 @@
                 <th scope="col">{% translate 'Trader name' %}</th>
                 {% if not market.game_over%}
                 <th scope="col">{% translate 'Ready for next round' %}</th>
-                {% endif %}
                 <th scope="col">{% translate 'Production cost' %}</th>
                 <th scope="col">{% translate 'Balance' %}</th>
+                {% else %}
+                <th scope="col">{% translate 'Production cost' %}</th>
+                <th scope="col">{% translate 'Final balance' %}</th>
+                {% endif %}
+                
             </tr>
         </thead>
         <tbody>
