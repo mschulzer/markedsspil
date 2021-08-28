@@ -267,9 +267,6 @@ msgstr "Deltag i et marked"
 msgid "Return to one of your previous markets"
 msgstr "Vend tilbage til et af dine tidligere markeder"
 
-#: templates/market/join.html:10
-msgid "Choose a trader name and join a market"
-msgstr "Tilslut dig et marked"
 
 #: templates/market/join.html:21
 msgid "Please note"

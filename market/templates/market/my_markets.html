@@ -13,7 +13,7 @@
 
             <thead>
                 <tr>
-                    <th>{% translate 'Market' %}</th>
+                    <th>{% translate 'ID' %}</th>
                     <th>{% translate 'Created at' %}</th>
                     <th>{% translate 'Initial balance' %}</th>
                     <th>{% translate 'Unit cost' %}</th>
@@ -26,7 +26,7 @@
 
                 <tr>
                     <td>{{ market.market_id }}<br>
-                        {{ market.product_name_plural }}
+                        ({{ market.product_name_plural }})
                     </td>
                     <td>{{ market.created_at }}</td>
                     <td>{{ market.initial_balance }}</td>

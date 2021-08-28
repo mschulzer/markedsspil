@@ -5,48 +5,48 @@
 {% block title %}{% translate 'Home' %}{% endblock %}
 
 {% block content %}
-
-<div class="container" style="max-width: 600px">
     <h4 class="mb-4">{% translate 'Welcome to the Market Simulator' %}</h4>
-
+    <div class="row">
     <!-- Card with options for "traders" -->
-    <div class="card mb-4">
-        <div class="card-header">
-            {% translate 'Participate as trader' %}
-        </div>   
-        <div class="card-body"> 
-            {% if request.session.market_id %}
-                <!-- Content if client has already joined a market -->
-                <p>Hi, {{ request.session.username }}! You have already joined the {{ market.product_name_singular }} market {{ market.market_id }}. Do you want to return to this market?</p>
-              	<div class="d-flex justify-content-center mb-4">
-                    <a href="{% url 'market:play' %}">
-                        <button class="btn btn-primary">
-                            {% translate 'Return to my market' %}
-                        </button>
-                    </a>
-                </div>
-                <p>Perhaps you want to join another market?</p>
-                <div class="d-flex justify-content-center">
-                    <a href="{% url 'market:join' %}">
-                        <button class="btn btn-primary">
-                            {% translate 'Join another market' %}
-                        </button>
-                    </a>          
-                </div>
-            {% else %}
-                <!-- Content if client has not joined a market -->
-                <p>{% translate 'Traders produce and sell goods on a market. They compete with other traders to gain the most money after a given number of rounds.'%}</p>
-                <div class="d-flex justify-content-center">
-                    <a href="{% url 'market:join' %}">
-                        <button class="btn btn-primary">
-                            {% translate 'Join a market' %}
-                        </button>
-                    </a> 
-                </div>        
-            {% endif %}
+    <div class="col col-12 col-lg-6 d-flex align-items-stretch">
+        <div class="card mb-4">
+            <div class="card-header">
+                {% translate 'Participate as trader' %}
+            </div>   
+            <div class="card-body"> 
+                {% if request.session.market_id %}
+                    <!-- Content if client has already joined a market -->
+                    <p>Hi, {{ request.session.username }}! You have already joined the {{ market.product_name_singular }} market {{ market.market_id }}. Do you want to return to this market?</p>
+                    <div class="d-flex justify-content-center mb-4">
+                        <a href="{% url 'market:play' %}">
+                            <button class="btn btn-primary">
+                                {% translate 'Return to my market' %}
+                            </button>
+                        </a>
+                    </div>
+                    <p>Perhaps you want to join another market?</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'market:join' %}">
+                            <button class="btn btn-primary">
+                                {% translate 'Join another market' %}
+                            </button>
+                        </a>          
+                    </div>
+                {% else %}
+                    <!-- Content if client has not joined a market -->
+                    <p>{% translate 'Traders produce and sell goods on a market. They compete with other traders to gain the most money after a given number of rounds.'%}</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'market:join' %}">
+                            <button class="btn btn-primary">
+                                {% translate 'Join a market' %}
+                            </button>
+                        </a> 
+                    </div>        
+                {% endif %}
+            </div>
         </div>
     </div>
-
+    <div class="col col-12 col-lg-6 d-flex align-items-stretch">
     <!-- Card with options for "hosts" -->
     <div class="card mb-4">
         <div class="card-header">
@@ -75,6 +75,8 @@
             </div>
         </div>
     </div>
+    </div>
+
 
 </div>
 

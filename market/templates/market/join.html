@@ -6,8 +6,8 @@
 
 {% block content %}
 
-<div class="container" style="max-width: 600px">
-	<h3 class="mb-lg-4 mt-5">{% translate 'Choose a trader name and join a market' %}</h3>
+<div class="container">
+	<h4 class="mb-3 mb-lg-4 mt-4">{% translate 'Join a market' %}</h4>
 
 	<form class="mb-4" action="" method="post">{% csrf_token %}
 		{{ form|crispy }}
