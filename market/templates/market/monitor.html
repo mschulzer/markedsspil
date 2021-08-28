@@ -5,7 +5,6 @@
 {% block content %}
 {% load custom_tags %}
 
-
 <!-- Page heading-->
 <h2 class="mb-3 mt-lg-5">{{ market.product_name_singular|title }} Market <span class="text-black-50">[{{ market.market_id }}]</span></h2>      
 
@@ -202,33 +201,44 @@
         <div id="collapse_{{ field }}" class="collapse" aria-labelledby="heading_{{ field }}" data-parent="#accordion">
             <div class="card-body">
                 {% if traders %}
-                    {% if field == 'balance_after' %}
-                        <h5>{{ field|field_name_to_label }} after each round </h5>
-                    {% else %}
-                        <h5>{{ field|field_name_to_label }} in each round </h5>
-                    {% endif %}
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        {% for round in rounds %}
-                                            <th>{{ round }}</th>
-                                        {% endfor %}
-                                    </tr>
-                                <thead>
-                                <tbody>
-                                    {% for trader in traders %}
-                                        <tr>
-                                            <td scope="row"> {{trader.name }}</td>
-                                            {% for trade in trader.trade_set.all %}
-                                                <td>{{ trade|get_attribute:field }}</td>
-                                            {% endfor %}
-                                        </tr>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    {% for round in rounds %}
+                                        <th>{{ round }}</th>
                                     {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                    
+                                    <!-- For balances we need an extra column -->
+                                    {% if field == 'balance_before' %}
+                                        {% if market.game_over %}
+                                            <th>Final</th>
+                                        {% else %}
+                                            <th>{{ market.round|add:1 }}</th>
+                                        {% endif %}
+                                    {% endif %}
+                                </tr>
+                            <thead>
+                            <tbody>
+                                {% for trader in traders %}
+                                    <tr>
+                                        <!-- queries could be optimized here -->
+                                        <td scope="row"> {{trader.name }}</td>
+                                        {% for trade in trader.trade_set.all %}
+                                            {% if trade.round < market.round %}
+                                                <td>{{ trade|get_attribute:field }}</td>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if field == 'balance_before' %}
+                                            <td>{{ trader.trade_set.last|get_attribute:'balance_after' }}</td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 {% else %}
                     <p class="text-muted">No data to show yet.</p>
                 {% endif %}
@@ -367,6 +377,5 @@
 
 </script>
 {% endif %}
-
 
 {% endblock %}

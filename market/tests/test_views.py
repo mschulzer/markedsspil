@@ -285,6 +285,7 @@ class JoinViewTestPOSTRequests(TestCase):
             self.assertEqual(hannes_trades[i].unit_amount, None)
             self.assertEqual(hannes_trades[i].round, i)
             self.assertEqual(hannes_trades[i].balance_after, None)
+            self.assertEqual(hannes_trades[i].balance_before, None)
 
         # The current balance of the trader be equal the initial balance
         self.assertEqual(hanne.balance, market.initial_balance)
@@ -414,6 +415,8 @@ class MonitorViewPOSTRequestsTest(TestCase):
         trade.refresh_from_db()
         self.assertEqual(trade.round, 7)
         self.assertIsInstance(trade.balance_after, Decimal)
+        self.assertIsInstance(trade.balance_before, Decimal)
+        self.assertEqual(trade.balance_before, TraderFactory.balance)
         self.assertIsInstance(trade.profit, Decimal)
         self.assertIsInstance(trade.units_sold, int)
         self.assertIsInstance(trade.demand, int)
@@ -451,6 +454,8 @@ class MonitorViewPOSTRequestsTest(TestCase):
         self.assertEqual(trade.was_forced, True)
         self.assertEqual(trade.round, 7)
         self.assertEqual(trade.profit, None)
+        self.assertEqual(trade.balance_before, 123456)
+        self.assertEqual(trade.balance_after, 123456)
 
         # The balance of trader2 should not be affected by the forced trade
         trader2.refresh_from_db()
@@ -525,6 +530,7 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         self.assertEqual(response['Location'], url)
 
     def test_balance_and_profit_of_trades_updates(self):
+
         self.assertEqual(self.c1.balance_after, None)
         self.assertEqual(self.m1.balance_after, None)
         self.assertEqual(self.n1.balance_after, None)
@@ -795,7 +801,8 @@ class PlayViewPOSTRequestTest(TestCase):
         self.assertEqual(trade.round, trade.trader.market.round)
         self.assertFalse(trade.was_forced)
         self.assertEqual(trade.profit, None)
-        self.assertFalse(trade.balance_after, None)
+        self.assertEqual(trade.balance_after, None)
+        self.assertEqual(trade.balance_before, TraderFactory.balance)
 
         # after a successful post request, we should redirect to play
         self.assertEqual(response.status_code, 302)

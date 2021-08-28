@@ -13,8 +13,6 @@ from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
 from django.utils.translation import gettext as _
-from decimal import Decimal
-from django.utils.safestring import mark_safe
 
 
 @login_required
@@ -65,6 +63,7 @@ def small_trader_table(request, market_id):
     traders = Trader.objects.filter(market=market).order_by('-balance')
     context = {
         'traders': traders,
+        'market': market
     }
     return render(request, 'market/small-trader-table.html', context)
 
@@ -168,7 +167,7 @@ def monitor(request, market_id):
         'traders': traders,
         'num_ready_traders': filter_trades(market=market, round=market.round).count(),
         'rounds': range(1, market.round + 1),
-        'show_stats_fields': ['balance_after', 'unit_price', 'profit', 'unit_amount', 'demand', 'units_sold'],
+        'show_stats_fields': ['balance_before', 'unit_price', 'profit', 'unit_amount', 'demand', 'units_sold'],
         'initial_balance': market.initial_balance
 
     }
@@ -202,7 +201,7 @@ def monitor(request, market_id):
             Pseudo random colors to be used in multi-player plots. 
             Perhaps we should select the first x colors from a list of colors that look nice together... 
             """
-            i += 300  # the first few colors did not look nice
+            i += 300  # the first few colors look okay with this choice
             red = (100 + i*100) % 255
             green = (50 + int((i/3)*100)) % 255
             blue = (0 + int((i/2)*100)) % 255
@@ -216,6 +215,16 @@ def monitor(request, market_id):
         }
             for i, trader in enumerate(traders)
         ]
+        rs = RoundStat.objects.filter(market=market).order_by('round')
+        avg_balances = [float(market.initial_balance)] + \
+            [float(round.avg_balance_after) for round in rs]
+
+        balanceDataSet.append({
+            'label': 'Average',
+            'backgroundColor': trader_color(1000),
+            'borderColor': trader_color(1000),
+            'data': avg_balances
+        })
 
         priceDataSet = [{
             'label': trader.name,
@@ -225,10 +234,9 @@ def monitor(request, market_id):
         }
             for i, trader in enumerate(traders)
         ]
-        rs = RoundStat.objects.filter(market=market).order_by('round')
         avg_prices = [float(round.avg_price) for round in rs]
         priceDataSet.append({
-            'label': 'Avg. price',
+            'label': 'Average',
             'backgroundColor': trader_color(1000),
             'borderColor': trader_color(1000),
             'data': avg_prices
@@ -323,6 +331,7 @@ def play(request):
                 new_trade = form.save(commit=False)
                 new_trade.trader = trader
                 new_trade.round = market.round
+                new_trade.balance_before = trader.balance
                 new_trade.save()
             return redirect(reverse('market:play'))
 

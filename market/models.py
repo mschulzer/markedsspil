@@ -161,6 +161,14 @@ class Trade(models.Model):
         max_digits=12,
         decimal_places=2,
     )
+    # Trader's balance before the trade. If a trader has just joined the game,
+    # this is equal to the market's initial balance. Else it is equal to the
+    # balance after of the previous round.
+    balance_before = models.DecimalField(
+        null=True,
+        max_digits=12,
+        decimal_places=2,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 

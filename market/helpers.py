@@ -40,13 +40,18 @@ def process_trade(market, trade, avg_price):
 def create_forced_trade(trader, round_num, is_new_trader):
     """
     Used in two different situations:
-    1) To create "null trades" for traders who did not make a real trade in time in the current round
-    2) To create "null trades" for previous rounds for new traders who have entered the game late
+    1) To create a "null trade" for round 0,1,2,..., n-1 for a trader who has entered the game in a round n
+    2) To create a "null trade" for the current round for a trader who joined in a previos round but did not trade in current round
+
     """
-    if is_new_trader:  # situation 2
+    if is_new_trader:
+        # situation 1
+        balance_before = None
         balance_after = None
-    else:  # situation 1
+    else:
+        # situation 2
         balance_after = trader.balance
+        balance_before = trader.balance
 
     forced_trade = Trade.objects.create(
         round=round_num,
@@ -55,6 +60,7 @@ def create_forced_trade(trader, round_num, is_new_trader):
         unit_amount=None,
         demand=None,
         balance_after=balance_after,
+        balance_before=balance_before,
         profit=None,
         was_forced=True
     )
@@ -79,15 +85,11 @@ def generate_balance_list(trader):
 
     For a trader, who joins the game in the first round, the resulting list
     should loook something like this
-    [5000, 405, 405, 410, 49, ...] 
+    [Initial_balance, 405, 405, 410, 49, ...] 
 
     For a trader who joined the game in "round 3" (market.round=2), 
     the list should look something like this: 
-    [None, None, 5000, 405, 405, 410, 49, ...] 
-
-    The function is a bit ugly because of the way we store data in the database.
-
-    (Not tested yet.)
+    [None, None, Initial_balance, 405, 405, 410, 49, ...] 
     """
     trades = Trade.objects.filter(trader=trader)
     initial_balance = float(trader.market.initial_balance)
@@ -99,6 +101,7 @@ def generate_balance_list(trader):
     if trader.round_joined > 0:
         balance_list[0] = None
         balance_list[trader.round_joined] = initial_balance
+
     return balance_list
 
 

@@ -57,7 +57,7 @@ class TradeFactory(factory.django.DjangoModelFactory):
     demand = max(0, round_to_int(MarketFactory.alpha - MarketFactory.beta*unit_price  + MarketFactory.theta * Decimal('12.32'))) # 12.32 is stand in for market avg. prce 
     units_sold = min(demand, unit_amount) 
     profit = Decimal(units_sold * unit_price - unit_amount * TraderFactory.prod_cost)
-    balance_after = Decimal(TraderFactory.balance)
+    balance_after = Decimal(TraderFactory.balance) + profit
     round = 37
 
 class UnProcessedTradeFactory(factory.django.DjangoModelFactory):
@@ -69,11 +69,13 @@ class UnProcessedTradeFactory(factory.django.DjangoModelFactory):
     unit_price = Decimal('10.20')
     unit_amount = 13
     round = 37
+    balance_before = Decimal(TraderFactory.balance)
+
 
 class ForcedTradeFactory(factory.django.DjangoModelFactory):
     """ 
     Produces a forced trade 
-    Note that balance_after will be set to None by default. Sometimes balance_after should be set equal to trader.balance
+    Note that balance_after and balance_before is set to None by default. Sometimes balance_after and balance_before should be set equal to trader.balance
      """
     class Meta:
         model = Trade
@@ -81,4 +83,5 @@ class ForcedTradeFactory(factory.django.DjangoModelFactory):
     trader = factory.SubFactory(TraderFactory)
     was_forced = True
     balance_after = None
+    balance_before = None
     round = 37

@@ -7,7 +7,7 @@
 {% block content %}
     <div class="mt-lg-4"></div>
 
-    <p class="pr-2 pl-2 py-3" >
+    <p class="pr-2 pl-2 py-3">
         {% if market.round > 0 and not wait and not trades.last.was_forced %}
             <!-- Text with info about last round choices and results.  -->
             {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
