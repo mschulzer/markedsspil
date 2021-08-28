@@ -10,7 +10,8 @@ class TraderAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'market', 'prod_cost', 'created_at')
 
 class TradeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'trader', 'unit_price', 'unit_amount', 'round', 'was_forced', 'demand', 'profit', 'balance_after', 'units_sold', 'created_at')
+    list_display = ('id', 'trader', 'unit_price', 'was_forced', 'unit_amount', 'round',
+                    'demand', 'profit', 'balance_after', 'units_sold', 'created_at')
 
 class RoundStatAdmin(admin.ModelAdmin):
     list_display = ('market', 'round', 'avg_price')

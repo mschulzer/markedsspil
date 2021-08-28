@@ -615,7 +615,7 @@ class PlayViewGetRequestTest(TestCase):
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "You made a trade" in message.message)
+            "Du har lavet din handel!" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn(

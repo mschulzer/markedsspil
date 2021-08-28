@@ -6,7 +6,7 @@
 {% load custom_tags %}
 
 <!-- Page heading-->
-<h2 class="mb-3">{{ market.product_name_singular|title }} Market <span class="text-black-50">[{{ market.market_id }}]</span></h2>      
+<h2 class="mb-3 mt-lg-5">{{ market.product_name_singular|title }} Market <span class="text-black-50">[{{ market.market_id }}]</span></h2>      
 
 <!-- Buttons -->
 <div class="mb-3">
@@ -37,15 +37,21 @@
         <p>
             In this <b>{{ market.product_name_singular}}</b> market, all traders start out with an initial balance of <b>{{ market.initial_balance }}</b> kr. 
             {% if market.min_cost < market.max_cost %}
-                When joining the game, the traders are assigned different unit production costs at random, giving some traders an advantage over others. 
+                When joining the market, the traders are assigned different unit production costs at random, giving some traders an advantage over others. 
                 The trader's production costs varies between a minimum of <b>{{ market.min_cost }}</b> kr. and maximum of <b>{{ market.max_cost }}</b> kr. pr unit. 
             {% else %}
                 All traders have the same production costs: <b>{{ market.min_cost}}</b> kr. per {{ market.product_name_singular }}, so no traders have a prior advantage over others.
             {% endif %}
-            {% if market.endless %}The game is <b>endless</b>, so it can go on for an indefinite number of rounds.{% endif %} 
+            {% if market.endless %}
+                The game is <b>endless</b>, so it can go on for an indefinite number of rounds.
+            {% else %}
+                The game will end after <b>{{ market.max_rounds }}</b> rounds.
+            {% endif %} 
+            <br><br>
+            The dynamics of the market is controlled by the three parameters α = <b>{{ market.alpha }}</b>, β = <b>{{ market.beta }}</b> and θ = <b>{{ market.theta }}</b>. 
         </p>
         {% if request.user == market.created_by %}
-        <a href="{% url 'market:market_edit' market.market_id %}">{% translate 'More details' %}</a> 
+        <a href="{% url 'market:market_edit' market.market_id %}">{% translate 'Edit market' %}</a> 
         {% endif %}
     </div>
 </div>
@@ -55,7 +61,11 @@
 
 <!-- Trader Status -->
 <h4 class="mt-5">
+    {% if market.game_over %}
     Scoreboard
+    {% else %}
+    Trader Status
+    {% endif %}
     <span class="text-black-50">
         {% if market.game_over %}
             [Game Over]
@@ -63,7 +73,7 @@
             {% if market.endless %}
                 [Round {{ market.round|add:1 }}]
             {% else %}
-                [Round {{ market.round|add:1 }} of {{ market.max_rounds }}]
+                [Round {{ market.round|add:1 }} / {{ market.max_rounds }}]
             {% endif %}
         {% endif %}
     </span>
@@ -124,7 +134,11 @@
         <div id="collapse_balance" class="collapse" aria-labelledby="heading_balance" data-parent="#accordion">
             <div class="card-body">  
                 <div class="mb-5">
-                    <canvas id="balanceCanvas"></canvas>
+                    {% if traders %}
+                        <canvas id="balanceCanvas"></canvas>
+                    {% else %}
+                        <div class="text-muted">No data to show yet.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -140,7 +154,11 @@
         <div id="collapse_price" class="collapse" aria-labelledby="heading_price" data-parent="#accordion">
             <div class="card-body">
                 <div class="mb-5">
+                    {% if traders %}
                     <canvas id="priceCanvas"></canvas>
+                    {% else %}
+                        <div class="text-muted">No data to show yet.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -162,31 +180,37 @@
         </div>
         <div id="collapse_{{ field }}" class="collapse" aria-labelledby="heading_{{ field }}" data-parent="#accordion">
             <div class="card-body">
-                {% if field == 'balance_after' %}
-                    <h5>{{ field|field_name_to_label }} after each round </h5>
+                {% if traders %}
+                    {% if field == 'balance_after' %}
+                        <h5>{{ field|field_name_to_label }} after each round </h5>
+                    {% else %}
+                        <h5>{{ field|field_name_to_label }} in each round </h5>
+                    {% endif %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        {% for round in rounds %}
+                                            <th>{{ round }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                <thead>
+                                <tbody>
+                                    {% for trader in traders %}
+                                        <tr>
+                                            <td scope="row"> {{trader.name }}</td>
+                                            {% for trade in trader.trade_set.all %}
+                                                <td>{{ trade|get_attribute:field }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                 {% else %}
-                    <h5>{{ field|field_name_to_label }} in each round </h5>
+                    <p class="text-muted">No data to show yet.</p>
                 {% endif %}
-                <table class="table table-striped table-sm">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            {% for round in rounds %}
-                                <th>{{ round }}</th>
-                            {% endfor %}
-                        </tr>
-                    <thead>
-                    <tbody>
-                        {% for trader in traders %}
-                            <tr>
-                                <th scope="row"> {{trader.name }}</th>
-                                {% for trade in trader.trade_set.all %}
-                                    <td>{{ trade|get_attribute:field }}</td>
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
@@ -205,8 +229,6 @@
 
 {% block javascript %}
 
-<!-- import Chart.js library-->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     function copy_join_link() {
@@ -216,7 +238,12 @@
         link_text.setSelectionRange(0, link_text.value.length);
         document.execCommand("copy")
     }
-   
+</script>
+<!-- import Chart.js library-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if traders %}
+
     const balanceData = {
         labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
         datasets: {{ balanceDataSet|safe }}
@@ -240,7 +267,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: "{% translate 'Balance during each round' %}",
+                    text: "{% translate 'Balance each round' %}",
                     padding: {
                         top: 5,
                         bottom: 10
@@ -285,6 +312,7 @@
 
 
 </script>
+{% endif %}
 
 
 {% endblock %}

@@ -135,8 +135,8 @@ class Trade(models.Model):
     unit_amount = models.IntegerField(null=True)
 
     round = models.IntegerField() # not always equal to trader.market.round
-    # a trade 'was-forced' if the trader did not make a trade decision in the given round. 
-    was_forced = models.BooleanField(default=False) 
+    # a trade 'was forced' if the trader did not make a trade decision in the given round.
+    was_forced = models.BooleanField(default=False)
     
     # demand, units_sold, profit and balance_after will all be set to null when a trade object is created and
     # updated with a real value when the round is finished
@@ -172,7 +172,9 @@ class RoundStat(models.Model):
     round = models.IntegerField()  
     # w/ below settings avg. price can't be bigger than 9999999999.99  
     avg_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True) 
-    avg_balance = models.DecimalField(
+
+    # the average balance of the traders after the round
+    avg_balance_after = models.DecimalField(
         max_digits=12, decimal_places=2, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)

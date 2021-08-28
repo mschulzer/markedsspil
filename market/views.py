@@ -71,7 +71,12 @@ def small_trader_table(request, market_id):
 
 @require_GET
 def home(request):
-    return render(request, 'market/home.html')
+    context = {}
+    if 'market_id' in request.session:
+        market = Market.objects.get(
+            market_id=request.session['market_id'])
+        context['market'] = market
+    return render(request, 'market/home.html', context)
 
 
 @login_required
@@ -142,7 +147,7 @@ def join(request):
                 market_id=request.session['market_id'])
 
             messages.warning(request, mark_safe(
-                f"Hi {request.session['username']}! You've already joined the {market.product_name_singular}-markedet {market.market_id}. If you submit the form below, you will permanenly lose access to this market. Do you want to return to your current market?<a href='/play'> Return to market </a>"))
+                f"Hi {request.session['username']}! You've already joined the {market.product_name_singular}-markedet {market.market_id}. If you submit the form below, you will permanenly lose access to this market. Do you want to return to your current market?<a href='/play'> Return to my market </a>"))
             # f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet {market.market_id}. Hvis du indsender formularen nedenfor, mister du permanent adgang til dette marked. Vil du tilbage til dit marked?<a href='/play'> Tilbage til mit marked </a>"))
 
     return render(request, 'market/join.html', {'form': form})
@@ -186,6 +191,11 @@ def monitor(request, market_id):
             return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
 
         def trader_color(i):
+            """
+            Pseudo random colors to be used in multi-player plots. 
+            Perhaps we should select the first x colors from a list of colors that look nice together... 
+            """
+            i += 300  # the first few colors did not look nice
             red = (100 + i*100) % 255
             green = (50 + int((i/3)*100)) % 255
             blue = (0 + int((i/2)*100)) % 255
@@ -222,6 +232,7 @@ def monitor(request, market_id):
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
+        # The host has pressed the 'next round' button
 
         real_trades = filter_trades(market=market, round=market.round)
 
@@ -234,7 +245,8 @@ def monitor(request, market_id):
             [trade.unit_price for trade in real_trades]) / len(real_trades)
 
         for trade in real_trades:
-            process_trade(market, trade, avg_price)
+            process_trade(
+                market, trade, avg_price)
 
         for trader in traders:
             traders_number_of_real_trades_this_round = filter_trades(
@@ -248,9 +260,15 @@ def monitor(request, market_id):
         assert(len(all_trades_this_round) == len(traders)
                ), f"Number of trades in this round does not equal num traders ."
 
-        RoundStat.objects.create(
+        # data for charts
+        round_stat = RoundStat.objects.create(
             market=market, round=market.round, avg_price=avg_price)
 
+        round_stat.avg_balance_after = sum(
+            [trader.balance for trader in traders])/len(traders)
+        round_stat.save()
+
+        # Update market round
         market.round += 1
         market.save()
 
@@ -312,18 +330,18 @@ def play(request):
 
             # data for balance graph
             'trader_balance_json': json.dumps(generate_balance_list(trader)),
+            'avg_balance_json': json.dumps([float(market.initial_balance)] + [float(round_stat.avg_balance_after) for round_stat in round_stats])
         }
 
         if trades.filter(round=market.round).exists():
             context['wait'] = True
             messages.success(
                 request,
-                _("You made a trade! We are now waiting for the host to finish round {0}...").format(
-                    market.round + 1)
+                _("You made a trade!")
             )
 
-        else:  # player should not be waiting
-
+        else:
+            # player should not be waiting
             if market.game_over():
                 messages.info(request,  mark_safe(
                     f"The game has ended after {market.max_rounds} rounds! <a href='/{market.market_id}/monitor' target='_blank'> Åbn markedsoversigt</a>."))

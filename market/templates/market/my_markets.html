@@ -4,56 +4,56 @@
 {% block title %}{% translate 'My markets' %}{% endblock %}
 {% block content %}
 
-<h3>
+<h3 class="mt-5 mb-3">
     {% translate 'Your markets' %}
 </h3>
 {% if markets %}
-    <table class="table table-striped">
-    <table class="table table-sm table-striped" >
+    <div class="table-responsive">
+        <table class="table table-sm table-striped" >
 
-        <thead>
-            <tr>
-                <th>{% translate 'Created at' %}</th>
-                <th>{% translate 'ID' %}</th>
-                <th>{% translate 'Product'%}</th>
-                <th>{% translate 'Initial balance' %}</th>
-                <th>{% translate 'Unit cost' %}</th>
-                <th>{% translate 'Parameters' %}</th>
-                <th>{% translate 'Progression' %}</th>
-                <th>{% translate 'Revisit' %}</th>
-            </tr>
-        </thead>
-        {% for market in markets %}
+            <thead>
+                <tr>
+                    <th>{% translate 'Market' %}</th>
+                    <th>{% translate 'Created at' %}</th>
+                    <th>{% translate 'Initial balance' %}</th>
+                    <th>{% translate 'Unit cost' %}</th>
+                    <th>{% translate 'Parameters' %}</th>
+                    <th>{% translate 'Progression' %}</th>
+                    <th>{% translate 'Revisit' %}</th>
+                </tr>
+            </thead>
+            {% for market in markets %}
 
-            <tr>
-                <td>{{ market.created_at }}</td>
-                <td>{{ market.market_id }}</td>
-                <td>{{ market.product_name_plural }}</td>
-                <td>{{ market.initial_balance }}</td>
-                <td>
-                    Min: {{ market.min_cost }}<br>
-                    Max: {{ market.max_cost }}<br>
+                <tr>
+                    <td>{{ market.market_id }}<br>
+                        {{ market.product_name_plural }}
+                    </td>
+                    <td>{{ market.created_at }}</td>
+                    <td>{{ market.initial_balance }}</td>
+                    <td>
+                        Min: {{ market.min_cost }}<br>
+                        Max: {{ market.max_cost }}<br>
 
-                </td>
-                <td>
-                    Alpha: {{ market.alpha }}<br>
-                    Beta: {{ market.beta }}<br>
-                    Theta: {{ market.theta }}<br>
-                </td>
-                {% if market.game_over %}
-                <td>Game over</td>
-                {% else %}
-                    {% if market.endless %}
-                    <td>Endless</td>
+                    </td>
+                    <td>
+                        Alpha: {{ market.alpha }}<br>
+                        Beta: {{ market.beta }}<br>
+                        Theta: {{ market.theta }}<br>
+                    </td>
+                    {% if market.game_over %}
+                    <td>Game over</td>
                     {% else %}
-                    <td>Round {{ market.round|add:1 }}/{{ market.max_rounds  }}</td>
+                        {% if market.endless %}
+                        <td>Endless</td>
+                        {% else %}
+                        <td>Round {{ market.round|add:1 }}/{{ market.max_rounds  }}</td>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-                <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>                    
-            </tr>
-        {% endfor %}
-    </table>
-
+                    <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>                    
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 {% else %}
     <p>{% translate 'You have not yet created a market.' %}</p>
 {% endif %}
