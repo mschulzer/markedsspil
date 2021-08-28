@@ -178,6 +178,7 @@ def monitor(request, market_id):
             messages.success(request, mark_safe(
                 "The game has ended after {0} rounds!".format(market.round)
             ))
+
         # Labels for x-axes of graphs
         if market.endless:
             round_labels = list(range(1, market.round + 2))
@@ -185,10 +186,16 @@ def monitor(request, market_id):
             round_labels = list(range(1, market.max_rounds + 1))
         context['round_labels_json'] = json.dumps(round_labels)
 
-        # Data for balance graph
+        # Data for balance and amount graphs
+        # If the app gets slow, we should refactor and optimize
+
         def generate_price_list(trader):
             trades = Trade.objects.filter(trader=trader)
             return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
+
+        def generate_amount_list(trader):
+            trades = Trade.objects.filter(trader=trader)
+            return [float(trade.unit_amount) if trade.unit_amount else None for trade in trades]
 
         def trader_color(i):
             """
@@ -227,8 +234,29 @@ def monitor(request, market_id):
             'data': avg_prices
         })
 
+        amountDataSet = [{
+            'label': trader.name,
+            'backgroundColor': trader_color(i),
+            'borderColor': trader_color(i),
+            'data': generate_amount_list(trader)
+        }
+            for i, trader in enumerate(traders)
+        ]
+
+        avg_amounts = [float(round.avg_amount)
+                       if round.avg_amount else None for round in rs]
+
+        amountDataSet.append({
+            'label': 'Avg. amount',
+            'backgroundColor': trader_color(1000),
+            'borderColor': trader_color(1000),
+            'data': avg_amounts
+        })
+
         context['balanceDataSet'] = json.dumps(balanceDataSet)
         context['priceDataSet'] = json.dumps(priceDataSet)
+        context['amountDataSet'] = json.dumps(amountDataSet)
+
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
@@ -266,6 +294,10 @@ def monitor(request, market_id):
 
         round_stat.avg_balance_after = sum(
             [trader.balance for trader in traders])/len(traders)
+
+        round_stat.avg_amount = sum(
+            [trade.unit_amount for trade in real_trades]) / len(real_trades)
+
         round_stat.save()
 
         # Update market round

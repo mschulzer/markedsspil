@@ -5,6 +5,7 @@
 {% block content %}
 {% load custom_tags %}
 
+
 <!-- Page heading-->
 <h2 class="mb-3 mt-lg-5">{{ market.product_name_singular|title }} Market <span class="text-black-50">[{{ market.market_id }}]</span></h2>      
 
@@ -163,6 +164,26 @@
             </div>
         </div>
     </div>
+     <div class="card">
+        <div class="card-header" id="heading_amount">
+            <h5 class="mb-0">
+                <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_amount" aria-expanded="true" aria-controls="collapse_amount">
+                    Production 
+                </button>
+            </h5>
+        </div>
+        <div id="collapse_amount" class="collapse" aria-labelledby="heading_amount" data-parent="#accordion">
+            <div class="card-body">
+                <div class="mb-5">
+                    {% if traders %}
+                    <canvas id="amountCanvas"></canvas>
+                    {% else %}
+                        <div class="text-muted">No data to show yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <br><br>
 
@@ -219,11 +240,11 @@
 
 <br><br>
 
-<div class="d-flex justify-content-center">
+{% comment %} <div class="d-flex justify-content-center">
     <button type="button" class="btn btn-primary mb-5" id="next_round_btn" onclick="alert('Feature not implemented yet, sorry')">
         Download Data
     </button>
-</div>
+</div> {% endcomment %}
 
 {% endblock %}
 
@@ -239,6 +260,7 @@
         document.execCommand("copy")
     }
 </script>
+
 <!-- import Chart.js library-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -255,6 +277,10 @@
         datasets: {{ priceDataSet|safe }}
     };
   
+    const amountData = {
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+        datasets: {{ amountDataSet|safe }}
+    };
     const configBalance = {
         type: 'line',
         data: balanceData,
@@ -297,8 +323,31 @@
             }
         }     
     }
+
+    const configAmount = {
+        type: 'line',
+        data: amountData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }         
+            },  
+            plugins: {
+                title: {
+                    display: true,
+                    text: "{% translate 'Units produced in each round' %}",
+                    padding: {
+                        top: 5,
+                        bottom: 10
+                    }
+                }
+            }
+        }     
+    }
     balanceCanvas = document.getElementById('balanceCanvas')
     priceCanvas = document.getElementById('priceCanvas')
+    amountCanvas = document.getElementById('amountCanvas')
 
     var myChart = new Chart(
         balanceCanvas,
@@ -308,6 +357,11 @@
     var myChart = new Chart(
         priceCanvas,
         configPrice
+    );
+
+    var myChart = new Chart(
+        amountCanvas,
+        configAmount
     );
 
 

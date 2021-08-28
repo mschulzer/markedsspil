@@ -187,6 +187,10 @@ class RoundStat(models.Model):
     avg_balance_after = models.DecimalField(
         max_digits=12, decimal_places=2, null=True, blank=True)
 
+    # the average amount of units produced in the given round
+    avg_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:

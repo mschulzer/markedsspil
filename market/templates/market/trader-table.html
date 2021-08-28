@@ -10,18 +10,18 @@
         <table class="table table-striped mb-4" id="trader_status_table"> 
     
             <thead id="trader_status_thead">
+                <!-- Since allow traders to visit the monitor page when game over & since we assume they use small screen devices
+                    we have to make the table reponsive in different ways
+                -->
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">{% translate 'Trader name' %}</th>
-                    {% if not market.game_over%}
-                    <th scope="col">{% translate 'Ready for next round' %}</th>
-                    <th scope="col">{% translate 'Production cost' %}</th>
-                    <th scope="col">{% translate 'Balance' %}</th>
-                    {% else %}
-                    <th scope="col">{% translate 'Production cost' %}</th>
-                    <th scope="col">{% translate 'Final balance' %}</th>
+                    {% if not market.game_over %}
+                        <th class="d-none d-md-block" scope="col">{% translate 'Ready for next round' %}</th>
+                        <th class="d-md-none" scope="col">{% translate 'Ready' %}</th>
                     {% endif %}
-                    
+                        <th scope="col">{% translate 'Cost/unit' %}</th>
+                    <th scope="col">{% translate 'Balance' %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,7 +59,6 @@
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#confirmationPopUp">
                         {% comment %} {% translate 'Finish Round' %} {% endcomment %}
                         Finish Round {{ market.round|add:1 }}
-
                     </button>
                 
                 {% else %}
