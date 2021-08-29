@@ -282,6 +282,22 @@ class MarketUpdateFormTest(TestCase):
         self.assertTrue(
             "game is over" in str(form))
 
+    def test_max_rounds_cant_be_zero(self):
+        """ Form is invalied when max_rounds < 1 """
+        market = MarketFactory(round=19, max_rounds=19, endless=False)
+        self.data['max_rounds'] = 0
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertFalse(form.is_valid())
+        self.assertTrue('max_rounds' in form.errors)
+
+    def test_max_rounds_cant_be_negative(self):
+        """ Form is invalied when max_rounds < 1 """
+        market = MarketFactory(round=19, max_rounds=19, endless=False)
+        self.data['max_rounds'] = -4
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertFalse(form.is_valid())
+        self.assertTrue('max_rounds' in form.errors)
+
 class TraderFormTest(TestCase):
 
     def test_trader_created(self):

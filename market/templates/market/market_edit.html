@@ -22,8 +22,9 @@
     {{ form|crispy }}
     <div class="d-flex justify-content-between mt-5">
         <a href="{% url 'market:monitor' market.market_id %}" class="btn btn-primary">Go Back</a>
+		{% if not market.game_over %}
 		<button class="btn btn-warning" type="submit">{% translate 'Update' %}</button>
-		
+		{% endif %}
     </div>
 </form>
 
@@ -54,7 +55,6 @@
 
 	adjust_max_round_field()
 	
-	//  Editing a market that is game over is not permitted back end. To we want field to appers read-only in this case: 
 	{% if market.game_over %}
 		document.getElementById("id_product_name_singular").setAttribute('readonly', true)
 		document.getElementById("id_product_name_plural").setAttribute('readonly', true)

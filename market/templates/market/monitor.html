@@ -51,7 +51,11 @@
             The dynamics of the market is controlled by the three parameters α = <b>{{ market.alpha }}</b>, β = <b>{{ market.beta }}</b> and θ = <b>{{ market.theta }}</b>. 
         </p>
         {% if request.user == market.created_by %}
-        <a href="{% url 'market:market_edit' market.market_id %}">{% translate 'Edit market' %}</a> 
+            {% if market.game_over %}
+                <a href="{% url 'market:market_edit' market.market_id %}">{% translate 'Market details' %}</a> 
+            {% else %}
+                <a href="{% url 'market:market_edit' market.market_id %}">{% translate 'Edit market' %}</a> 
+            {% endif %}
         {% endif %}
     </div>
 </div>

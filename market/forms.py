@@ -86,11 +86,12 @@ class MarketUpdateForm(MarketForm):
             raise ValidationError(
                 "You can't edit a market that has ended (game is over)")
         if not endless:
-            if max_rounds < self.instance.round + 1:
-                raise forms.ValidationError(
-                    "Number of rounds can't be smaller than the current round of the market".format(
-                        self.instance.round + 1)
-                )
+            if max_rounds:
+                if max_rounds < self.instance.round + 1:
+                    raise forms.ValidationError(
+                        "Number of rounds can't be smaller than the current round of the market".format(
+                            self.instance.round + 1)
+                    )
         return cleaned_data
 
 
