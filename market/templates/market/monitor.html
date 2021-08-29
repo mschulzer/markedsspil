@@ -87,7 +87,7 @@
 <!-- Update trader status table every x seconds -->
 <div 
     hx-get="{% url 'market:trader_table' market.market_id %}"
-    hx-trigger="every 2s"
+    hx-trigger="every 1s"
     hx-target="#trader_table">
 </div>
 {% endif %}
@@ -107,7 +107,7 @@
                 {% blocktranslate %}
                 Not all traders in your market are ready for next round.
                 <br><br>
-                If you choose to proceed now, these players will enter next round with unchanged balance.
+                If you choose to proceed now, these players will enter next round without having traded and with unchanged balance.
                 <br><br>
                 Proceed to next round?
                 {% endblocktranslate %}
@@ -260,7 +260,6 @@
 
 {% block javascript %}
 
-
 <script>
     function copy_join_link() {
         // From w3schools
@@ -375,6 +374,15 @@
     );
 
 
+</script>
+
+
+<script>
+$(function () {
+  $('.example-popover').popover({
+    container: 'body'
+  })
+})
 </script>
 {% endif %}
 

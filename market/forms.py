@@ -72,26 +72,36 @@ class MarketUpdateForm(MarketForm):
             'max_cost': forms.NumberInput(attrs={'readonly': True}),
         }
 
-    def clean(self):
-        """ Can't update market when game over """
-        cleaned_data = super().clean()
-        if self.instance.game_over():
-            raise ValidationError(
-                "You can't edit a market that has ended (game over)")
-        return cleaned_data
+    # This works, in case we don't want the market to be editable when game is over
 
-    def clean_max_rounds(self):
-        """ Choice of max rounds can't be smaller than current round """
+    # def clean(self):
+    #     """ Can't update market when game over """
+    #     cleaned_data = super().clean()
+    #     if self.instance.game_over():
+    #         raise ValidationError(
+    #             "You can't edit a market that has ended (game over)")
+    #     return cleaned_data
+
+    def clean(self):
+        """ 
+        Max numner of rounds can't be smaller than current round + 1 (when endless = False) 
+        If market.round = 7, the market is already in its 8'th round, so 8 shold be the minimal 
+        choice for a new maximal number of rounds.  
+        """
         cleaned_data = super().clean()
         endless = cleaned_data.get("endless")
         max_rounds = cleaned_data.get("max_rounds")
+        if self.instance.game_over():
+            raise ValidationError(
+                "You can't edit a market that has ended (game is over)")
         if not endless:
-            if max_rounds < self.instance.round:
+            if max_rounds < self.instance.round + 1:
                 raise forms.ValidationError(
                     "Number of rounds can't be smaller than the current round of the market".format(
                         self.instance.round + 1)
                 )
-        return max_rounds
+        return cleaned_data
+
 
 class TraderForm(forms.ModelForm):
     market_id = forms.CharField(max_length=16, label=_("Market ID"), help_text=_(

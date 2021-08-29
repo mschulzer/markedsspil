@@ -93,6 +93,10 @@ class TestMarketFactory(TestCase):
         market = MarketFactory(round=5, max_rounds=5, endless=False)
         self.assertTrue(market.game_over())
 
+    def test_game_over_method_1(self):
+        market = MarketFactory(round=29, max_rounds=5, endless=False)
+        self.assertTrue(market.game_over())
+
     def test_game_over_method_2(self):
         market = MarketFactory(round=5, max_rounds=5, endless=True)
         self.assertFalse(market.game_over())

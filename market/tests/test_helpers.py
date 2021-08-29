@@ -7,7 +7,7 @@ from django.test import TestCase
 from ..helpers import create_forced_trade, filter_trades, process_trade, generate_balance_list, generate_cost_list
 from decimal import Decimal
 from decimal import Decimal
-from .factories import MarketFactory, TraderFactory, TradeFactory, ForcedTradeFactory
+from .factories import MarketFactory, TraderFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
 
 
 class TestProcessTrade(TestCase):
@@ -184,4 +184,42 @@ class TestFilterTrades(TestCase):
 
 
 class TestGenerateBalanceList(TestCase):
-    pass
+
+    def test_trader_who_joined_in_round_1_a(self):
+        """ 
+        The balance list should consist of a list of balances during round 0, 1, 2, etc.
+        If a trader joined in round 0, the first element in the list should be the initial balance. 
+        """
+        trader = TraderFactory(round_joined=0)
+
+        # There are no trades, so the balance list should at this point only consist of the initial balance of the market (balance in round 0)
+        self.assertEqual(generate_balance_list(trader), [5000.0])
+
+        # We create a (processed) trade in round 0
+        # The balance list should now consist of the initial balance followed by the balance  in 1
+        trade = TradeFactory(trader=trader, round=0,
+                             balance_after=Decimal('4500.32'), balance_before=Decimal('5000.0'))
+        self.assertEqual(generate_balance_list(trader), [5000.0, 4500.32])
+
+        # We create a (un-processed) trade in round 1
+        # The balance list should now consist of the initial balance followed by the balance in round 1
+        trade = UnProcessedTradeFactory(trader=trader, round=1)
+        self.assertEqual(generate_balance_list(trader)[0], 5000.0)
+        self.assertEqual(generate_balance_list(trader)[1], 4500.32)
+
+    def test_trader_who_joined_in_round_2(self):
+        """ 
+        The balance list should consist of a list of balances during round 0, 1, 2, etc.
+        If a trader joined in round 2, the list should look like [None, None, initial balance, ... ] 
+        """
+        # A trader joind a market in round 2 and gets the initial balance, say 5000
+        trader = TraderFactory(round_joined=2, balance=Decimal('5000'))
+
+        # When the trader joins in round 2, forced trades will be produced for round 0 and 1
+        ForcedTradeFactory(round=0, trader=trader)
+        ForcedTradeFactory(round=1, trader=trader)
+
+        # At this point, the balance list should be [None, None, 5000]
+        self.assertEqual(generate_balance_list(trader)[0], None)
+        self.assertEqual(generate_balance_list(trader)[1], None)
+        self.assertEqual(generate_balance_list(trader)[2], 5000)

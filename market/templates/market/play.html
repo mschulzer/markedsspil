@@ -95,7 +95,11 @@
             <h2 class="mb-0">
                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
                     data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
-                    {% translate 'Scoreboard' %}
+                    {% if market.game_over %}
+                        {% translate 'Final Scoreboard' %}
+                    {% else %}
+                        {% translate 'Scoreboard' %}
+                    {% endif %}
                 </button>
             </h2>
         </div>
@@ -168,6 +172,7 @@
     hx-swap ="innerHTML"
     hx-target="#card_body">
 </div>  
+
 
 {% endblock content %}
 

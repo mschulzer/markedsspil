@@ -17,10 +17,9 @@ from django.utils.translation import gettext as _
 
 @login_required
 def market_edit(request, market_id):
-    """ This is both a details view and an edit view """
     market = get_object_or_404(Market, market_id=market_id)
 
-    # Only the user who created the market has access to this details/edit page
+    # Only the user who created the market has access to this edit page
     if not request.user == market.created_by:
         return HttpResponseRedirect(reverse('market:home'))
 
@@ -385,7 +384,8 @@ def play(request):
             # player should not be waiting
             if market.game_over():
                 messages.info(request,  mark_safe(
-                    f"The game has ended after {market.max_rounds} rounds! <a href='/{market.market_id}/monitor' target='_blank'> Åbn markedsoversigt</a>."))
+                    # f"The game has ended after {market.max_rounds} rounds!<br><a href='/{market.market_id}/monitor' target='_blank'>Monitor market</a>."))
+                    f"GAME OVER!<br>The game has ended after {market.max_rounds} rounds."))
 
             else:  # game is not over
                 if market.round == trader.round_joined:

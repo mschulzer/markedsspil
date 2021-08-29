@@ -27,10 +27,9 @@
     </div>
 </form>
 
-<!-- The script below is also used in market_create template. Should be imported from elsewhere -->
+<!-- The script below is also used in market_create template. Perhaps we should import to re-use code -->
 <script>
 	function adjust_max_round_field(){
-		// This function is also used by market create template, so perhaps it should be imported.
 		
 		max_rounds_field = document.getElementById('div_id_max_rounds')
 		if (document.getElementById('id_endless').checked){
@@ -54,7 +53,8 @@
 	}); 			
 
 	adjust_max_round_field()
-
+	
+	//  Editing a market that is game over is not permitted back end. To we want field to appers read-only in this case: 
 	{% if market.game_over %}
 		document.getElementById("id_product_name_singular").setAttribute('readonly', true)
 		document.getElementById("id_product_name_plural").setAttribute('readonly', true)
@@ -63,7 +63,7 @@
 		document.getElementById("id_beta").setAttribute('readonly', true)
 		document.getElementById("id_theta").setAttribute('readonly', true)
 		document.getElementById("id_endless").setAttribute('disabled', 'disabled')
-	{% endif %}
+	{% endif %} 
 </script>
 
 

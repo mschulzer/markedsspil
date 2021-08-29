@@ -5,9 +5,10 @@ $ docker-compose exec web python manage.py test market.tests.test_forms
 # Create your tests here.
 from django.test import TestCase
 from ..models import Market, Trader, Trade
-from ..forms import MarketForm, TraderForm, TradeForm
+from ..forms import MarketForm, TraderForm, TradeForm, MarketUpdateForm
 from django.core.exceptions import ValidationError
 from .factories import MarketFactory, TraderFactory
+from decimal import Decimal
 
 class MarketFormTest(TestCase):
 
@@ -185,6 +186,101 @@ class MarketFormTest(TestCase):
         self.assertFalse(is_valid)
         self.assertTrue('max_rounds' in form.errors)
 
+
+class MarketUpdateFormTest(TestCase):
+    def setUp(self):
+        self.data = {
+            'product_name_singular': 'ost',
+            'product_name_plural': 'baguettes',
+            'alpha': 12.1234,
+            'beta': 5.0334,
+            'theta': 3.4432,
+            'max_rounds': 15,
+            'endless': False,
+            'initial_balance': 4500,
+            'min_cost': 30,
+            'max_cost': 45
+        }
+
+    def test_valid_data(self):
+        market = MarketFactory(
+            endless=True, round=3)
+        form = MarketUpdateForm(self.data, instance=market)
+
+        valid = form.is_valid()
+
+        form.save()
+        market.refresh_from_db()
+        updated_name = market.product_name_singular
+
+        # form data is vald
+        self.assertTrue(valid)
+
+        # product name and endless has been updated
+        self.assertEqual(market.product_name_singular, 'ost')
+        self.assertEqual(market.endless, False)
+
+        # round has not been updataed
+        self.assertEqual(market.round, 3)
+
+    def test_if_endless_max_rounds_is_valid(self):
+        """ If endless = True, max_rounds can be chosen smaller than current round of the market """
+        market = MarketFactory(round=8)
+
+        self.data['endless'] = True
+        self.data['max_rounds'] = 5
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertTrue(form.is_valid())
+
+    def test_if_not_endless_max_rounds_can_be_invalid_1(self):
+        """ If endless = False, max_rounds must be chosen bigger than current round of the market (>market.round) """
+        market = MarketFactory(round=8)
+        self.data['endless'] = False
+        self.data['max_rounds'] = 5
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertFalse(form.is_valid())
+
+        self.assertTrue(
+            "Number of rounds can&#x27;t be smaller than the current round of the market" in str(form))
+
+    def test_if_not_endless_max_rounds_can_be_invalid_2(self):
+        """ If endless = False, max_rounds must be chosen bigger than current round of the market (>market.round) """
+        market = MarketFactory(round=8)
+        self.data['endless'] = False
+        self.data['max_rounds'] = 8
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertFalse(form.is_valid())
+
+        self.assertTrue(
+            "Number of rounds can&#x27;t be smaller than the current round of the market" in str(form))
+
+    def test_if_not_endless_max_rounds_can_be_invalid_2(self):
+        """ It is okay to choose current round as last round when editing market """
+        market = MarketFactory(round=8)
+        self.data['endless'] = False
+        self.data['max_rounds'] = 9
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertTrue(form.is_valid())
+
+    def test_editing_a_market_that_is_game_over_is_invalid_1(self):
+        """ Form should not be valid when game is over """
+        market = MarketFactory(round=19, max_rounds=19, endless=False)
+        self.assertTrue(market.game_over())
+        self.data['max_rounds'] = 1000
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertFalse(form.is_valid())
+        self.assertTrue(
+            "game is over" in str(form))
+
+    def test_editing_a_market_that_is_game_over_is_invalid_2(self):
+        """ Form should not be valid when game is over """
+        market = MarketFactory(round=19, max_rounds=19, endless=False)
+        self.assertTrue(market.game_over())
+        self.data['product_name_singular'] = 'XXX'
+        form = MarketUpdateForm(self.data, instance=market)
+        self.assertFalse(form.is_valid())
+        self.assertTrue(
+            "game is over" in str(form))
 
 class TraderFormTest(TestCase):
 

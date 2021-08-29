@@ -58,6 +58,8 @@ class Market(models.Model):
 
     # endless indicates whether or not the game should go on indefinitely.
     endless = models.BooleanField()
+
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(
         get_user_model(), null=True, on_delete=models.SET_NULL)
@@ -65,6 +67,8 @@ class Market(models.Model):
     def game_over(self):
         if not self.endless and (self.round >= self.max_rounds):
             return True
+        else:
+            return False
 
     def save(self, *args, **kwargs):
         """

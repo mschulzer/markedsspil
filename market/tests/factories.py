@@ -41,6 +41,7 @@ class TraderFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: 'eva%s' % n)
     balance = Decimal('4734.23')
     prod_cost = Decimal('8.00')
+    round_joined = 0
 
 def round_to_int(number):
     """ Re-naming is needed since 'round' is also the name of a field in TradeFactory """
@@ -58,6 +59,7 @@ class TradeFactory(factory.django.DjangoModelFactory):
     units_sold = min(demand, unit_amount) 
     profit = Decimal(units_sold * unit_price - unit_amount * TraderFactory.prod_cost)
     balance_after = Decimal(TraderFactory.balance) + profit
+    balance_before = Decimal(TraderFactory.balance)
     round = 37
 
 class UnProcessedTradeFactory(factory.django.DjangoModelFactory):

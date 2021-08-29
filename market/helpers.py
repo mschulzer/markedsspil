@@ -90,9 +90,14 @@ def generate_balance_list(trader):
     For a trader who joined the game in "round 3" (market.round=2), 
     the list should look something like this: 
     [None, None, Initial_balance, 405, 405, 410, 49, ...] 
+
+    The length of the list should equal market.round + 1, as the numbers should
+    reflect the balances during each round.
     """
     trades = Trade.objects.filter(trader=trader)
     initial_balance = float(trader.market.initial_balance)
+    if not trades:
+        return [initial_balance]
 
     balance_list = [initial_balance] + \
         [float(trade.balance_after)
@@ -102,6 +107,11 @@ def generate_balance_list(trader):
         balance_list[0] = None
         balance_list[trader.round_joined] = initial_balance
 
+    if balance_list[-1] == None:
+        # the last balance has not be calculated yet (round not finished)
+        balance_list = balance_list[:-1]
+
+    #assert len(balance_list) == trader.market.round + 1
     return balance_list
 
 
