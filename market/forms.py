@@ -163,7 +163,7 @@ class TradeForm(forms.ModelForm):
                 max_unit_amount = 10000  # this number is arbitrary
 
             self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount
-            self.fields['unit_price'].help_text = (_("Set a price for one {0} (your costs pr. {0} are {1} kr.)")).format(
+            self.fields['unit_price'].help_text = (_("Set a price for one {0} (your cost pr. {0} is <b>{1}</b> kr.)")).format(
                 trader.market.product_name_singular, trader.prod_cost)
             self.fields['unit_amount'].help_text = (
                 _("How many {0} do you want to produce?")).format(trader.market.product_name_plural)

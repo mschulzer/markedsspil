@@ -93,7 +93,7 @@
     <div class="card" class="mb-2">
         <div class="card-header" id="headingFour">
             <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
+                <button class="btn btn-link btn-block text-left collapsed m-0" type="button" data-toggle="collapse"
                     data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
                     {% if market.game_over %}
                         {% translate 'Final Scoreboard' %}
@@ -104,8 +104,8 @@
             </h2>
         </div>
         <div id="collapseScoreBoard" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
-            <div class="card-body px-2 pt-0 mt-0" id="card_body">
-            {% include 'market/small-trader-table.html' %}
+            <div class="card-body px-2 px-sm-5 pt-0 mt-0" id="card_body">
+                {% include 'market/small-trader-table.html' %}
             </div>
         </div>
     </div>
@@ -189,12 +189,44 @@
     const thirdColor = 'rgb(255, 153, 0, 0.6)'
 </script>
 
+
+<script>
+function responsive_title(){
+    // Don't show graph titles on small screens 
+    // Title will take up the space needed for the graphs
+    if (window.innerWidth < 500) {
+        return false
+    }
+    else {
+        return true
+    }
+}
+function responsive_padding(){
+    // No top and bottom padding on smalls screens
+    // Padding will take up the space needed for the graps
+
+    if (window.innerWidth < 600) {
+        return {'top':0, 'bottom':0}
+    }
+    else{
+        return {'top':5, 'bottom':5}
+    }
+}
+</script>
+<script>
+    const myscales = {
+            y: {
+                    beginAtZero: true
+                }
+
+        }
+</script>
 <!-- Balance chart -->
 <script>
     balanceCanvas = document.getElementById('balanceCanvas')
 
     var traderBalanceDataSet = {
-        label: "You",
+        label: "Your balance",
         data: JSON.parse("{{ trader_balance_json }}"),
         lineTension: 0,
         borderColor: traderColor,
@@ -217,21 +249,13 @@
     var lineChart = new Chart(balanceCanvas, {
             type: 'line',
             data: balanceData,
-            options: {
-                scales: {
-                    y: {
-                            beginAtZero: true
-                        }
-
-                },  
+            options:{ 
+                scales: myscales,
                 plugins: {
                     title: {
-                        display: true,
+                        display: responsive_title(),
                         text: "{% translate 'Balance each round' %}",
-                        padding: {
-                            top: 5,
-                            bottom: 10
-                        }
+                        padding: responsive_padding()
                     }
                 }, 
                  
@@ -279,27 +303,20 @@
             type: 'line',
             data: unitsData,
             options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        
-                    },
-                              
-                }, 
+                scales: myscales, 
                 plugins: {
                     title: {
-                        display: true,
+                        display: responsive_title(),
                         text: "{% translate 'Production history' %}",
-                        padding: {
-                            top: 5,
-                            bottom: 10
-                        }
+                        padding: responsive_padding()
                     },
                 },
             }
         }
     );
 </script>
+
+
 
 <!-- Price chart -->
 <script>
@@ -319,7 +336,7 @@
     };
 
     var dataProdCost = {
-        label: "{% translate 'Your cost per unit' %}",
+        label: "{% translate 'Your unit cost' %}",
         data: JSON.parse("{{ data_prod_cost_json }}"),
         borderColor: thirdColor,
     };
@@ -333,36 +350,19 @@
             type: 'line',
             data: priceData,
             options: {
+                scales: myscales, 
                 plugins: {
                     title: {
-                        display: true,
+                        display: responsive_title(),
                         text: "{% translate 'Price history' %}",
-                        padding: {
-                            top: 5,
-                            bottom: 10
-                        }
+                        padding: responsive_padding() 
                     },
-                    legend: {
-                        display: true,
-                        position: function () {
-                            //you can return position based on inner width of your display area
-                            if (window.innerWidth < 600) {
-                                return "bottom";
-                            }
-                        }
-                    }
-                },
-                 scales: {
-                    y: {
-                            beginAtZero: true,
-                         
-                        }
-                    
-                } 
+                }
             }
         }
     );
 </script>
+
 
 {% if not wait %}
 <script>
