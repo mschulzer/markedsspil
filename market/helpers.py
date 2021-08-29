@@ -106,12 +106,12 @@ def generate_balance_list(trader):
         balance_list[0] = None
         balance_list[trader.round_joined] = initial_balance
 
-    assert len(balance_list) == trader.market.round + 1
+    #assert len(balance_list) == trader.market.round + 1
 
     return balance_list
 
     # The above implementation makes a lot of queries.
-    # In below implementation makes fewer queries. This might be faster.
+    # The alternative implementation below (seems to) work and makes fewer queries.
     #
     # def process(entry):
     #     "Helper function"

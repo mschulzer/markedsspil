@@ -72,15 +72,6 @@ class MarketUpdateForm(MarketForm):
             'max_cost': forms.NumberInput(attrs={'readonly': True}),
         }
 
-    # This works, in case we don't want the market to be editable when game is over
-
-    # def clean(self):
-    #     """ Can't update market when game over """
-    #     cleaned_data = super().clean()
-    #     if self.instance.game_over():
-    #         raise ValidationError(
-    #             "You can't edit a market that has ended (game over)")
-    #     return cleaned_data
 
     def clean(self):
         """ 
