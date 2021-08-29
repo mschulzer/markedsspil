@@ -190,30 +190,38 @@ class TestGenerateBalanceList(TestCase):
         The balance list should consist of a list of balances during round 0, 1, 2, etc.
         If a trader joined in round 0, the first element in the list should be the initial balance. 
         """
-        trader = TraderFactory(round_joined=0)
+        market = MarketFactory(round=0)
+        trader = TraderFactory(round_joined=0, market=market)
 
         # There are no trades, so the balance list should at this point only consist of the initial balance of the market (balance in round 0)
-        self.assertEqual(generate_balance_list(trader), [5000.0])
+        self.assertEqual(generate_balance_list(trader), [
+                         float(market.initial_balance)])
 
-        # We create a (processed) trade in round 0
-        # The balance list should now consist of the initial balance followed by the balance  in 1
+        # We create a (processed) trade in round 0 & change that market round to 1
         trade = TradeFactory(trader=trader, round=0,
                              balance_after=Decimal('4500.32'), balance_before=Decimal('5000.0'))
-        self.assertEqual(generate_balance_list(trader), [5000.0, 4500.32])
+        market.round = 1
+        market.save()
 
-        # We create a (un-processed) trade in round 1
-        # The balance list should now consist of the initial balance followed by the balance in round 1
+        # The balance list should now consist of the initial balance followed by the balance  in 1
+
+        self.assertEqual(generate_balance_list(trader), [
+                         float(market.initial_balance), 4500.32])
+
+        # We create a (un-processed) trade in round 1. This should not affect the balance list
         trade = UnProcessedTradeFactory(trader=trader, round=1)
-        self.assertEqual(generate_balance_list(trader)[0], 5000.0)
-        self.assertEqual(generate_balance_list(trader)[1], 4500.32)
+        self.assertEqual(generate_balance_list(trader), [
+                         float(market.initial_balance), 4500.32])
 
     def test_trader_who_joined_in_round_2(self):
-        """ 
-        The balance list should consist of a list of balances during round 0, 1, 2, etc.
-        If a trader joined in round 2, the list should look like [None, None, initial balance, ... ] 
         """
+        The balance list should consist of a list of balances during round 0, 1, 2, etc.
+        If a trader joined in round 2, the list should look like [None, None, initial balance, ... ]
+        """
+        market = MarketFactory(round=2)
         # A trader joind a market in round 2 and gets the initial balance, say 5000
-        trader = TraderFactory(round_joined=2, balance=Decimal('5000'))
+        trader = TraderFactory(
+            round_joined=2, balance=market.initial_balance, market=market)
 
         # When the trader joins in round 2, forced trades will be produced for round 0 and 1
         ForcedTradeFactory(round=0, trader=trader)
@@ -222,4 +230,6 @@ class TestGenerateBalanceList(TestCase):
         # At this point, the balance list should be [None, None, 5000]
         self.assertEqual(generate_balance_list(trader)[0], None)
         self.assertEqual(generate_balance_list(trader)[1], None)
-        self.assertEqual(generate_balance_list(trader)[2], 5000)
+        self.assertEqual(generate_balance_list(
+            trader)[2], market.initial_balance)
+        self.assertEqual(len(generate_balance_list(trader)), 3)

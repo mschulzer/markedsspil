@@ -79,7 +79,7 @@ def filter_trades(market, round="all_rounds"):
 
 def generate_balance_list(trader):
     """
-    Generates a list of floats consisting of the balance history of a single trader.
+    Generates a list of floats consisting of the balances of a single trader.
     The i'th entry of the list is the balance before/during each round, not the
     balance after the round.  
 
@@ -91,13 +91,12 @@ def generate_balance_list(trader):
     the list should look something like this: 
     [None, None, Initial_balance, 405, 405, 410, 49, ...] 
 
-    The length of the list should equal market.round + 1, as the numbers should
-    reflect the balances during each round.
+    The length of the list should equal market.round + 1, as there should be one
+    balance for each round, including the current round. 
     """
-    trades = Trade.objects.filter(trader=trader)
+    trades = Trade.objects.filter(
+        trader=trader, round__lte=trader.market.round - 1)
     initial_balance = float(trader.market.initial_balance)
-    if not trades:
-        return [initial_balance]
 
     balance_list = [initial_balance] + \
         [float(trade.balance_after)
@@ -107,12 +106,30 @@ def generate_balance_list(trader):
         balance_list[0] = None
         balance_list[trader.round_joined] = initial_balance
 
-    if balance_list[-1] == None:
-        # the last balance has not be calculated yet (round not finished)
-        balance_list = balance_list[:-1]
+    assert len(balance_list) == trader.market.round + 1
 
-    #assert len(balance_list) == trader.market.round + 1
     return balance_list
+
+    # The above implementation makes a lot of queries.
+    # In below implementation makes fewer queries. This might be faster.
+    #
+    # def process(entry):
+    #     "Helper function"
+    #     if type(entry) == dict:
+    #         if entry['balance_before']:
+    #             return float(entry['balance_before'])
+    #     elif entry:
+    #         return(float(entry))
+    #
+    # if len(trades) == 0:
+    #     return [initial_balance]
+    # balances = Trade.objects.filter(
+    #    trader=trader, round__lte=trader.market.round-1).values('balance_before')
+    #
+    # balances = list(map(process, balances))
+    # balances.append(process(trades.last().balance_after))
+    # if trader.round_joined > 0:
+    #     balances[trader.round_joined] = initial_balance
 
 
 def generate_cost_list(trader):
