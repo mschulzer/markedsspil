@@ -4,18 +4,10 @@
 {% load i18n %}
 
 {% block title %}{% translate 'Play' %}{% endblock %}
-
 {% block content %}
+    <div class="mt-lg-4"></div>
 
-    <style>
-        @media screen and (max-width: 575px) {
-            .hide-when-small {
-                display:none;
-            }
-        }
-    </style>
-
-    <p class="pt-3 p-2" >
+    <p class="pr-2 pl-2 py-3">
         {% if market.round > 0 and not wait and not trades.last.was_forced %}
             <!-- Text with info about last round choices and results.  -->
             {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
@@ -32,13 +24,22 @@
         {% endif %}
         
         {% if trades.last.was_forced %}
-            Du handlede ikke i sidste runde. 
+            {% translate "You didn't make a trade last round." %} 
         {% endif %}
 
         {% if wait %}
-            Du har valgt at producere <b>{{ trades.last.unit_amount }}</b> 
-            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk. Vi venter nu på, at værten afslutter runde <b>{{ market.round|add:1 }}</b>. 
-        
+            You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+            {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
+            
+            {% comment %} 
+            Suggested translation:
+            Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
+            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
+            {% endcomment %}
+
+            <br><br>
+            <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
+                   
         {% else %}
         {% blocktranslate with balance=trader.balance %}
             Your current balance is <b style="color:green">{{ balance }}</b> kr.
@@ -47,7 +48,7 @@
         {% endif %}
     </p>
 
-    
+<div class="mt-lg-4"></div>
 
 {% if not wait and not market.game_over %}
     <div class="card mb-4">
@@ -86,6 +87,47 @@
 {% endif %}
 
 <div class="accordion mb-5" id="accordionCharts">
+
+
+    <!-- ScoreBoard -->
+    <div class="card" class="mb-2">
+        <div class="card-header" id="headingFour">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left collapsed m-0" type="button" data-toggle="collapse"
+                    data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
+                    {% if market.game_over %}
+                        {% translate 'Final Scoreboard' %}
+                    {% else %}
+                        {% translate 'Scoreboard' %}
+                    {% endif %}
+                </button>
+            </h2>
+        </div>
+        <div id="collapseScoreBoard" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+            <div class="card-body px-2 px-sm-5 pt-0 mt-0" id="card_body">
+                {% include 'market/small-trader-table.html' %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance chart-->
+    <div class="card">
+        <div class="card-header" id="headingThree">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
+                    data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseThree">
+                    {% translate 'Balance history' %}
+                </button>
+            </h2>
+        </div>
+
+        <div id="collapseBalance" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+            <div class="card-body">
+                <canvas id="balanceCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Price chart-->
     <div class="card">
         <div class="card-header" id="headingOne">
@@ -122,40 +164,6 @@
         </div>
     </div>
 
-    <!-- Balance chart-->
-    <div class="card">
-        <div class="card-header" id="headingThree">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseThree">
-                    {% translate 'Balance history' %}
-                </button>
-            </h2>
-        </div>
-
-        <div id="collapseBalance" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
-            <div class="card-body">
-                <canvas id="balanceCanvas"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- ScoreBoard -->
-    <div class="card">
-        <div class="card-header" id="headingFour">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
-                    {% translate 'Score Board' %}
-                </button>
-            </h2>
-        </div>
-        <div id="collapseScoreBoard" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
-            <div class="card-body" id="card_body">
-               {% include 'market/small-trader-table.html' %}
-            </div>
-        </div>
-    </div>
 </div>
 
 <div 
@@ -165,6 +173,7 @@
     hx-target="#card_body">
 </div>  
 
+
 {% endblock content %}
 
 {% block javascript %}
@@ -172,31 +181,118 @@
 <!-- Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!--Units chart-->
+
+<script>
+    // Colors to be used in charts
+    const traderColor = 'rgb(75, 192, 192, 0.6)' 
+    const secondColor = 'rgb(0, 153, 255, 0.6)'
+    const thirdColor = 'rgb(255, 153, 0, 0.6)'
+</script>
+
+
+<script>
+function responsive_title(){
+    // Don't show graph titles on small screens 
+    // Title will take up the space needed for the graphs
+    if (window.innerWidth < 500) {
+        return false
+    }
+    else {
+        return true
+    }
+}
+function responsive_padding(){
+    // No top and bottom padding on smalls screens
+    // Padding will take up the space needed for the graps
+
+    if (window.innerWidth < 600) {
+        return {'top':0, 'bottom':0}
+    }
+    else{
+        return {'top':5, 'bottom':5}
+    }
+}
+</script>
+<script>
+    const myscales = {
+            y: {
+                    beginAtZero: true
+                }
+
+        }
+</script>
+<!-- Balance chart -->
+<script>
+    balanceCanvas = document.getElementById('balanceCanvas')
+
+    var traderBalanceDataSet = {
+        label: "Your balance",
+        data: JSON.parse("{{ trader_balance_json }}"),
+        lineTension: 0,
+        borderColor: traderColor,
+    };
+
+    var averageBalanceDataSet = {
+        label: "{% translate 'Market average balance' %}",
+        data: JSON.parse("{{ avg_balance_json }}"),
+        lineTension: 0,
+        borderColor: secondColor,
+    };
+
+    var balanceData = {
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+        datasets: [traderBalanceDataSet, averageBalanceDataSet]
+    };
+
+    balanceData.labels.push('Final')
+    
+    var lineChart = new Chart(balanceCanvas, {
+            type: 'line',
+            data: balanceData,
+            options:{ 
+                scales: myscales,
+                plugins: {
+                    title: {
+                        display: responsive_title(),
+                        text: "{% translate 'Balance each round' %}",
+                        padding: responsive_padding()
+                    }
+                }, 
+                 
+            }
+        }
+            
+    );
+    lineChart.height = 500;
+
+</script>
+
+
+<!-- Units chart -->
 <script>
     unitsCanvas = document.getElementById('unitsCanvas')
 
     var dataDemand = {
         label: "{% translate 'Demand' %}",
-        data: JSON.parse("{{data_demand_json}}"),
+        data: JSON.parse("{{ data_demand_json }}"),
         lineTension: 0,
-        borderColor: 'rgb(75, 192, 192)',
+        borderColor: traderColor,
     };
 
     var dataSold = {
         label: "{% translate 'Sold' %}",
-        data: JSON.parse("{{data_sold_json}}"),
-        borderColor: 'rgb(0, 153, 255)',
+        data: JSON.parse("{{ data_sold_json }}"),
+        borderColor: secondColor,
     };
 
     var dataProduced = {
         label: "{% translate 'Produced' %}",
-        data: JSON.parse("{{data_produced_json}}"),
-        borderColor: 'rgb(255, 153, 0)',
+        data: JSON.parse("{{ data_produced_json }}"),
+        borderColor: thirdColor,
     };
 
     var unitsData = {
-        labels: JSON.parse("{{rounds_json}}"), // labels on x-axis
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
         datasets: [dataDemand,
 				   dataSold,
 				   dataProduced]
@@ -207,22 +303,22 @@
             type: 'line',
             data: unitsData,
             options: {
+                scales: myscales, 
                 plugins: {
                     title: {
-                        display: true,
-                        text: "{% translate 'Units produced' %}",
-                        padding: {
-                            top: 5,
-                            bottom: 10
-                        }
-                    }
+                        display: responsive_title(),
+                        text: "{% translate 'Production history' %}",
+                        padding: responsive_padding()
+                    },
                 },
             }
         }
     );
 </script>
 
-<!--Price chart-->
+
+
+<!-- Price chart -->
 <script>
     priceCanvas = document.getElementById('priceCanvas')
 
@@ -230,23 +326,22 @@
         label: "{% translate 'Your price' %}",
         data: JSON.parse("{{ data_price_json }}"),
         lineTension: 0,
-        borderColor: 'rgb(75, 192, 192)',
+        borderColor: traderColor,
     };
 
     var dataMarketAvgPrice = {
         label: "{% translate 'Market average price' %}",
         data: JSON.parse("{{ data_market_avg_price_json }}"),
-        borderColor: 'rgb(0, 153, 255)',
+        borderColor: secondColor,
     };
 
     var dataProdCost = {
-        label: "{% translate 'Cost per unit (fixed)' %}",
+        label: "{% translate 'Your unit cost' %}",
         data: JSON.parse("{{ data_prod_cost_json }}"),
-        borderColor: 'rgb(255, 153, 0)',
+        borderColor: thirdColor,
     };
-
     var priceData = {
-        labels: JSON.parse("{{ rounds_json }}"), // labels on x-axis
+        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
         datasets: [dataYourPrice, dataMarketAvgPrice, dataProdCost]
     };
 
@@ -255,57 +350,18 @@
             type: 'line',
             data: priceData,
             options: {
+                scales: myscales, 
                 plugins: {
                     title: {
-                        display: true,
+                        display: responsive_title(),
                         text: "{% translate 'Price history' %}",
-                        padding: {
-                            top: 5,
-                            bottom: 10
-                        }
-                    }
+                        padding: responsive_padding() 
+                    },
                 }
             }
         }
     );
 </script>
-
-<!--Balance chart-->
-<script>
-    balanceCanvas = document.getElementById('balanceCanvas')
-
-    var dataBalance = {
-        label: "{% translate 'Your balance' %}",
-        data: JSON.parse("{{ data_balance_json }}"),
-        lineTension: 0,
-        borderColor: 'rgb(75, 192, 192)',
-    };
-
-    var balanceData = {
-        labels: JSON.parse("{{rounds_json}}"), // labels on x-axis
-        datasets: [dataBalance]
-    };
-
-    var lineChart = new Chart(
-        balanceCanvas, {
-            type: 'line',
-            data: balanceData,
-            options: {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: "{% translate 'Balance history' %}",
-                        padding: {
-                            top: 5,
-                            bottom: 10
-                        }
-                    }
-                }
-            }
-        }
-    );
-</script>
-
 
 
 {% if not wait %}
@@ -349,7 +405,6 @@
             formula.innerHTML = `${amount} * ${unit_prod_cost.toFixed(2)} = `;
         } 
     }
-
     
     function set_potential_income(){
         amount = amount_slider.value;
@@ -426,7 +481,7 @@
 </script>
 {% endif %}
 
-
+{% if wait %}
 <script>
     round_num = parseInt("{{ market.round }}");
     market_id = "{{ market.market_id }}";
@@ -439,7 +494,6 @@
             },
             dataType: 'json',
             success: function (data) {
-                //console.log(data, data.round, round_num);
                 if (data.round > round_num) {
                     window.location.href = "{% url 'market:play' %}"
                 }
@@ -449,5 +503,6 @@
 
     window.setInterval(check_for_next_round, 1000);
 </script>
+{% endif %}
 
 {% endblock javascript%}

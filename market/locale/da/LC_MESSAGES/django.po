@@ -19,12 +19,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: forms.py:12
-msgid "The name of the product being traded in singular form (e.g 'baguette')."
-msgstr "Navnet på produktet i ental (f.eks. 'baguette')."
+msgid "The name of the product being traded in singular form (e.g 'baguette')"
+msgstr "Navnet på produktet i ental (f.eks. 'baguette')"
 
 #: forms.py:13
-msgid "The name of the product being traded in plural form (e.g. 'baguettes')."
-msgstr "Navnet på produktet i flertal (f.eks. 'baguetter')."
+msgid "The name of the product being traded in plural form (e.g. 'baguettes')"
+msgstr "Navnet på produktet i flertal (f.eks. 'baguetter')"
 
 #: forms.py:14
 msgid "How much money should the participants start out with?"
@@ -143,6 +143,9 @@ msgstr "Pris (kr.)"
 #: forms.py:138 templates/market/play.html:304
 msgid "Amount"
 msgstr "Antal produkter"
+
+msgid "You didn't make a trade last round."
+msgstr "Du handlede ikke i sidste runde."
 
 #: forms.py:159
 #, python-brace-format
@@ -264,9 +267,6 @@ msgstr "Deltag i et marked"
 msgid "Return to one of your previous markets"
 msgstr "Vend tilbage til et af dine tidligere markeder"
 
-#: templates/market/join.html:10
-msgid "Choose a trader name and join a market"
-msgstr "Tilslut dig et marked"
 
 #: templates/market/join.html:21
 msgid "Please note"
@@ -463,7 +463,7 @@ msgstr "Udbytte hvis intet sælges"
 
 #: templates/market/play.html:84 templates/market/play.html:226
 msgid "Price history"
-msgstr "Prisudvikling over tid"
+msgstr "Prishistorik"
 
 #: templates/market/play.html:102
 msgid "Production history"
@@ -490,7 +490,7 @@ msgid "Units produced"
 msgstr "Produktionsantal"
 
 # templates/market/play.html
-msgid "Score Board"
+msgid "Scoreboard"
 msgstr "Dine konkurrenter"
 
 #: templates/market/play.html:195
@@ -503,11 +503,11 @@ msgstr "Markedets gennemsnitspris"
 
 #: templates/market/play.html:208
 msgid "Cost per unit (fixed)"
-msgstr "Produktionsomkostning (fast)"
+msgstr "Din omkostning pr enhed"
 
 #: templates/market/play.html:243
-msgid "Your balance"
-msgstr "Din saldo før runden"
+msgid "Your balance (kr.)"
+msgstr "Din saldo (kr.)"
 
 #: templates/market/trader-table.html:5
 msgid "Waiting for the first trader to join the market..."
@@ -540,11 +540,11 @@ msgstr "Udbytte"
 
 #: templatetags/custom_tags.py:12
 msgid "Unit price"
-msgstr "Pris pr. enhed"
+msgstr "Enhedspris"
 
 #: templatetags/custom_tags.py:14
 msgid "Unit amount"
-msgstr "Mængde produceret"
+msgstr "Antal produceret"
 
 #: templatetags/custom_tags.py:18
 msgid "Units sold"
@@ -568,7 +568,7 @@ msgstr "Hej {0}! Du er nu klar til at forhandle på {1}-markedet (id = {2})."
 msgid ""
 "You made a trade!"
 msgstr ""
-"Din beslutning er modtaget."
+"Du har lavet din handel!"
 
 #: views.py:227
 #, python-brace-format

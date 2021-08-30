@@ -6,7 +6,8 @@ from django.utils.translation import gettext as _
 
 SCENARIOS = [
     {
-        "description": _("Scenario 1. All traders have the same production costs. This is a good place to start."),
+        "title": _("Scenario 1: All traders have equal costs"),
+        "description": _("In this scenario, all traders have the same unit production costs, so the traders compete on equal terms. This is a good place to start."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -15,9 +16,12 @@ SCENARIOS = [
         "theta": 14.58,
         "min_cost": 8,
         "max_cost": 8,
+        "max_rounds": 15,
+        "endless": False
     },
     {
-        "description": _("Scenario 2. Traders are assigned different production costs at random, giving some traders an advantage over others."),
+        "title": _("Scenario 2: Some traders have an advantage"),
+        "description": _("In this scenario, the traders are assigned different production costs at random, giving some traders an advantage over others."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguettes",
         "initial_balance": 5000,
@@ -25,10 +29,13 @@ SCENARIOS = [
         "beta": 17.5,
         "theta": 14.58,
         "min_cost": 5,
-        "max_cost": 15
+        "max_cost": 15,
+        "max_rounds": 15,
+        "endless": False
     },
     {
-        "description": _("Custom scenario. Create a market with parameters of your choice."),
+        "title": _("Custom scenario"),
+        "description": _("Create a market with parameters of your own choice."),
         "product_name_singular": "",
         "product_name_plural": "",
         "initial_balance": "",
@@ -36,6 +43,8 @@ SCENARIOS = [
         "beta": "",
         "theta": "",
         "min_cost": "",
-        "max_cost": ""
+        "max_cost": "",
+        "max_rounds": "",
+        "endless": False
     }
 ]

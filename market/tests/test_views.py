@@ -150,6 +150,19 @@ class CreateMarketViewPOSTRequestTests(TestCase):
         self.assertContains(response,
                             "Denne værdi skal være større end eller lig 0.01.")
 
+    def test_if_user_chooses_negative_max_rounds_he_gets_a_good_error_message(self):
+        """ 
+        Max_rounds must be an integer >= 1. 
+        """
+
+        self.data['max_rounds'] = -4
+
+        response = self.client.post(
+            reverse('market:create'), self.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "There must be at least 1 round")
+
 
 class JoinViewTestGETRequests(TestCase):
 
@@ -240,6 +253,7 @@ class JoinViewTestPOSTRequests(TestCase):
                                     'name': 'Hanne', 'market_id': market.market_id})
         self.assertEqual(Trader.objects.all().count(), 1)
         new_trader = Trader.objects.first()
+        self.assertTrue(new_trader.round_joined == 0)
         self.assertEqual(new_trader.market, market)
         self.assertEqual(new_trader.balance, market.initial_balance)
         self.assertTrue('trader_id' in self.client.session)
@@ -257,6 +271,9 @@ class JoinViewTestPOSTRequests(TestCase):
         # the trader hanne was created
         hanne = Trader.objects.get(name='Hanne')
 
+        # it is registered, that Hanne joined in round 3
+        self.assertTrue(hanne.round_joined == 3)
+
         # when hanne joined, 3 forced trades was made for her in previous rounds
         hannes_trades = hanne.trade_set.all()
         self.assertEqual(hannes_trades.count(), 3)
@@ -268,6 +285,7 @@ class JoinViewTestPOSTRequests(TestCase):
             self.assertEqual(hannes_trades[i].unit_amount, None)
             self.assertEqual(hannes_trades[i].round, i)
             self.assertEqual(hannes_trades[i].balance_after, None)
+            self.assertEqual(hannes_trades[i].balance_before, None)
 
         # The current balance of the trader be equal the initial balance
         self.assertEqual(hanne.balance, market.initial_balance)
@@ -292,10 +310,43 @@ class MonitorViewGETRequestsTest(TestCase):
                           password='defaultpassword')
 
     def test_view_url_exists_at_proper_name_and_uses_proper_template(self):
+        """ The user who created the marked can access the monitor view"""
         response = self.client.get(
             reverse('market:monitor', args=(self.market.market_id,)))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'market/monitor.html'),
+
+    def test_user_not_logged_has_no_access(self):
+        """ Other users (e.g. traders) can't in general access the monitor view"""
+        self.client.logout()
+        other_user = UserFactory(username="olebole")
+        self.client.login(username=other_user.username,
+                          password='defaultpassword')
+        response = self.client.get(
+            reverse('market:monitor', args=(self.market.market_id,)))
+        # redirect as no access
+        self.assertEqual(response.status_code, 302)
+
+    def test_user_not_logged_has_no_access(self):
+        """ client who did not create the market only has access to monitor view when the game is over"""
+        self.client.logout()
+        other_user = UserFactory(username="olebole")
+        self.client.login(username=other_user.username,
+                          password='defaultpassword')
+        response = self.client.get(
+            reverse('market:monitor', args=(self.market.market_id,)))
+        # redirect as no access
+        self.assertEqual(response.status_code, 302)
+
+        # we set game state to game over
+        self.market.round = self.market.max_rounds
+        self.assertTrue(self.market.game_over())
+        self.market.save()
+
+        # visitor should now have access to the monitor page
+        response = self.client.get(
+            reverse('market:monitor', args=(self.market.market_id,)))
+        self.assertEqual(response.status_code, 200)
 
     def test_market_is_in_context(self):
         response = self.client.get(
@@ -364,6 +415,8 @@ class MonitorViewPOSTRequestsTest(TestCase):
         trade.refresh_from_db()
         self.assertEqual(trade.round, 7)
         self.assertIsInstance(trade.balance_after, Decimal)
+        self.assertIsInstance(trade.balance_before, Decimal)
+        self.assertEqual(trade.balance_before, TraderFactory.balance)
         self.assertIsInstance(trade.profit, Decimal)
         self.assertIsInstance(trade.units_sold, int)
         self.assertIsInstance(trade.demand, int)
@@ -401,6 +454,8 @@ class MonitorViewPOSTRequestsTest(TestCase):
         self.assertEqual(trade.was_forced, True)
         self.assertEqual(trade.round, 7)
         self.assertEqual(trade.profit, None)
+        self.assertEqual(trade.balance_before, 123456)
+        self.assertEqual(trade.balance_after, 123456)
 
         # The balance of trader2 should not be affected by the forced trade
         trader2.refresh_from_db()
@@ -475,6 +530,7 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
         self.assertEqual(response['Location'], url)
 
     def test_balance_and_profit_of_trades_updates(self):
+
         self.assertEqual(self.c1.balance_after, None)
         self.assertEqual(self.m1.balance_after, None)
         self.assertEqual(self.n1.balance_after, None)
@@ -560,12 +616,12 @@ class PlayViewGetRequestTest(TestCase):
         self.assertTemplateUsed(response, 'market/play.html'),
         self.assertTrue(response.context.get('wait'))
 
-        # there should now be a message saying that the user i waiting
+        # there should now be a message saying that the user is waiting
         html = response.content.decode('utf8')
         message = list(response.context.get('messages'))[0]
         self.assertEqual(message.tags, "success")
         self.assertTrue(
-            "Din beslutning er modtaget." in message.message)
+            "Du har lavet din handel!" in message.message)
 
         # This is round 0, so no data from last round should be shown
         self.assertNotIn(
@@ -574,7 +630,7 @@ class PlayViewGetRequestTest(TestCase):
         # Template should not contain a submit button
         self.assertNotIn('submit', html)
 
-    def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_round(self):
+    def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_the_previous_round(self):
         """
         User has traded in round 4, and in round 3.
         """
@@ -611,6 +667,9 @@ class PlayViewGetRequestTest(TestCase):
         # template should contain a submit button
         html = response.content.decode('utf8')
         self.assertIn("submit", html)
+
+        # template should not contain a link to the monitor view, since game is not over
+        self.assertNotIn(f"/{market.market_id}/monitor", html)
 
     def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(self):
         """
@@ -652,6 +711,9 @@ class PlayViewGetRequestTest(TestCase):
         # template should contain a submit button
         self.assertIn("submit", html)
 
+        # template should not contain a link to the monitor view, since game is not over
+        self.assertNotIn(f"/{market.market_id}/monitor", html)
+
     def test_form_attributes_are_set_correctly(self):
         """
         The form fields should have their max values determined by the market and traders
@@ -680,6 +742,33 @@ class PlayViewGetRequestTest(TestCase):
         # we expect the max input value of unit_amount to be floor(trader.balance/trader.prod_cost) = floor(101/2) = 50.00
         self.assertIn('max="50"', str(form))
         self.assertNotIn('max="53"', str(form))
+
+    def test_game_over_when_rounds_equal_max_round(self):
+        """
+        When game is over, the user should be notified about this
+        """
+        market = MarketFactory(round=4, max_rounds=4, endless=False)
+
+        # a user has joined properly
+        trader = TraderFactory(market=market, balance=101, prod_cost=2)
+        session = self.client.session
+        session['trader_id'] = trader.pk
+        session['username'] = 'Hans'
+        session.save()
+
+        # user goes to play url
+        response = self.client.get(reverse('market:play'))
+
+        # user is informed about the game state
+        self.assertContains(
+            response, "The game has ended")
+
+        # the player interface does not contain a submit button
+        html = response.content.decode('utf8')
+        self.assertNotIn('submit', html)
+
+        # the player interface contains a link to the monitor view
+        # self.assertIn(f"/{market.market_id}/monitor", html)
 
 
 class PlayViewPOSTRequestTest(TestCase):
@@ -712,7 +801,8 @@ class PlayViewPOSTRequestTest(TestCase):
         self.assertEqual(trade.round, trade.trader.market.round)
         self.assertFalse(trade.was_forced)
         self.assertEqual(trade.profit, None)
-        self.assertFalse(trade.balance_after, None)
+        self.assertEqual(trade.balance_after, None)
+        self.assertEqual(trade.balance_before, TraderFactory.balance)
 
         # after a successful post request, we should redirect to play
         self.assertEqual(response.status_code, 302)
@@ -841,7 +931,8 @@ class MarketEditTest(TestCase):
 
     def test_valid_post_data_updates_market_and_redirects(self):
         data = {'product_name_singular': 'surdejsbolle',
-                'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 10, 'theta': 32}
+                'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 10, 'theta': 32, 'endless': True, 'initial_balance': 53, 'max_rounds': 12,
+                'min_cost': 35, 'max_cost': 3565}
 
         url = reverse('market:market_edit', args=(self.market.market_id,))
         response = self.client.post(url, data=data)
@@ -860,9 +951,9 @@ class MarketEditTest(TestCase):
         """
 
         self.client.login(username='somename', password='testpass123')
-
         data = {'product_name_singular': 'surdejsbolle',
-                'product_name_plural': 'surdejsboller', 'alpha': -3, 'beta': 10, 'theta': 32}
+                'product_name_plural': 'surdejsboller', 'alpha': -14, 'beta': 10, 'theta': 32, 'endless': True, 'initial_balance': 53, 'max_rounds': 12,
+                'min_cost': 35, 'max_cost': 3565}
 
         url = reverse('market:market_edit', args=(self.market.market_id,))
         response = self.client.post(url, data=data)
