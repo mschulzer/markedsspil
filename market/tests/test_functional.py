@@ -5,6 +5,10 @@ from django.urls import reverse
 from ..models import Market, Trader, Trade
 from .factories import TraderFactory, UserFactory, MarketFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
 
+# Run tests with english language settings
+from django.utils.translation import activate
+activate("en-US")
+
 class TwoPlayerGame(TestCase):
 
     @classmethod

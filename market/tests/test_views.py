@@ -2,6 +2,7 @@
 To run all tests: $ manage.py test
 To run only one test in a specific class in test_views:
 $ docker-compose exec web python manage.py test market.tests.test_views.MyTestClass.my_test_function 
+$ docker-compose run web pytest market/tests/test_views.py
 """
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -12,68 +13,65 @@ from ..helpers import filter_trades
 from decimal import Decimal
 from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory, TraderFactory, UserFactory, MarketFactory
 
+# Run tests with english language settings
+from django.utils.translation import activate
+activate("en-US")
 
-class HomeViewTests(TestCase):
+import pytest
+from pytest_django.asserts import assertTemplateUsed, assertContains
 
-    def test_post_requests_not_allowed(self):
-        url = reverse('market:home')
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 405)
+# def assertTemplateUsed(response, template):
+#     assert template in (t.name for t in response.template)
 
-    def test_view_url_exists_at_proper_location_and_uses_proper_template(self):
-        response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/home.html'),
+# Test HomeView
+def test_post_requests_not_allowed(client):
+    url = reverse('market:home')
+    response = client.post(url)
+    assert response.status_code == 405
 
-    def test_view_url_exits_at_proper_name_and_uses_proper_template(self):
-        response = self.client.get(reverse('market:home'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/home.html'),
+def test_view_url_exists_at_proper_location_and_uses_proper_template(client):
+    response = client.get('/')
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'market/home.html')
 
-
-class CreateMarketViewGETRequestTests(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
-
-    def setUp(self):
-        """ log in user before each test """
-        self.client.login(username=self.user.username,
-                          password='defaultpassword')
-
-    def test_view_url_exists_at_proper_location_and_uses_proper_template(self):
-        response = self.client.get('/create/')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/create.html'),
-
-    def test_view_url_exits_at_proper_name_and_uses_proper_template(self):
-        response = self.client.get(reverse('market:create'))
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'market/create.html'),
-
-    def test_login_required(self):
-        """ User not logged in will be redirected to login page """
-        self.client.logout()
-        response = self.client.get(reverse('market:create'))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'],
-                         '/accounts/login/?next=/create/')
+def test_view_url_exits_at_proper_name_and_uses_proper_template(client):
+    response = client.get(reverse('market:home'))
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'market/home.html')
 
 
-class CreateMarketViewPOSTRequestTests(TestCase):
+### Test CreateMarketViewGETRequest
 
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = UserFactory()
+@pytest.fixture
+def logged_in_user(db, client):
+    user = UserFactory()
+    client.login(username=user.username,
+                 password='defaultpassword')
+    return user
 
-    def setUp(self):
-        """ log in user before each test """
-        self.client.login(username=self.user.username,
-                          password='defaultpassword')
 
-        # valid post data
-        self.data = {
+def test_view_url_exists_at_proper_location_and_uses_proper_template(client, logged_in_user):
+    response = client.get('/create/')
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'market/create.html')
+
+def test_view_url_exits_at_proper_name_and_uses_proper_template(client, logged_in_user):
+    response = client.get(reverse('market:create'))
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'market/create.html'),
+
+def test_login_required(client, logged_in_user):
+    """ User not logged in will be redirected to login page """
+    client.logout()
+    response = client.get(reverse('market:create'))
+    assert response.status_code == 302
+    assert response['Location'] == '/accounts/login/?next=/create/'
+
+### Test CreateMarketViewPOSTRequest
+
+@pytest.fixture
+def create_market_data():
+    return {
             'product_name_singular': 'baguettes',
             'product_name_plural': 'baguettes',
             'initial_balance': 5000,
@@ -84,71 +82,56 @@ class CreateMarketViewPOSTRequestTests(TestCase):
             'max_cost': 144,
             'max_rounds': 15,
             'endless': False
-
         }
 
-    def test_market_is_created_when_data_is_valid(self):
-        """ 
-        A market is created when posting valid data & logged in user is set as market's creator 
-        After successfull creation, client is redirected to monitor page
-        """
-        response = self.client.post(
-            reverse('market:create'), self.data)
-        self.assertEqual(Market.objects.all().count(), 1)
-        market = Market.objects.first()
-        self.assertEqual(market.created_by, self.user)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['Location'], reverse(
-            'market:monitor', args=(market.market_id,)))
+def test_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
+    """ 
+    A market is created when posting valid data & logged in user is set as market's creator 
+    After successfull creation, client is redirected to monitor page
+    """
+    response = client.post(reverse('market:create'), create_market_data)
+    assert Market.objects.all().count() == 1
+    market = Market.objects.first()
+    assert market.created_by == logged_in_user
+    assert response.status_code == 302
+    assert response['Location'] == reverse('market:monitor', args=(market.market_id,))
 
-    def test_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(self):
-        """ data is invalid """
-        self.data['min_cost'] = 200
-        response = self.client.post(
-            reverse('market:create'), self.data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Market.objects.all().count(), 0)
-        self.assertContains(
-            response, "Min cost can&#x27;t be bigger than max cost")
+def test_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
+    """ data is invalid """
+    create_market_data['min_cost'] = 200
+    response = client.post(reverse('market:create'), create_market_data)
+    assert response.status_code == 200
+    assert Market.objects.all().count() == 0
+    assertContains(response, "Min cost can&#x27;t be bigger than max cost")
 
-    def test_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(self):
-        """ data is invalid """
-        self.data['alpha'] = ''
-        response = self.client.post(reverse('market:create'), self.data)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Market.objects.all().count(), 0)
-        self.assertContains(response, "Dette felt er påkrævet")
+def test_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
+    """ data is invalid """
+    create_market_data['alpha'] = ''
+    response = client.post(reverse('market:create'), create_market_data)
+    assert response.status_code == 200
+    assert Market.objects.all().count() == 0
+    assertContains(response, "Dette felt er påkrævet")
 
-    def test_error_mgs_shown_to_user_when_alpha_bigger_than_9999999999(self):
-        """ 
-        In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 9999999999.9999
-        Choosing alpha = 10000000000 in the create form should should create an understandable message to the user,
-        not a database-error. 
-        """
+def test_error_mgs_shown_to_user_when_alpha_bigger_than_9999999999(client, logged_in_user, create_market_data):
+    """ 
+    In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 9999999999.9999
+    Choosing alpha = 10000000000 in the create form should should create an understandable message to the user,
+    not a database-error. 
+    """
+    create_market_data['alpha'] = 10000000000
+    response = client.post(reverse('market:create'), create_market_data)
+    assert response.status_code == 200
+    assertContains(response, "Der må maksimalt være 10 cifre før kommaet.")
 
-        self.data['alpha'] = 10000000000
-
-        response = self.client.post(
-            reverse('market:create'), self.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(
-            response, "Der må maksimalt være 10 cifre før kommaet.")
-
-    def test_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(self):
-        """ 
-        In the model, min_cost and max_cost are set as positive integers. 
-        If the users chooses beta negative, this should not cast a database error, but a nice feedback message
-        """
-
-        self.data['min_cost'] = -11
-
-        response = self.client.post(
-            reverse('market:create'), self.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response,
-                            "Denne værdi skal være større end eller lig 0.01.")
+def test_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(client, logged_in_user, create_market_data):
+    """ 
+    In the model, min_cost and max_cost are set as positive integers. 
+    If the users chooses beta negative, this should not cast a database error, but a nice feedback message
+    """
+    create_market_data['min_cost'] = -11
+    response = client.post(reverse('market:create'), create_market_data)
+    assert response.status_code == 200
+    assertContains(response, "Denne værdi skal være større end eller lig 0.01.")
 
 
 class JoinViewTestGETRequests(TestCase):
