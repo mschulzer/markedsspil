@@ -50,10 +50,10 @@
             <br><br>
             Should all traders decide to give away their {{ market.product_name_plural}} for free, each trader will experience a demand for 
             <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. 
-            When a trader raises her price by 1 kr, the demand for her {{ market.product_name_plural }} will 
-            go down by <b>{{ market.beta }}</b>, all else being equal.
-            When the market average price goes up by one, the demand for a single trader's product will 
-            increase by <b>{{ market.theta }}</b> {{ market.product_name_plural }}, all else being equal.            
+            When a trader raises her unit price by 1 kr, the demand for her {{ market.product_name_plural }} will 
+            decrease by <b>{{ market.beta }}</b>, if the market average price remains unchanged. 
+            When the market average goes up by 1 kr, the demand for a trader's product will 
+            increase by <b>{{ market.theta }}</b> {{ market.product_name_plural }}, if his unit price remains unchanged.             
             
         </p>
         {% if request.user == market.created_by %}
