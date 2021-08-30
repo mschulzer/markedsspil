@@ -13,22 +13,22 @@
 
             <thead>
                 <tr>
-                    <th>{% translate 'ID' %}</th>
+                    <th>{% translate 'Market' %}</th>
                     <th>{% translate 'Created at' %}</th>
+                    <th>{% translate 'Product' %}</th>
                     <th>{% translate 'Initial balance' %}</th>
                     <th>{% translate 'Cost/unit' %}</th>
                     <th>{% translate 'Parameters' %}</th>
                     <th>{% translate 'Progression' %}</th>
-                    <th>{% translate 'Revisit' %}</th>
                 </tr>
             </thead>
             {% for market in markets %}
 
                 <tr>
-                    <td>{{ market.market_id }}<br>
-                        ({{ market.product_name_plural }})
+                    <td><a href="{% url 'market:monitor' market.market_id %}">{{ market.market_id }}</a></td>                    
                     </td>
                     <td>{{ market.created_at }}</td>
+                    <td>{{ market.product_name_plural }}</td>
                     <td>{{ market.initial_balance }}</td>
                     <td>
                         Min: {{ market.min_cost }}<br>
@@ -49,7 +49,6 @@
                         <td>Round {{ market.round|add:1 }}/{{ market.max_rounds  }}</td>
                         {% endif %}
                     {% endif %}
-                    <td><a href="{% url 'market:monitor' market.market_id %}">Monitor</a></td>                    
                 </tr>
             {% endfor %}
         </table>
