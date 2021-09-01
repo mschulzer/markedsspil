@@ -137,12 +137,13 @@ class Trade(models.Model):
     # unit price can be null because 'forced trades' have no unit_price
     unit_price = models.DecimalField(
         null=True,
+        blank=False,
         max_digits=12,
         decimal_places=2,
     )
     # unit_amount is the number of products produced
     # unit_amount can be null, because 'forced trades' have no unit_amount
-    unit_amount = models.IntegerField(null=True)
+    unit_amount = models.IntegerField(null=True, blank=False)
 
     round = models.IntegerField()  # not always equal to trader.market.round
     # a trade 'was forced' if the trader did not make a trade decision in the given round.

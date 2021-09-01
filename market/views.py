@@ -325,18 +325,16 @@ def play(request):
 
         if request.method == 'POST':
             form = TradeForm(data=request.POST)
-            assert(form.is_valid), 'TradeForm invalid - This should not be possible'
             if form.is_valid():
                 new_trade = form.save(commit=False)
                 new_trade.trader = trader
                 new_trade.round = market.round
                 new_trade.balance_before = trader.balance
                 new_trade.save()
-            return redirect(reverse('market:play'))
+                return redirect(reverse('market:play'))
+        else:
+            form = TradeForm(trader)
 
-        # Get requests only :
-
-        form = TradeForm(trader)
         round_stats = RoundStat.objects.filter(market=market)
         trades = Trade.objects.filter(trader=trader)
 

@@ -420,3 +420,15 @@ class TradeFormTest(TestCase):
         new_trade.round = trader.market.round
         new_trade.save()
         self.assertEqual(Trade.objects.all().count(), 1)
+
+    def test_no_input_is_not_valid(self):
+        """ Blank fields invalides form """
+        trader = TraderFactory(prod_cost=0, balance=201)
+        data = {
+            'unit_price': '',
+            'unit_amount': ''
+        }
+        form = TradeForm(trader, data=data)
+        self.assertFalse(form.is_valid())
+        self.assertTrue('unit_price' in form.errors)
+        self.assertTrue('unit_amount' in form.errors)

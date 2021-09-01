@@ -809,6 +809,33 @@ class PlayViewPOSTRequestTest(TestCase):
         expected_redirect_url = reverse('market:play')
         self.assertEqual(response['Location'], expected_redirect_url)
 
+    def test_error_message_to_user_when_invalid_form(self):
+        trader = TraderFactory()
+
+        session = self.client.session
+        session['trader_id'] = trader.pk
+        session.save()
+
+        # the client sends in a trade form with invalid data (unit price is blank)
+        response = self.client.post(
+            reverse('market:play'), {'unit_price': '', 'unit_amount': '45'})
+
+        # The trade is not saved to the database
+        self.assertEqual(Trade.objects.all().count(), 0)
+
+        # The response code should be 200
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context['form']
+
+        # Validation error msgs shown for unit price
+        self.assertIn(
+            'name="unit_price" min="0" class="slider numberinput form-control is-invalid', str(form))
+
+        # Validation error msgs not shown for unit amount
+        self.assertNotIn(
+            'name="unit_amount" min="0" class="slider numberinput form-control is-invalid', str(form))
+
 
 class CurrentRoundViewTest(TestCase):
 
