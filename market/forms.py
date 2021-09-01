@@ -36,9 +36,9 @@ class MarketForm(forms.ModelForm):
             'max_rounds': _('Max rounds'),
         }
         widgets = {
-            'initial_balance': forms.NumberInput(attrs={'step': 1}),
-            'min_cost': forms.NumberInput(attrs={'step': 1}),
-            'max_cost': forms.NumberInput(attrs={'step': 1})
+            'initial_balance': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),
+            'min_cost': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),
+            'max_cost': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"})
         }
 
     def clean(self):
