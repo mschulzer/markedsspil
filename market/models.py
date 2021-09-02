@@ -89,36 +89,48 @@ class Trader(models.Model):
     
     def save(self, *args, **kwargs):
         """
-        Set random productions cost before creating a new trader (not when updating an existing trader)
-        If prod cost is provided, use the provided value. 
+        Set productions cost before creating a new trader (not when updating an existing trader)
         """
+        # If we are saving a new trader object (not updating an existing trader)
         if not self.id:
             if not self.prod_cost:
-                # Get all unused production costs
-                unused_costs = UnusedCosts.objects.filter(market=self.market)
+                if self.market.min_cost == self.market.max_cost:
+                    # set traders production cost equal to this value
+                    self.prod_cost = self.market.min_cost
 
-                # If there are any unused costs,
-                if len(unused_costs) > 0:
-                    # pick one at random
-                    rnd_unused_cost = choice(unused_costs)
-                    self.prod_cost = rnd_unused_cost.cost
-                    # then move it to the used costs
-                    UsedCosts(cost=self.prod_cost,market=self.market).save()
-                    rnd_unused_cost.delete()
-
-                # If there are no unused costs,
+                # If min_cost < max_cost
                 else:
-                    # use the costs "between" each pair of used costs as new unused costs
-                    all_used_costs = UsedCosts.objects.filter(market=self.market).order_by('cost')
-                    for i in range(len(all_used_costs)-1):
-                        new_unused_cost = (all_used_costs[i].cost/2
-                                           + all_used_costs[i+1].cost/2)
-                        UnusedCosts(cost=new_unused_cost,market=self.market).save()
-                    # then pick one of the new unused costs for this trader
-                    rnd_unused_cost = choice(UnusedCosts.objects.filter(market=self.market))
-                    self.prod_cost = rnd_unused_cost.cost
-                    UsedCosts(cost=self.prod_cost,market=self.market).save()
-                    rnd_unused_cost.delete()
+                    # Get all unused production costs
+                    unused_costs = UnusedCosts.objects.filter(
+                        market=self.market)
+
+                    # If there are any unused costs,
+                    if len(unused_costs) > 0:
+                        # pick one at random
+                        rnd_unused_cost = choice(unused_costs)
+                        self.prod_cost = rnd_unused_cost.cost
+                        # then move it to the used costs
+                        UsedCosts(cost=self.prod_cost,
+                                  market=self.market).save()
+                        rnd_unused_cost.delete()
+
+                    # If there are no unused costs,
+                    else:
+                        # use the costs "between" each pair of used costs as new unused costs
+                        all_used_costs = UsedCosts.objects.filter(
+                            market=self.market).order_by('cost')
+                        for i in range(len(all_used_costs)-1):
+                            new_unused_cost = (all_used_costs[i].cost/2
+                                               + all_used_costs[i+1].cost/2)
+                            UnusedCosts(cost=new_unused_cost,
+                                        market=self.market).save()
+                        # then pick one of the new unused costs for this trader
+                        rnd_unused_cost = choice(
+                            UnusedCosts.objects.filter(market=self.market))
+                        self.prod_cost = rnd_unused_cost.cost
+                        UsedCosts(cost=self.prod_cost,
+                                  market=self.market).save()
+                        rnd_unused_cost.delete()
 
         super(Trader, self).save(*args, **kwargs)
     

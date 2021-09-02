@@ -74,9 +74,11 @@ def create(request):
             new_market = form.save(commit=False)
             new_market.created_by = request.user  
             new_market.save()
-
-            UnusedCosts(market=new_market, cost=new_market.min_cost).save()
-            UnusedCosts(market=new_market, cost=new_market.max_cost).save()
+            # if all traders are not to have equal production cost
+            if new_market.min_cost < new_market.max_cost:
+                # add min_cost og max_cost to the list of unused costs
+                UnusedCosts(market=new_market, cost=new_market.min_cost).save()
+                UnusedCosts(market=new_market, cost=new_market.max_cost).save()
 
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
     elif request.method == 'GET':
