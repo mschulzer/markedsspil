@@ -1,71 +1,115 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
-{% block title %}Create{% endblock %}
+{% block title %}{% translate 'Create a new market' %}{% endblock %}
 
 {% block content %}
 
-<h3>Create a market</h3>
-<h6 class="mb-3">Choose between predefined scenarios or create your own custom market from scratch</h6>
+
+<h3 class="mt-5">{% translate 'Create a new market' %}</h3>
+<h6 class="mb-3">{% translate 'Choose a predefined scenario, or create a market with custom settings.' %}</h6>
 
 <div class="card mb-3">
 	<div class="card-header">
-		Predefined Market Scenarios 	
+		{% translate 'Predefined scenarios'%}
 	</div>
+	
 	<div class="card-body">
 		<form id='market_radio_form'>
-			<h5 class="card-title">Select scenario (see/edit details below)</h5>
+			<h5 class="card-title">{% translate 'Select scenario' %}<span class="text-muted text" style="font-size:18px"> (view/edit settings below)</span></h5>
 			<div class="pl-3 mb-2">
 				{% for scenario in scenarios %}
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
 						{% if forloop.counter0 == 0 %}checked{% endif%}>
-					<label for="scenario_{{ forloop.counter0 }}">{{ scenario.description }}</label><br>
+					<label for="scenario_{{ forloop.counter0 }}" class="mb-0 pb-0">{{ scenario.title }}</label>
+					{% comment %} <p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p> {% endcomment %}
+					<p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p>
 				{% endfor %}
 			</div>
-		</form>
-
+		</form> 
 		<div class="d-flex justify-content-center">
-		<input type="submit" value="Create Market" class="btn btn-primary my-2" form="create-market-form">
-		</div>
+			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-2" form="create-market-form">
+		</div> 
 	</div>
 </div>
+
 <div class="card mb-3">
 	<div class="card-header">
-		Market Details
+		{% translate 'Market details' %}
 	</div>
 	<div class="card-body">
 		<form action="" id="create-market-form" method="post">{% csrf_token %}
 			{{ form|crispy }}
 		</form>
 		<div class="d-flex justify-content-center">
-			<input type="submit" value="Create Market" class="btn btn-primary my-4" form="create-market-form">
+			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-4" form="create-market-form">
 		</div>
 	</div>
 </div>
+
 {% endblock content %}
 
 {% block javascript %}
 <script>
-
+	function adjust_max_round_field(){
+		// This function is also used by market edit template, so should be imported.
+		
+		max_rounds_field = document.getElementById('div_id_max_rounds')
+		if (document.getElementById('id_endless').checked){
+			max_rounds_field.style.visibility = "hidden";
+			/* max_rounds has to be a non-blank positive integer, even if game is endless.
+			If user has typed an invalid max_rounds value, we have to change this. 
+			The value chosen will be disregarded when market.endless = true */	
+			max_rounds = document.getElementById('id_max_rounds')
+			max_rounds.value = parseInt(max_rounds.value)
+			if (max_rounds.value < 1){			
+				max_rounds.value = 15; 
+			}
+		}
+		else{
+			max_rounds_field.style.visibility = "";
+		}
+	}		
+   
 	scenarios = {{ scenarios_json|safe }}
 
 	function fill_form(scenario){
+		// toFixed(2) ensures two decimals on initial rendering of form
 		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
 		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
-		document.getElementById('id_initial_balance').value=scenario.initial_balance
+		document.getElementById('id_initial_balance').value=scenario.initial_balance.toFixed(2); 
 		document.getElementById('id_alpha').value=scenario.alpha
 		document.getElementById('id_beta').value=scenario.beta
 		document.getElementById('id_theta').value=scenario.theta
-		document.getElementById('id_min_cost').value=scenario.min_cost
-		document.getElementById('id_max_cost').value=scenario.max_cost
+		document.getElementById('id_min_cost').value=scenario.min_cost.toFixed(2); 
+		document.getElementById('id_max_cost').value=scenario.max_cost.toFixed(2);
+		document.getElementById('id_max_rounds').value=scenario.max_rounds
+		document.getElementById('id_endless').checked=scenario.endless
+		adjust_max_round_field()
 	}
-	
-	fill_form(scenarios[0])
+
+	/* We should NOT fill out form with predefined scenario values after an unsuccesful post-attempt.
+	   Instead, the form will be filled out with the posted values + error messages */
+	{% if not form.errors %}fill_form(scenarios[0]){% endif %}
+
 	
 	document.getElementById('market_radio_form').addEventListener('change', function() {
 		scenario_number = document.querySelector('input[name="scenario"]:checked').value
 			fill_form(scenarios[scenario_number]);
 	}); 
 
+	document.getElementById('div_id_endless').addEventListener('change', function() {
+		adjust_max_round_field()
+	});
+
+	adjust_max_round_field()
+
+	function setTwoNumberDecimal(el) {
+		// Ensure two decimals after changing form values
+        el.value = parseFloat(el.value).toFixed(2);
+    };
+
 </script>
+
 {% endblock javascript %}

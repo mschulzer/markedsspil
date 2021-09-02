@@ -1,44 +1,83 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
-{% block title %}Home{% endblock %}
+{% block title %}{% translate 'Home' %}{% endblock %}
 
 {% block content %}
+    <h4 class="mb-4">{% translate 'Welcome to the Market Simulator' %}</h4>
+    <div class="row">
+    <!-- Card with options for "traders" -->
+    <div class="col col-12 col-lg-6 d-flex align-items-stretch">
+        <div class="card mb-4">
+            <div class="card-header">
+                {% translate 'Participate as trader' %}
+            </div>   
+            <div class="card-body"> 
+                {% if request.session.market_id %}
+                    <!-- Content if client has already joined a market -->
+                    <p>Hi, {{ request.session.username }}! You have already joined the {{ market.product_name_singular }} market {{ market.market_id }}. Do you want to return to this market?</p>
+                    <div class="d-flex justify-content-center mb-4">
+                        <a href="{% url 'market:play' %}">
+                            <button class="btn btn-primary">
+                                {% translate 'Return to my market' %}
+                            </button>
+                        </a>
+                    </div>
+                    <p>Perhaps you want to join another market?</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'market:join' %}">
+                            <button class="btn btn-primary">
+                                {% translate 'Join another market' %}
+                            </button>
+                        </a>          
+                    </div>
+                {% else %}
+                    <!-- Content if client has not joined a market -->
+                    <p>{% translate 'Traders produce and sell goods on a market. They compete with other traders to gain the most money after a given number of rounds.'%}</p>
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'market:join' %}">
+                            <button class="btn btn-primary">
+                                {% translate 'Join a market' %}
+                            </button>
+                        </a> 
+                    </div>        
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col col-12 col-lg-6 d-flex align-items-stretch">
+    <!-- Card with options for "hosts" -->
+    <div class="card mb-4">
+        <div class="card-header">
+            {% translate 'Host a market' %}
+        </div>
+        <div class="card-body">
+            <div class="mb-4">        
+                <p>Hosts are game masters who create and control markets. Do you want to host a new market?</p>
+               	<div class="d-flex justify-content-center">
+                    <a href="{% url 'market:create' %}">
+                        <button class="btn btn-primary">
+                            {% translate 'Create a new market' %}
+                        </button>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p>{% translate 'Perhaps you have created some markets earlier? You have the option to revisit those markets too:' %}</p>
+               	<div class="d-flex justify-content-center">
+                    <a href="{% url 'market:my_markets' %}">
+                        <button class="btn btn-primary">
+                            {% translate 'My markets' %}
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
 
-<h2>Velkommen til Markedsspillet</h2>
 
-<br><br>
-{% if request.session.trader_id %}
-<p style="border: 2px solid black; padding:2em">You are currently participating in the market
-    <b>{{ request.session.market_id }}</b>
-    with the trader name
-    <b>{{ request.session.username }}</b>. 
-    <br>
-    Return to this market?
-    <a href="{% url 'market:play' %}">
-        Keep playing
-    </a>
-</p>
-
-</span>
-
-{% endif %}
-
-<br><br>
-<p>Join an existing market as new trader:</p>
-<form action="{% url 'market:join' %}" method="GET">
-    <input type="submit" value="Join Market" class="btn btn-primary">
-</form>
-<br>
-<p>Create a new market:</p>
-<form action="{% url 'market:create' %}" method="GET">
-    <input type="submit" value="Create Market" class="btn btn-secondary">
-</form>
-<br>
-<p>Revisit the markets you have hosted:</p>
-<form action="{% url 'market:my_markets' %}" method="GET">
-    <input type="submit" value="My Markets" class="btn btn-warning">
-</form>
-
+</div>
 
 {% endblock %}

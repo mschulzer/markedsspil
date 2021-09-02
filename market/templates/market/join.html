@@ -1,35 +1,19 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
+{% load i18n %}
 
-{% block title %}Join{% endblock %}
+{% block title %}{% translate 'Join' %}{% endblock %}
 
 {% block content %}
 
+<div class="container">
+	<h4 class="mb-3 mb-lg-4 mt-4">{% translate 'Join a market' %}</h4>
 
-<h4>Choose a name and join a market:</h4>
-
-<form action="" method="post">{% csrf_token %}
-	{{ form|crispy }}
-	<input type="submit" value="Join Market" class="btn btn-primary">
-</form>
-
-<br>
-<br>
-
-{% if request.session.trader_id %}
-	<h5><i>Please Note</i></h5>
-	<p>You've already joined the market 
-		<b>{{ request.session.market_id }}</b>
-		with the username 
-		<b>{{ request.session.username }}</b>. 
-		If you use the above form, you will loose access to your data from this market... </p>
-	
-	<p>Keep playing on <b>{{ request.session.market_id }}</b>? 
-		<a href="{% url 'market:play' %}">
-			Return to play  
-		</a>
-	</p>
-{% endif %}
-
-
+	<form class="mb-4" action="" method="post">{% csrf_token %}
+		{{ form|crispy }}
+		<div class="d-flex justify-content-center">
+			<input type="submit" value="{% translate "Join" %}" class="btn btn-primary my-2">
+		</div>
+	</form>
+</div>
 {% endblock %}

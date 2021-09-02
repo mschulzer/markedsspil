@@ -50,9 +50,25 @@ class Market(models.Model):
                                    validators=[MinValueValidator(Decimal('0.01'))])
 
     round = models.IntegerField(default=0)
+
+    # If endless is false, the game will stop after the number of rounds specified in max_rounds.
+    # Note that if max_rounds = n, then the last being played will be the round stored in the database as round n-1
+    # If endless is True, any value of max_rounds will be disregarded.
+    max_rounds = models.IntegerField(
+        validators=[MinValueValidator(1)])
+
+    # endless indicates whether or not the game should go on indefinitely.
+    endless = models.BooleanField()
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(
         get_user_model(), null=True, on_delete=models.SET_NULL)
+
+    def game_over(self):
+        if not self.endless and (self.round >= self.max_rounds):
+            return True
+        else:
+            return False
 
     def save(self, *args, **kwargs):
         """
@@ -80,6 +96,8 @@ class Trader(models.Model):
         max_digits=12,
         decimal_places=2,
     )
+    round_joined = models.IntegerField(default=0)
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
@@ -91,7 +109,6 @@ class Trader(models.Model):
                 fields=['market', 'name'], name='market_and_name_unique_together'),
         ]
 
-   
     def save(self, *args, **kwargs):
         """
         Set productions cost before creating a new trader. 
@@ -112,7 +129,6 @@ class Trader(models.Model):
                     self.prod_cost_algoritm()
 
         super(Trader, self).save(*args, **kwargs)
-
 
     def prod_cost_algoritm(self):
         """ 
@@ -153,7 +169,6 @@ class Trader(models.Model):
                       market=self.market).save()
             rnd_unused_cost.delete()
 
-
     def __str__(self):
         return f"{self.name} [{self.market.market_id}] - ${self.balance}"
 
@@ -171,15 +186,16 @@ class Trade(models.Model):
     # unit price can be null because 'forced trades' have no unit_price
     unit_price = models.DecimalField(
         null=True,
+        blank=False,
         max_digits=12,
         decimal_places=2,
     )
     # unit_amount is the number of products produced
     # unit_amount can be null, because 'forced trades' have no unit_amount
-    unit_amount = models.IntegerField(null=True)
+    unit_amount = models.IntegerField(null=True, blank=False)
 
     round = models.IntegerField()  # not always equal to trader.market.round
-    # a trade 'was-forced' if the trader did not make a trade decision in the given round.
+    # a trade 'was forced' if the trader did not make a trade decision in the given round.
     was_forced = models.BooleanField(default=False)
 
     # demand, units_sold, profit and balance_after will all be set to null when a trade object is created and
@@ -193,11 +209,21 @@ class Trade(models.Model):
         max_digits=12,
         decimal_places=2,
     )
+    # Trader's balance after the trade
     balance_after = models.DecimalField(
         null=True,
         max_digits=12,
         decimal_places=2,
     )
+    # Trader's balance before the trade. If a trader has just joined the game,
+    # this is equal to the market's initial balance. Else it is equal to the
+    # balance after of the previous round.
+    balance_before = models.DecimalField(
+        null=True,
+        max_digits=12,
+        decimal_places=2,
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
@@ -218,6 +244,15 @@ class RoundStat(models.Model):
     # w/ below settings avg. price can't be bigger than 9999999999.99
     avg_price = models.DecimalField(
         max_digits=12, decimal_places=2, null=True, blank=True)
+
+    # the average balance of the traders after the round
+    avg_balance_after = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True)
+
+    # the average amount of units produced in the given round
+    avg_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:

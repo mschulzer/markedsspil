@@ -9,6 +9,9 @@ python manage.py migrate
 echo "${0}: collecting static files."
 python manage.py collectstatic --noinput --clear
 
+echo "${0}: generating .mo files for translations"
+django-admin compilemessages
+
 # cp -rv static/* static_shared/
 
 echo "${0}: Running development server."
