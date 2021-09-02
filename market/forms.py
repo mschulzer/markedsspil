@@ -72,7 +72,6 @@ class MarketUpdateForm(MarketForm):
             'max_cost': forms.NumberInput(attrs={'readonly': True}),
         }
 
-
     def clean(self):
         """ 
         Max numner of rounds can't be smaller than current round + 1 (when endless = False) 
@@ -162,9 +161,15 @@ class TradeForm(forms.ModelForm):
                 max_unit_amount = floor((trader.balance/trader.prod_cost))
             else:  # if prod_cost is 0 (this is currently not allowed to happen)
                 max_unit_amount = 10000  # this number is arbitrary
-
             self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount
+
             self.fields['unit_price'].help_text = (_("Set a price for one {0} (your cost pr. {0} is <b>{1}</b> kr.)")).format(
                 trader.market.product_name_singular, trader.prod_cost)
             self.fields['unit_amount'].help_text = (
                 _("How many {0} do you want to produce?")).format(trader.market.product_name_plural)
+
+            # Set default value of price slider equal to the trader's prod cost
+            self.fields['unit_price'].widget.attrs['value'] = trader.prod_cost
+
+            # Set default value of amount slider equal to zero
+            self.fields['unit_amount'].widget.attrs['value'] = 0
