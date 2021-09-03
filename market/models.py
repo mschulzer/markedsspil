@@ -126,11 +126,11 @@ class Trader(models.Model):
                 # If min_cost < max_cost
                 else:
                     # use production cost algorithm to set production cost of trader
-                    self.prod_cost_algoritm()
+                    self.prod_cost_algorithm()
 
         super(Trader, self).save(*args, **kwargs)
 
-    def prod_cost_algoritm(self):
+    def prod_cost_algorithm(self):
         """ 
         Used when market.min_cost < market.max_cost to produce 
         semi-random production costs that cover the whole spectrum of 
