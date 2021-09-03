@@ -116,7 +116,7 @@ class Trader(models.Model):
 
         # If we are saving a new trader object (not updating an existing trader)
         if not self.id:
-            # If a specific production cost NOT is provided
+            # If a specific production cost is NOT provided
             # (we are, for example, not creating a new trader with specific prod_cost in a test )
             if not self.prod_cost:
                 if self.market.min_cost == self.market.max_cost:
