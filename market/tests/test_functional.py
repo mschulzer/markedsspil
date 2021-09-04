@@ -83,6 +83,14 @@ class TwoPlayerGame(TestCase):
 
         klaus = Trader.objects.get(name='Klaus')
 
+        # Since market.min_cost = 11 < market.max_cost = 144, we expect
+        # one trader to have prod_cost = 11 and the other to have prod_cost = 144
+        actual_set_of_trader_costs = {
+            float(marianne.prod_cost), float(klaus.prod_cost)}
+        expected_set_of_trader_costs = {11.00, 144.00}
+        self.assertEqual(actual_set_of_trader_costs,
+                         expected_set_of_trader_costs,)
+
         # Klaus has not made a trade yet so let's assert that klaus it not ready at this point        
         self.assertFalse(klaus.is_ready())
 
