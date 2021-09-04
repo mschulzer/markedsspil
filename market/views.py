@@ -187,6 +187,8 @@ def monitor(request, market_id):
         # Data for balance and amount graphs
         # If the app gets slow, we should refactor and optimize
 
+        color_for_averages = 'rgb(173,255,47,0.7)'  # yellow
+
         def generate_price_list(trader):
             trades = Trade.objects.filter(trader=trader)
             return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
@@ -214,16 +216,6 @@ def monitor(request, market_id):
         }
             for i, trader in enumerate(traders)
         ]
-        rs = RoundStat.objects.filter(market=market).order_by('round')
-        avg_balances = [float(market.initial_balance)] + \
-            [float(round.avg_balance_after) for round in rs]
-
-        balanceDataSet.append({
-            'label': 'Average',
-            'backgroundColor': trader_color(1000),
-            'borderColor': trader_color(1000),
-            'data': avg_balances
-        })
 
         priceDataSet = [{
             'label': trader.name,
@@ -233,13 +225,6 @@ def monitor(request, market_id):
         }
             for i, trader in enumerate(traders)
         ]
-        avg_prices = [float(round.avg_price) for round in rs]
-        priceDataSet.append({
-            'label': 'Average',
-            'backgroundColor': trader_color(1000),
-            'borderColor': trader_color(1000),
-            'data': avg_prices
-        })
 
         amountDataSet = [{
             'label': trader.name,
@@ -250,15 +235,38 @@ def monitor(request, market_id):
             for i, trader in enumerate(traders)
         ]
 
-        avg_amounts = [float(round.avg_amount)
-                       if round.avg_amount else None for round in rs]
+        rs = RoundStat.objects.filter(market=market).order_by('round')
+        avg_balances = [float(round.avg_balance_after) for round in rs]
 
-        amountDataSet.append({
-            'label': 'Avg. amount',
-            'backgroundColor': trader_color(1000),
-            'borderColor': trader_color(1000),
-            'data': avg_amounts
-        })
+        # Adding averages to datasets
+        # We don't want to show an average balance in first round before any traders have joined
+        if market.round > 0 or market.trader_set.count() > 0:
+            avg_balances = [float(market.initial_balance)] + avg_balances
+
+            balanceDataSet.append({
+                'label': 'Average',
+                'backgroundColor': color_for_averages,
+                'borderColor': color_for_averages,
+                'data': avg_balances
+            })
+
+            avg_prices = [float(round.avg_price) for round in rs]
+            priceDataSet.append({
+                'label': 'Average',
+                'backgroundColor': color_for_averages,
+                'borderColor': color_for_averages,
+                'data': avg_prices
+            })
+
+            avg_amounts = [float(round.avg_amount)
+                           if round.avg_amount else None for round in rs]
+
+            amountDataSet.append({
+                'label': 'Avg. amount',
+                'backgroundColor': color_for_averages,
+                'borderColor': color_for_averages,
+                'data': avg_amounts
+            })
 
         context['balanceDataSet'] = json.dumps(balanceDataSet)
         context['priceDataSet'] = json.dumps(priceDataSet)

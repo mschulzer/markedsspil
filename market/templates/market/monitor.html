@@ -140,11 +140,7 @@
         <div id="collapse_balance" class="collapse" aria-labelledby="heading_balance" data-parent="#accordion">
             <div class="card-body">  
                 <div class="mb-5">
-                    {% if traders %}
-                        <canvas id="balanceCanvas"></canvas>
-                    {% else %}
-                        <div class="text-muted">No data to show yet.</div>
-                    {% endif %}
+                    <canvas id="balanceCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -160,11 +156,7 @@
         <div id="collapse_price" class="collapse" aria-labelledby="heading_price" data-parent="#accordion">
             <div class="card-body">
                 <div class="mb-5">
-                    {% if traders %}
                     <canvas id="priceCanvas"></canvas>
-                    {% else %}
-                        <div class="text-muted">No data to show yet.</div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -180,18 +172,13 @@
         <div id="collapse_amount" class="collapse" aria-labelledby="heading_amount" data-parent="#accordion">
             <div class="card-body">
                 <div class="mb-5">
-                    {% if traders %}
                     <canvas id="amountCanvas"></canvas>
-                    {% else %}
-                        <div class="text-muted">No data to show yet.</div>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 <br><br>
-
 
 <h4>Tabular Data</h4>
 <div id="accordion">
@@ -252,8 +239,7 @@
         </div>
     </div>
     {% endfor %}
-</div>
-
+</div> 
 <br><br>
 
 {% comment %} <div class="d-flex justify-content-center">
@@ -278,110 +264,127 @@
 
 <!-- import Chart.js library-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Settings for the three charts -->
 <script>
-    {% if traders %}
-
-    const balanceData = {
-        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
-        datasets: {{ balanceDataSet|safe }}
-    }; 
-    balanceData.labels.push("Final")
-
-    const priceData = {
-        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
-        datasets: {{ priceDataSet|safe }}
-    };
+ 
+    // Global settings for charts on this page
+    Chart.defaults.plugins.title.display = true;
+    Chart.defaults.plugins.title.padding = {top:5, bottom:10};
+    Chart.defaults.scales.linear.beginAtZero = true; // y axes is forced to include 0    
   
-    const amountData = {
-        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
-        datasets: {{ amountDataSet|safe }}
-    };
-    const configBalance = {
+    
+    function format_amount_labels(value, index, values){
+        // Default format of 5000 on axis is 5,000. 
+        // Here we change this to 5000.00
+        return value.toFixed(2) 
+    }
+
+    // Balance chart 
+    balance_labels = JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+    balance_labels.push("Final")
+    var balanceChart = new Chart(document.getElementById('balanceCanvas'), {
         type: 'line',
-        data: balanceData,
+        data: {
+            labels : balance_labels,
+            datasets: {{ balanceDataSet|safe }}
+        },
         options: {
             scales: {
                 y: {
-                    beginAtZero: true
-                }        
+                    title:{ 
+                        text: 'Balance (kr.)',
+                        display: 'true'
+                    },
+                    ticks: {
+                        callback: format_amount_labels
+                    },
+                    suggestedMax: parseInt("{{ market.initial_balance }}"),
+                },
+                x: {
+                    title:{ 
+                        text: 'Round',
+                        display: 'true'
+                    }
+                },            
             },  
             plugins: {
                 title: {
-                    display: true,
-                    text: "{% translate 'Balance each round' %}",
-                    padding: {
-                        top: 5,
-                        bottom: 10
-                    }
+                    text: "{% translate 'Balance' %}",
                 }
             }
         }     
-    }
-    const configPrice = {
+    });
+
+    // Price chart
+    var priceChart = new Chart(document.getElementById('priceCanvas'),{
         type: 'line',
-        data: priceData,
+        data: {
+            labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+            datasets: {{ priceDataSet|safe }}
+        },
         options: {
             scales: {
                 y: {
-                    beginAtZero: true
-                }         
+                    title:{ 
+                        text: 'Unit price (kr.)',
+                        display: 'true'
+                    },
+                    ticks: {
+                        callback: format_amount_labels
+                    },
+                    suggestedMax: 2*parseInt("{{ market.max_cost }}"),
+
+                },
+                x: {
+                    title:{
+                        text: 'Round',
+                        display: 'true'
+                    }
+                },         
             },  
             plugins: {
                 title: {
-                    display: true,
-                    text: "{% translate 'Unit price in each round' %}",
-                    padding: {
-                        top: 5,
-                        bottom: 10
-                    }
+                    text: "{% translate 'Unit price' %}",
                 }
             }
         }     
-    }
+    });
 
-    const configAmount = {
+
+    // Amount Chart
+    var amountChart = new Chart(document.getElementById('amountCanvas'), {
         type: 'line',
-        data: amountData,
-        options: {
+        data: {
+            labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+            datasets: {{ amountDataSet|safe }}
+        },
+        options:{
             scales: {
                 y: {
-                    beginAtZero: true
-                }         
+                    title:{ 
+                        text: 'Units produced',
+                        display: 'true'
+                    },
+                    suggestedMax: 100,
+
+                },
+                x: {
+                    title:{ 
+                        text: 'Round',
+                        display: 'true'
+                    }
+                },         
             },  
             plugins: {
                 title: {
-                    display: true,
-                    text: "{% translate 'Units produced in each round' %}",
-                    padding: {
-                        top: 5,
-                        bottom: 10
-                    }
+                    text: "{% translate 'Units produced' %}",
                 }
             }
-        }     
-    }
-    balanceCanvas = document.getElementById('balanceCanvas')
-    priceCanvas = document.getElementById('priceCanvas')
-    amountCanvas = document.getElementById('amountCanvas')
-
-    var myChart = new Chart(
-        balanceCanvas,
-        configBalance
-    );
-
-    var myChart = new Chart(
-        priceCanvas,
-        configPrice
-    );
-
-    var myChart = new Chart(
-        amountCanvas,
-        configAmount
-    );
-
+        }
+    });
+    
 
 </script>
-
-{% endif %}
 
 {% endblock %}

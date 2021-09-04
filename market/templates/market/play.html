@@ -213,17 +213,23 @@ function responsive_padding(){
     }
 }
 </script>
-<script>
-    const myscales = {
-            y: {
-                    beginAtZero: true
-                }
 
-        }
+<script>
+    // Global settings for charts on this page
+    Chart.defaults.plugins.title.display = true;
+    Chart.defaults.plugins.title.padding = {top:5, bottom:10};
+    Chart.defaults.scales.linear.beginAtZero = true; // y axes is forced to include 0    
+
+      
+    function format_amount_labels(value, index, values){
+        // Default format of 5000 on axis is 5,000. 
+        // Here we change this to 5000.00
+        return value.toFixed(2) 
+    }
+
 </script>
 <!-- Balance chart -->
 <script>
-    balanceCanvas = document.getElementById('balanceCanvas')
 
     var traderBalanceDataSet = {
         label: "Your balance",
@@ -238,19 +244,18 @@ function responsive_padding(){
         lineTension: 0,
         borderColor: secondColor,
     };
-
-    var balanceData = {
-        labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
-        datasets: [traderBalanceDataSet, averageBalanceDataSet]
-    };
-
-    balanceData.labels.push('Final')
     
-    var lineChart = new Chart(balanceCanvas, {
+    // Balance chart
+    balance_labels = JSON.parse("{{ round_labels_json }}") // labels on x-axis
+    balance_labels.push('Final')
+
+    var lineChart = new Chart(document.getElementById('balanceCanvas'), {
             type: 'line',
-            data: balanceData,
+            data: {
+                labels: balance_labels,
+                datasets: [traderBalanceDataSet, averageBalanceDataSet]
+            },
             options:{ 
-                scales: myscales,
                 plugins: {
                     title: {
                         display: responsive_title(),
@@ -303,7 +308,6 @@ function responsive_padding(){
             type: 'line',
             data: unitsData,
             options: {
-                scales: myscales, 
                 plugins: {
                     title: {
                         display: responsive_title(),
@@ -350,7 +354,6 @@ function responsive_padding(){
             type: 'line',
             data: priceData,
             options: {
-                scales: myscales, 
                 plugins: {
                     title: {
                         display: responsive_title(),
