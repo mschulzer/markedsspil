@@ -2,7 +2,8 @@
 Helper functions used by the views
 """
 
-from .models import Trader, Trade
+from .models import Trader, Trade, RoundStat
+import json
 
 
 def process_trade(market, trade, avg_price):
@@ -154,3 +155,133 @@ def generate_cost_list(trader):
         for i in range(trader.round_joined):
             prod_cost_list[i] = None
     return prod_cost_list
+
+
+def add_graph_context_for_monitor_page(context, market, traders):
+    """ 
+    This function produces all the data for the graphs on the monitor pages
+    """
+
+    # Labels for x-axes of graphs
+    if market.endless:
+        round_labels = list(range(1, market.round + 2))
+    else:
+        round_labels = list(range(1, market.max_rounds + 1))
+    context['round_labels_json'] = json.dumps(round_labels)
+
+    # Data for balance and amount graphs
+    # If the app gets slow, we should refactor and optimize
+
+    color_for_averages = 'rgb(173,255,47,0.7)'  # yellow
+
+    def generate_price_list(trader):
+        trades = Trade.objects.filter(trader=trader)
+        return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
+
+    def generate_amount_list(trader):
+        trades = Trade.objects.filter(trader=trader)
+        return [float(trade.unit_amount) if trade.unit_amount else None for trade in trades]
+
+    def trader_color(i):
+        """
+        Pseudo random colors to be used in multi-player plots. 
+        Perhaps we should select the first x colors from a list of colors that look nice together... 
+        """
+        i += 300  # the first few colors look okay with this choice
+        red = (100 + i*100) % 255
+        green = (50 + int((i/3)*100)) % 255
+        blue = (0 + int((i/2)*100)) % 255
+        return f"rgb({red},{green},{blue}, 0.7)"
+
+    balanceDataSet = [{
+        'label': trader.name,
+        'backgroundColor': trader_color(i),
+        'borderColor': trader_color(i),
+        'data': generate_balance_list(trader)
+    }
+        for i, trader in enumerate(traders)
+    ]
+
+    priceDataSet = [{
+        'label': trader.name,
+        'backgroundColor': trader_color(i),
+        'borderColor': trader_color(i),
+        'data': generate_price_list(trader)
+    }
+        for i, trader in enumerate(traders)
+    ]
+
+    amountDataSet = [{
+        'label': trader.name,
+        'backgroundColor': trader_color(i),
+        'borderColor': trader_color(i),
+        'data': generate_amount_list(trader)
+    }
+        for i, trader in enumerate(traders)
+    ]
+
+    # If at least one trader has joined the game:
+    if traders:
+        # We add average data to graph datasets
+
+        round_stats = RoundStat.objects.filter(market=market)
+
+        # Average balances
+        avg_balances = [float(market.initial_balance)] + [float(round_stat.avg_balance_after)
+                                                          for round_stat in round_stats]
+        # the average balance in the current round might change during the round (due to new traders joining the market),
+        # so we update this value on each page reload:
+        avg_balance_this_round_so_far = sum(
+            [trader.balance for trader in traders])/len(traders)
+        avg_balances[-1] = float(avg_balance_this_round_so_far)
+
+        balanceDataSet.append({
+            'label': 'Average',
+            'backgroundColor': color_for_averages,
+            'borderColor': color_for_averages,
+            'data': avg_balances
+        })
+
+        # Average prices
+        avg_prices = [float(round_stat.avg_price)
+                      for round_stat in round_stats]
+
+        # During the current round, traders will set a price and it makes sense to calculate a temporary avg unit price for the current round on each page reload
+        trades_this_round = filter_trades(market, market.round)
+        if trades_this_round:
+            prices_this_round_so_far = [
+                trade.unit_price for trade in trades_this_round]
+            avg_price_this_round_so_far = float(
+                sum(prices_this_round_so_far)/len(prices_this_round_so_far))
+            avg_prices += [avg_price_this_round_so_far]
+
+        priceDataSet.append({
+            'label': 'Average',
+            'backgroundColor': color_for_averages,
+            'borderColor': color_for_averages,
+            'data': avg_prices
+        })
+
+        # Average units produced
+        avg_amounts = [float(round_stat.avg_amount)
+                       for round_stat in round_stats]
+
+        # During the current round, traders will set select amounts for this tound and it makes sense to calculate a temporary avg amount for the current round on each page reload
+        if trades_this_round:
+            amounts_this_round_so_far = [
+                trade.unit_amount for trade in trades_this_round]
+            avg_amount_this_round_so_far = float(
+                sum(amounts_this_round_so_far)/len(amounts_this_round_so_far))
+            avg_amounts += [avg_amount_this_round_so_far]
+
+        amountDataSet.append({
+            'label': 'Avg. amount',
+            'backgroundColor': color_for_averages,
+            'borderColor': color_for_averages,
+            'data': avg_amounts
+        })
+
+    context['balanceDataSet'] = json.dumps(balanceDataSet)
+    context['priceDataSet'] = json.dumps(priceDataSet)
+    context['amountDataSet'] = json.dumps(amountDataSet)
+    return context
