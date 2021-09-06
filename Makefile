@@ -27,3 +27,6 @@ build:
 # Open shell within running docker development container
 shell:
 	docker-compose exec web /bin/bash
+
+dumpdatabase:
+	docker-compose run --rm web ./manage.py dumpdata > fixtures/$(shell date +%Y-%m-%d-%H.%M.%S).json
