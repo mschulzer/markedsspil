@@ -7,7 +7,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
 from .models import Market, Trader, Trade, RoundStat, UnusedCosts, UsedCosts
 from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
-from .helpers import create_forced_trade, filter_trades, process_trade, generate_balance_list, generate_cost_list
+from .helpers import create_forced_trade, filter_trades, process_trade, generate_balance_list, generate_cost_list, add_graph_context_for_monitor_page
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
@@ -181,98 +181,13 @@ def monitor(request, market_id):
                 "The game has ended after {0} rounds!".format(market.round)
             ))
 
-        # Labels for x-axes of graphs
-        if market.endless:
-            round_labels = list(range(1, market.round + 2))
-        else:
-            round_labels = list(range(1, market.max_rounds + 1))
-        context['round_labels_json'] = json.dumps(round_labels)
-
-        # Data for balance and amount graphs
-        # If the app gets slow, we should refactor and optimize
-
-        def generate_price_list(trader):
-            trades = Trade.objects.filter(trader=trader)
-            return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
-
-        def generate_amount_list(trader):
-            trades = Trade.objects.filter(trader=trader)
-            return [float(trade.unit_amount) if trade.unit_amount else None for trade in trades]
-
-        def trader_color(i):
-            """
-            Pseudo random colors to be used in multi-player plots. 
-            Perhaps we should select the first x colors from a list of colors that look nice together... 
-            """
-            i += 300  # the first few colors look okay with this choice
-            red = (100 + i*100) % 255
-            green = (50 + int((i/3)*100)) % 255
-            blue = (0 + int((i/2)*100)) % 255
-            return f"rgb({red},{green},{blue}, 0.7)"
-
-        balanceDataSet = [{
-            'label': trader.name,
-            'backgroundColor': trader_color(i),
-            'borderColor': trader_color(i),
-            'data': generate_balance_list(trader)
-        }
-            for i, trader in enumerate(traders)
-        ]
-        rs = RoundStat.objects.filter(market=market).order_by('round')
-        avg_balances = [float(market.initial_balance)] + \
-            [float(round.avg_balance_after) for round in rs]
-
-        balanceDataSet.append({
-            'label': 'Average',
-            'backgroundColor': trader_color(1000),
-            'borderColor': trader_color(1000),
-            'data': avg_balances
-        })
-
-        priceDataSet = [{
-            'label': trader.name,
-            'backgroundColor': trader_color(i),
-            'borderColor': trader_color(i),
-            'data': generate_price_list(trader)
-        }
-            for i, trader in enumerate(traders)
-        ]
-        avg_prices = [float(round.avg_price) for round in rs]
-        priceDataSet.append({
-            'label': 'Average',
-            'backgroundColor': trader_color(1000),
-            'borderColor': trader_color(1000),
-            'data': avg_prices
-        })
-
-        amountDataSet = [{
-            'label': trader.name,
-            'backgroundColor': trader_color(i),
-            'borderColor': trader_color(i),
-            'data': generate_amount_list(trader)
-        }
-            for i, trader in enumerate(traders)
-        ]
-
-        avg_amounts = [float(round.avg_amount)
-                       if round.avg_amount else None for round in rs]
-
-        amountDataSet.append({
-            'label': 'Avg. amount',
-            'backgroundColor': trader_color(1000),
-            'borderColor': trader_color(1000),
-            'data': avg_amounts
-        })
-
-        context['balanceDataSet'] = json.dumps(balanceDataSet)
-        context['priceDataSet'] = json.dumps(priceDataSet)
-        context['amountDataSet'] = json.dumps(amountDataSet)
+        # add context for graphs
+        context = add_graph_context_for_monitor_page(context, market, traders)
 
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
         # The host has pressed the 'next round' button
-
         real_trades = filter_trades(market=market, round=market.round)
 
         for trade in real_trades:
