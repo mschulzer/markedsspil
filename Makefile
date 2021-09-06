@@ -8,7 +8,6 @@ check: flake8 test
 test:
 	docker-compose run --rm web django-admin compilemessages
 	DJANGO_SETTINGS_MODULE=config.settings docker-compose run --rm web pytest 
-	#docker-compose run --rm web ./manage.py test
 
 
 # Check codestyle complies with PEP8

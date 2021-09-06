@@ -1,5 +1,5 @@
 """
-To only run tests in this file:
+To only run the tests in this file:
 $ docker-compose run web pytest market/tests/test_forms.py
 """
 # Create your tests here.
