@@ -6,7 +6,7 @@ $ docker-compose exec web python manage.py test market.tests.test_views.MyTestCl
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from ..models import Market, Trader, Trade, RoundStat
+from ..models import Market, Trader, Trade, RoundStat, UsedCosts, UnusedCosts
 from ..forms import TraderForm
 from ..helpers import filter_trades
 from decimal import Decimal
@@ -90,6 +90,7 @@ class CreateMarketViewPOSTRequestTests(TestCase):
     def test_market_is_created_when_data_is_valid(self):
         """ 
         A market is created when posting valid data & logged in user is set as market's creator 
+        Since min_cost < max_cost two new Unused costs are produced
         After successfull creation, client is redirected to monitor page
         """
         response = self.client.post(
@@ -100,6 +101,36 @@ class CreateMarketViewPOSTRequestTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse(
             'market:monitor', args=(market.market_id,)))
+
+        # min_cost is less than max_cost. Therefore two Unused costs should have been produced after creating the market
+        unused_costs = UnusedCosts.objects.all()
+        self.assertEqual(unused_costs.count(), 2)
+        # the first unused cost should have value = min_cost
+        self.assertEqual(unused_costs.first().cost, 11)
+        self.assertEqual(unused_costs.first().market, market)
+        # the second unused cost should have value = max_cost
+        self.assertEqual(unused_costs.last().cost, 144)
+
+    def test_when_min_costs_equals_max_cost_no_unused_costs_are_produced(self):
+        """ 
+        A market is created when posting valid data & logged in user is set as market's creator 
+        After successfull creation, client is redirected to monitor page. 
+        Since min_cost == max_cost not Unused costs are produced
+        """
+        self.data['max_cost'] = 11
+
+        response = self.client.post(
+            reverse('market:create'), self.data)
+        self.assertEqual(Market.objects.all().count(), 1)
+        market = Market.objects.first()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['Location'], reverse(
+            'market:monitor', args=(market.market_id,)))
+
+        # min_cost is less than max_cost. Therefore two Unused costs should have been produced after creating the market
+        unused_costs = UnusedCosts.objects.all()
+        self.assertEqual(unused_costs.count(), 0)
+
 
     def test_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(self):
         """ data is invalid """
@@ -248,7 +279,7 @@ class JoinViewTestPOSTRequests(TestCase):
         self.assertEqual(Trader.objects.all().count(), 1)
 
     def test_new_trader_created_when_form_is_valid(self):
-        market = MarketFactory()
+        market = MarketFactory(min_cost=4, max_cost=4)
         response = self.client.post(reverse('market:join'), {
                                     'name': 'Hanne', 'market_id': market.market_id})
         self.assertEqual(Trader.objects.all().count(), 1)
@@ -259,6 +290,9 @@ class JoinViewTestPOSTRequests(TestCase):
         self.assertTrue('trader_id' in self.client.session)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['Location'], reverse('market:play'))
+        # Since min_cost == max_cost ==4, the traders prod_cost should equal 4
+        self.assertEqual(new_trader.prod_cost, 4)
+
 
     def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(self):
         # a market is in round 3

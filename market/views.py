@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonRespons
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
-from .models import Market, Trader, Trade, RoundStat
+from .models import Market, Trader, Trade, RoundStat, UnusedCosts, UsedCosts
 from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
 from .helpers import create_forced_trade, filter_trades, process_trade, generate_balance_list, generate_cost_list
 from django.contrib.auth.decorators import login_required
@@ -94,8 +94,12 @@ def create(request):
             new_market = form.save(commit=False)
             new_market.created_by = request.user
             new_market.save()
-            # messages.success(
-            #    request, _("You created a new market"))
+            # if all traders are not to have equal production cost
+            if new_market.min_cost < new_market.max_cost:
+                # add min_cost og max_cost to the list of unused costs
+                UnusedCosts(market=new_market, cost=new_market.min_cost).save()
+                UnusedCosts(market=new_market, cost=new_market.max_cost).save()
+
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
 
     elif request.method == 'GET':
