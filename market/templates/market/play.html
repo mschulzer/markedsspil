@@ -373,10 +373,6 @@ function responsive_padding(){
     
     var amount_slider = document.getElementById("id_unit_amount");
     var price_slider = document.getElementById("id_unit_price");
-    {% if not wait %}
-        amount_slider.value = "{{ trades.last.unit_amount }}"
-        price_slider.value = "{{ trades.last.unit_price }}"
-    {% endif %}
     var balance = parseFloat("{{ trader.balance }}".replace(',', '.'))
     var unit_prod_cost = parseFloat("{{ trader.prod_cost }}".replace(',', '.'))
     var total_cost = document.getElementById('total_cost');
