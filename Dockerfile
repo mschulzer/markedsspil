@@ -14,7 +14,7 @@ COPY Pipfile Pipfile.lock /code/
 
 # Install pip, pipenv, and requirements
 RUN pip install --upgrade pip
-RUN pip install pipenv && pipenv install --system --deploy
+RUN pip install pipenv && pipenv install --system --dev --deploy
 
 # Install gettext - necessary for i18n localization
 RUN apt-get update && apt-get install -y gettext
