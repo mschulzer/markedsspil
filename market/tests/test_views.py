@@ -73,6 +73,7 @@ def create_market_data():
             'endless': False
         }
 
+
 def test_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
     """ 
     A market is created when posting valid data & logged in user is set as market's creator 
@@ -122,7 +123,16 @@ def test_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(clien
     assert response.status_code == 200
     assertContains(response, "Ensure this value is greater than or equal to 0.01.")
 
+def test_if_user_chooses_negative_max_rounds_he_gets_a_good_error_message(client, logged_in_user, create_market_data):
+    """ 
+    Max_rounds must be an integer >= 1. 
+    """
+    create_market_data['max_rounds'] = -4
+    response = client.post(reverse('market:create'), create_market_data)
+    assert (response.status_code == 200)
+    assertContains(response, "There must be at least 1 round")
 
+    
 ## JoinViewTestGETRequests
 
 def test_view_url_exists_at_proper_name_uses_proper_template_and_has_correct_content(client):
@@ -143,14 +153,14 @@ def test_notify_users_who_have_already_joined_a_market(client, db):
     market = MarketFactory()
     session = client.session
     session['trader_id'] = 3
-    session['market_id'] = 'ABCDEF'
+    session['market_id'] = market.market_id
     session['username'] = 'Alberte'
     session.save()
 
     response = client.get(reverse('market:join'))
 
     # user should somehow be informed, that he has already joined the market with this id
-    assertContains(response, "ABCDEF")
+    assertContains(response, market.market_id)
     assertContains(response, "Alberte")
 
 
@@ -247,6 +257,39 @@ def test_view_url_exists_at_proper_name_and_uses_proper_template(client, db, log
     assert response.status_code == 200
     assertTemplateUsed(response, 'market/monitor.html'),
 
+def test_user_not_logged_has_no_access(client, db, logged_in_user):
+    """ Other users (e.g. traders) can't in general access the monitor view"""
+    client.logout()
+    other_user = UserFactory(username="olebole")
+    client.login(username=other_user.username,
+                 password='defaultpassword')
+    response = client.get(
+        reverse('market:monitor', args=(market.market_id,)))
+    # redirect as no access
+    assert (response.status_code == 302)
+
+def test_user_not_logged_has_no_access(client, db, logged_in_user):
+    """ client who did not create the market only has access to monitor view when the game is over"""
+    market = MarketFactory(created_by=logged_in_user)
+    client.logout()
+    other_user = UserFactory(username="olebole")
+    client.login(username=other_user.username,
+                      password='defaultpassword')
+    response = client.get(
+        reverse('market:monitor', args=(market.market_id,)))
+    # redirect as no access
+    assert (response.status_code == 302)
+
+    # we set game state to game over
+    market.round = market.max_rounds
+    assert (market.game_over())
+    market.save()
+
+    # visitor should now have access to the monitor page
+    response = client.get(
+        reverse('market:monitor', args=(market.market_id,)))
+    assert (response.status_code == 200)
+
 def test_market_is_in_context(client, db, logged_in_user):
     market = MarketFactory(created_by=logged_in_user)
     response = client.get(
@@ -342,6 +385,9 @@ def test_monitor_view_created_forced_moves_for_inactive_player(client, logged_in
     assert (trade.was_forced)
     assert (trade.round == 7)
     assert (trade.profit is None)
+    assert (trade.balance_before == 123456)
+    assert (trade.balance_after == 123456)
+
 
     # The balance of trader2 should not be affected by the forced trade
     trader2.refresh_from_db()
@@ -504,17 +550,10 @@ def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(cl
     html = response.content.decode('utf8')
     message = list(response.context.get('messages'))[0]
     assert (message.tags == "success")
-    assert ("You made a decision!" in message.message)
+    assert ("You made a trade!" in message.message)
 
     # This is round 0, so no data from last round should be shown
-    assertNotContains(response, 'last round')
-    assertNotContains(response, 'Last round')
-    assert not (response.context.get('show_last_round_data'))
-
-    # --- no trade history should not be shown either
-    assertNotContains(response, 'Trade History')
-    assertNotContains(response, 'Previous History')
-    assertNotContains(response, 'Record')
+    assertNotContains(response, 'Text with info about last round choices and results')
 
     # Template should not contain a submit button
     assertNotContains(response, 'submit')
@@ -554,8 +593,8 @@ def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_ro
     # template should contain a submit button
     assertContains(response, "submit")
 
-    # player did make a trade in the last round and hence show_last_round_data should be true
-    assert (response.context.get('show_last_round_data'))
+    # template should not contain a link to the monitor view, since game is not over
+    assertNotContains(response, f"/{market.market_id}/monitor")
 
 def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(client, db):
     """
@@ -588,11 +627,15 @@ def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_
     assertNotContains(response, "wait")
     assertNotContains(response, "Wait")
 
-    # player did not make a trade in the last round and hence show_last_round_data should be false
-    assert not (response.context.get('show_last_round_data'))
+    # The player should know that he didn't trade last round
+    assertContains(response, "You didn't make a trade last round.")
 
     # template should contain a submit button
     assertContains(response, "submit")
+
+    # template should not contain a link to the monitor view, since game is not over
+    assertNotContains(response, f"/{market.market_id}/monitor")
+
 
 def test_form_attributes_are_set_correctly(client, db):
     """
@@ -622,6 +665,31 @@ def test_form_attributes_are_set_correctly(client, db):
     # we expect the max input value of unit_amount to be floor(trader.balance/trader.prod_cost) = floor(101/2) = 50.00
     assert ('max="50"' in str(form))
     assert ('max="53"' not in str(form))
+
+def test_game_over_when_rounds_equal_max_round(client, db):
+    """
+    When game is over, the user should be notified about this
+    """
+    market = MarketFactory(round=4, max_rounds=4, endless=False)
+
+    # a user has joined properly
+    trader = TraderFactory(market=market, balance=101, prod_cost=2)
+    session = client.session
+    session['trader_id'] = trader.pk
+    session['username'] = 'Hans'
+    session.save()
+
+    # user goes to play url
+    response = client.get(reverse('market:play'))
+
+    # user is informed about the game state
+    assertContains(response, "The game has ended")
+
+    # the player interface does not contain a submit button
+    assertNotContains(response, 'submit')
+
+    # the player interface contains a link to the monitor view
+    #assertContains(response, f"/{market.market_id}/monitor")
 
 
 # PlayViewPOSTRequest
@@ -655,11 +723,39 @@ def test_if_all_data_is_good_then_save_trade_and_redirect_to_play(client, db):
     assert not (trade.was_forced)
     assert (trade.profit is None)
     assert (trade.balance_after is None)
+    assert (trade.balance_before == TraderFactory.balance)
 
     # after a successful post request, we should redirect to play
     assert (response.status_code == 302)
     expected_redirect_url = reverse('market:play')
     assert (response['Location'] == expected_redirect_url)
+
+def test_error_message_to_user_when_invalid_form(client, db):
+    trader = TraderFactory()
+
+    session = client.session
+    session['trader_id'] = trader.pk
+    session.save()
+
+    # the client sends in a trade form with invalid data (unit price is blank)
+    response = client.post(
+        reverse('market:play'), {'unit_price': '', 'unit_amount': '45'})
+
+    # The trade is not saved to the database
+    assert (Trade.objects.all().count() == 0)
+
+    # The response code should be 200
+    assert (response.status_code == 200)
+
+    form = response.context['form']
+
+    # Validation error msgs shown for unit price
+    assert(
+        'name="unit_price" min="0" class="slider numberinput form-control is-invalid' in str(form))
+
+    # Validation error msgs not shown for unit amount
+    assert not(
+        'name="unit_amount" min="0" class="slider numberinput form-control is-invalid' in str(form))
 
 
 # Test CurrentRoundView
@@ -668,6 +764,7 @@ def test_response_status_code_404_when_market_does_not_exists(client, db):
     url = reverse('market:current_round', args=('BARMARKETID',))
     response = client.get(url)
     assert (response.status_code == 404)
+
 
 def test_response_status_code_200_when_market_exists(client, db):
     market = MarketFactory()
@@ -753,7 +850,9 @@ def test_user_has_no_permission_to_edit_other_market(client, logged_in_user):
 def test_valid_post_data_updates_market_and_redirects(client, logged_in_user):
     market = MarketFactory(created_by=logged_in_user, alpha=105.55)
     data = {'product_name_singular': 'surdejsbolle',
-            'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 10, 'theta': 32}
+            'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 10, 'theta': 32,
+            'endless' : True, 'initial_balance' : 53, 'max_rounds': 12,
+            'min_cost': 35, 'max_cost': 3565}
 
     url = reverse('market:market_edit', args=(market.market_id,))
     response = client.post(url, data=data)
@@ -774,8 +873,10 @@ def test_invalid_post_data_does_not_update_market(client, logged_in_user):
     client.login(username='somename', password='testpass123')
 
     data = {'product_name_singular': 'surdejsbolle',
-            'product_name_plural': 'surdejsboller', 'alpha': -3, 'beta': 10, 'theta': 32}
-
+            'product_name_plural': 'surdejsboller', 'alpha': -14, 'beta': 10, 'theta': 32,
+            'endless' : True, 'initial_balance' : 53, 'max_rounds': 12,
+            'min_cost': 35, 'max_cost': 3565}
+    
     url = reverse('market:market_edit', args=(market.market_id,))
     response = client.post(url, data=data)
 

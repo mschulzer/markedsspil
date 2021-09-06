@@ -8,6 +8,8 @@ def field_name_to_label(value):
         value=_("Profit")
     elif value == "balance_after":
         value=_("Balance")
+    elif value == "balance_before":
+        value = _("Balance")
     elif value == "unit_price":
         value=_("Unit price")
     elif value == "unit_amount":

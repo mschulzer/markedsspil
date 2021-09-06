@@ -6,23 +6,65 @@
 
 {% block content %}
 
-<h2 class="mb-4">
-    {% translate 'Change market parameters' %}
-</h2>
+<h3 class="mb-4">
+    Market details <span class="text-black-50">[{{ market.market_id }}]</span> 
+</h3>
 
-<p>
-    {% translate 'You can edit the market parameters below' %}<b>{{ market.market_id }}</b><br>
-</p>
-
+{% if not market.game_over %}
+	<p class="mt-0">
+		{% translate 'You are allowed to edit most of the settings. Changes will take effect from this round forward.'%}<br>
+	</p>
+{% endif %}
+<br>
 
 <form class="mb-5" method="POST" action="{% url 'market:market_edit' market.market_id %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <div class="d-flex justify-content-between">
-        <a href="{% url 'market:monitor' market.market_id %}" class="btn btn-primary">Cancel</a>
-        <button class="btn btn-warning" type="submit">{% translate 'Update' %}</button>
+    <div class="d-flex justify-content-between mt-5">
+        <a href="{% url 'market:monitor' market.market_id %}" class="btn btn-primary">Go Back</a>
+		{% if not market.game_over %}
+		<button class="btn btn-warning" type="submit">{% translate 'Update' %}</button>
+		{% endif %}
     </div>
 </form>
+
+<!-- The script below is also used in market_create template. Perhaps we should import to re-use code -->
+<script>
+	function adjust_max_round_field(){
+		
+		max_rounds_field = document.getElementById('div_id_max_rounds')
+		if (document.getElementById('id_endless').checked){
+			max_rounds_field.style.visibility = "hidden";
+			/* max_rounds has to be a non-blank positive integer, even if game is endless.
+			If user has typed an invalid max_rounds value, we have to change this. 
+			The value chosen will be disregarded when market.endless = true */	
+			max_rounds = document.getElementById('id_max_rounds')
+			max_rounds.value = parseInt(max_rounds.value)
+			if (max_rounds.value < 1){			
+				max_rounds.value = 15; 
+			}
+		}
+		else{
+			max_rounds_field.style.visibility = "";
+		}
+	}		
+   
+	document.getElementById('div_id_endless').addEventListener('change', function() {
+		adjust_max_round_field()
+	}); 			
+
+	adjust_max_round_field()
+	
+	{% if market.game_over %}
+		document.getElementById("id_product_name_singular").setAttribute('readonly', true)
+		document.getElementById("id_product_name_plural").setAttribute('readonly', true)
+		document.getElementById("id_max_rounds").setAttribute('readonly', true)
+		document.getElementById("id_alpha").setAttribute('readonly', true)
+		document.getElementById("id_beta").setAttribute('readonly', true)
+		document.getElementById("id_theta").setAttribute('readonly', true)
+		document.getElementById("id_endless").setAttribute('disabled', 'disabled')
+	{% endif %} 
+</script>
 
 
 {% endblock content %}

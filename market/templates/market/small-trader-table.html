@@ -1,0 +1,28 @@
+{% load i18n %}
+<table class="table table-sm" >
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">{% translate 'Trader name' %}</th>
+            <th scope="col">{% translate 'Balance' %}</th>
+        </tr>
+    </thead>
+
+    <div class="mb-5">
+        {% for trader in traders %}
+            {% if request.session.username == trader.name %}
+            <tr style="background-color:rgb(75,192,192,0.1)">
+                <td scope="row">{{ forloop.counter }}</td>
+                <td>You</td>
+                <td>{{ trader.balance }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td scope="row">{{ forloop.counter }}</td>
+                <td>{{ trader.name }}</td>
+                <td>{{ trader.balance }}</td>
+            </tr> 
+            {% endif %}
+        {% endfor %}
+    </div>
+</table>

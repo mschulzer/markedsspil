@@ -4,6 +4,7 @@ from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
 from ..models import Market, Trader, Trade, RoundStat
 from decimal import Decimal
 
+
 import pytest
 
 @pytest.fixture
@@ -48,6 +49,8 @@ def test_instances_of_default_factory_market(market):
     assert isinstance(market.max_cost, Decimal)
     assert isinstance(market.min_cost, Decimal)
     assert isinstance(market.round, int)
+    assert isinstance(market.max_rounds, int)
+    assert isinstance(market.endless, bool)
 
 def test_factory_with_provided_values(db):
     market = MarketFactory(
@@ -60,7 +63,8 @@ def test_factory_with_provided_values(db):
         max_cost=Decimal('6.30'),
         initial_balance = Decimal('4000.00'),
         created_by = UserFactory(username='egon'),
-        round=74
+        round=74,
+        endless = True,
     )
     assert market.alpha == Decimal('102.2034')
     assert market.beta == Decimal('304.5003')
@@ -72,6 +76,7 @@ def test_factory_with_provided_values(db):
     assert market.min_cost == Decimal('4.00')
     assert market.created_by.username == 'egon'
     assert market.round == 74
+    assert market.endless
 
     # object name
     expected_object_name = f"{market.market_id}[74]:102.2034,304.5003,14.1234"
@@ -86,6 +91,26 @@ def test_saving_existing_market_does_not_create_new_market_or_new_market_id(db):
     assert expected_num_markets == actual_num_markets
     assert expected_market_id == market.market_id
 
+def test_game_over_method_1(db):
+    market = MarketFactory(round=5, max_rounds=5, endless=False)
+    assert (market.game_over())
+
+def test_game_over_method_1(db):
+    market = MarketFactory(round=29, max_rounds=5, endless=False)
+    assert (market.game_over())
+
+def test_game_over_method_2(db):
+    market = MarketFactory(round=5, max_rounds=5, endless=True)
+    assert not (market.game_over())
+
+def test_game_over_method_3(db):
+    market = MarketFactory(round=5, max_rounds=6, endless=False)
+    assert not (market.game_over())
+
+def test_game_over_method_4(db):
+    market = MarketFactory(round=5, max_rounds=6, endless=True)
+    assert not (market.game_over())
+    
 
 ### Test TraderFactory ###
 def test_default_trader_factory_with_default_values(db):
@@ -103,13 +128,15 @@ def test_trader_factory_ith_provided_values(db):
         market=market,
         prod_cost=Decimal('4.30'), 
         balance=Decimal('8.00'), 
-        name='John'
+        name='John',
+        round_joined=20,
     )
     assert trader.name == 'John'
     assert trader.balance == Decimal('8.00')
     assert trader.prod_cost == Decimal('4.30')
     assert trader.market.round == 17
     assert str(trader) == f"John [{market.market_id}] - $8.00"
+    assert trader.round_joined == 20
 
 def test_trader_is_ready(db):
     """ A trader is ready if (and only if) he has made a trade in current round """

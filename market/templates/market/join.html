@@ -6,32 +6,14 @@
 
 {% block content %}
 
+<div class="container">
+	<h4 class="mb-3 mb-lg-4 mt-4">{% translate 'Join a market' %}</h4>
 
-<h4>{% translate 'Choose a username and join a market' %}:</h4>
-
-<form action="" method="post">{% csrf_token %}
-	{{ form|crispy }}
-	<input type="submit" value="{% translate 'Join' %}" class="btn btn-primary">
-</form>
-
-<br>
-<br>
-
-{% if request.session.trader_id %}
-<h5><i>{% translate 'Please note' %}</i></h5>
-{% blocktranslate with market_id=request.session.market_id username=request.session.username %}
-<p>
-You've already joined the market
-<b>{{ market_id }}</b>
-with the username
-<b>{{ username }}</b>.
-If you use the above form, you will loose access to your data from this market...
-</p>
-<p>Keep playing on<b>{{ market_id }}</b>?
-{% endblocktranslate %}
-<a href="{% url 'market:play' %}">{% translate 'Keep playing' %}</a>
-</p>
-{% endif %}
-
-
+	<form class="mb-4" action="" method="post">{% csrf_token %}
+		{{ form|crispy }}
+		<div class="d-flex justify-content-center">
+			<input type="submit" value="{% translate "Join" %}" class="btn btn-primary my-2">
+		</div>
+	</form>
+</div>
 {% endblock %}

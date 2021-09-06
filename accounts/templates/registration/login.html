@@ -5,14 +5,18 @@
 {% block title %}Log In{% endblock title %}
 
 {% block content %}
-<h2>{% translate 'LogIn_Title' %}</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button class="btn btn-primary" type="submit">{% translate 'LogIn_Title' %}</button>
-</form>
-<br>
-<p>{% translate 'ForgotPassword' %} <a href="{% url 'password_reset' %}">{% translate 'ResetPassword' %}</a></p>
-<p>{% translate 'HaveNoAccount' %} <a href="{% url 'signup' %}">{% translate 'SignUp' %}</a></p>
+<div class="container">
+    <h3>{% translate 'LogIn_Title' %}</h3>
+ 	
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="mt-3 mb-4">
+            <button class="btn btn-primary" type="submit">{% translate 'LogIn_Title' %}</button>
+        </div>
+    </form>
 
+    <p>{% translate 'ForgotPassword' %} <a href="{% url 'password_reset' %}">{% translate 'ResetPassword' %}</a></p>
+    <p>{% translate 'HaveNoAccount' %} <a href="{% url 'signup' %}">{% translate 'SignUp' %}</a></p>
+</div>
 {% endblock content %}
