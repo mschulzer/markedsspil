@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from decimal import Decimal
 from random import randint as random_integer
+from random import choice
 
 
 def new_unique_market_id():
@@ -59,7 +60,6 @@ class Market(models.Model):
     # endless indicates whether or not the game should go on indefinitely.
     endless = models.BooleanField()
 
-
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(
         get_user_model(), null=True, on_delete=models.SET_NULL)
@@ -111,14 +111,63 @@ class Trader(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Set random productions cost before creating a new trader (not when updating an existing trader)
-        If prod cost is provided, use the provided value. 
+        Set productions cost before creating a new trader. 
         """
+
+        # If we are saving a new trader object (not updating an existing trader)
         if not self.id:
+            # If a specific production cost is NOT provided
+            # (we are, for example, not creating a new trader with specific prod_cost in a test )
             if not self.prod_cost:
-                self.prod_cost = Decimal(random_integer(
-                    int(self.market.min_cost), int(self.market.max_cost)))
+                if self.market.min_cost == self.market.max_cost:
+                    # set traders production cost equal to this value
+                    self.prod_cost = self.market.min_cost
+
+                # If min_cost < max_cost
+                else:
+                    # use production cost algorithm to set production cost of trader
+                    self.prod_cost_algorithm()
+
         super(Trader, self).save(*args, **kwargs)
+
+    def prod_cost_algorithm(self):
+        """ 
+        Used when market.min_cost < market.max_cost to produce 
+        semi-random production costs that cover the whole spectrum of 
+        possible production costs 
+        """
+
+        # Get all unused production costs
+        unused_costs = UnusedCosts.objects.filter(
+            market=self.market)
+
+        # If there are any unused costs,
+        if len(unused_costs) > 0:
+            # pick one at random
+            rnd_unused_cost = choice(unused_costs)
+            self.prod_cost = rnd_unused_cost.cost
+            # then move it to the used costs
+            UsedCosts(cost=self.prod_cost,
+                      market=self.market).save()
+            rnd_unused_cost.delete()
+
+        # If there are no unused costs,
+        else:
+            # use the costs "between" each pair of used costs as new unused costs
+            all_used_costs = UsedCosts.objects.filter(
+                market=self.market).order_by('cost')
+            for i in range(len(all_used_costs)-1):
+                new_unused_cost = (all_used_costs[i].cost/2
+                                   + all_used_costs[i+1].cost/2)
+                UnusedCosts(cost=new_unused_cost,
+                            market=self.market).save()
+            # then pick one of the new unused costs for this trader
+            rnd_unused_cost = choice(
+                UnusedCosts.objects.filter(market=self.market))
+            self.prod_cost = rnd_unused_cost.cost
+            UsedCosts(cost=self.prod_cost,
+                      market=self.market).save()
+            rnd_unused_cost.delete()
 
     def __str__(self):
         return f"{self.name} [{self.market.market_id}] - ${self.balance}"
@@ -217,3 +266,35 @@ class RoundStat(models.Model):
 
     def __str__(self):
         return f"{self.market.market_id}[{self.round}]"
+
+
+class UnusedCosts(models.Model):
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+    cost = models.DecimalField(max_digits=14, decimal_places=2,
+                               validators=[MinValueValidator(Decimal('0.01'))])
+
+    class Meta:
+        # There cannot be unused costs of the same value in the same market
+        constraints = [
+            models.UniqueConstraint(
+                fields=['market', 'cost'], name='market_and_unused_cost_unique_together'),
+        ]
+
+    def __str__(self):
+        return f"{self.cost}"
+
+
+class UsedCosts(models.Model):
+    market = models.ForeignKey(Market, on_delete=models.CASCADE)
+    cost = models.DecimalField(max_digits=14, decimal_places=2,
+                               validators=[MinValueValidator(Decimal('0.01'))])
+
+    class Meta:
+        # There cannot be used costs of the same value in the same market
+        constraints = [
+            models.UniqueConstraint(
+                fields=['market', 'cost'], name='market_and_used_cost_unique_together'),
+        ]
+
+    def __str__(self):
+        return f"{self.cost}"

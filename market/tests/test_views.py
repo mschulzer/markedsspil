@@ -11,7 +11,7 @@ $ docker-compose run web pytest -k <substring of test function names to run>
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from ..models import Market, Trader, Trade, RoundStat
+from ..models import Market, Trader, Trade, RoundStat, UsedCosts, UnusedCosts
 from ..forms import TraderForm
 from ..helpers import filter_trades
 from decimal import Decimal
@@ -73,7 +73,6 @@ def create_market_data():
             'endless': False
         }
 
-
 def test_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
     """ 
     A market is created when posting valid data & logged in user is set as market's creator 
@@ -86,6 +85,49 @@ def test_market_is_created_when_data_is_valid(client, logged_in_user, create_mar
     assert response.status_code == 302
     assert response['Location'] == reverse('market:monitor', args=(market.market_id,))
 
+
+def test_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
+    """ 
+    A market is created when posting valid data & logged in user is set as market's creator 
+    Since min_cost < max_cost two new Unused costs are produced
+    After successfull creation, client is redirected to monitor page
+    """
+    response = client.post(reverse('market:create'), create_market_data)
+    assert Market.objects.all().count() == 1
+    market = Market.objects.first()
+    assert (market.created_by == logged_in_user)
+    assert (response.status_code == 302)
+    assert(response['Location'] == reverse(
+        'market:monitor', args=(market.market_id,)))
+
+    # min_cost is less than max_cost. Therefore two Unused costs should have been produced after creating the market
+    unused_costs = UnusedCosts.objects.all()
+    assert (unused_costs.count() == 2)
+    # the first unused cost should have value = min_cost
+    assert (unused_costs.first().cost == 11)
+    assert (unused_costs.first().market == market)
+    # the second unused cost should have value = max_cost
+    assert (unused_costs.last().cost == 144)
+
+def test_when_min_costs_equals_max_cost_no_unused_costs_are_produced(client, logged_in_user, create_market_data):
+    """ 
+    A market is created when posting valid data & logged in user is set as market's creator 
+    After successfull creation, client is redirected to monitor page. 
+    Since min_cost == max_cost not Unused costs are produced
+    """
+    create_market_data['max_cost'] = 11
+
+    response = client.post(reverse('market:create'), create_market_data)
+    assert (Market.objects.all().count() == 1)
+    market = Market.objects.first()
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse('market:monitor', args=(market.market_id,)))
+
+    # min_cost is less than max_cost. Therefore two Unused costs should have been produced after creating the market
+    unused_costs = UnusedCosts.objects.all()
+    assert (unused_costs.count() == 0)
+
+    
 def test_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
     """ data is invalid """
     create_market_data['min_cost'] = 200
@@ -206,7 +248,7 @@ def test_proper_behaviour_and_nice_feedback_message_when_username_not_available(
     assert (Trader.objects.all().count() == 1)
 
 def test_new_trader_created_when_form_is_valid(db, client):
-    market = MarketFactory()
+    market = MarketFactory(min_cost=4, max_cost=4)
     response = client.post(reverse('market:join'), {
                                 'name': 'Hanne', 'market_id': market.market_id})
     assert (Trader.objects.all().count() == 1)
@@ -216,6 +258,8 @@ def test_new_trader_created_when_form_is_valid(db, client):
     assert ('trader_id' in client.session)
     assert (response.status_code == 302)
     assert (response['Location'] == reverse('market:play'))
+    # Since min_cost == max_cost ==4, the traders prod_cost should equal 4
+    assert (new_trader.prod_cost == 4)
 
 def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(db, client):
     # a market is in round 3
@@ -228,6 +272,9 @@ def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_
     # the trader hanne was created
     hanne = Trader.objects.get(name='Hanne')
 
+    # it is registered, that Hanne joined in round 3
+    assert (hanne.round_joined == 3)
+    
     # when hanne joined, 3 forced trades was made for her in previous rounds
     hannes_trades = hanne.trade_set.all()
     assert (hannes_trades.count() == 3)
@@ -239,6 +286,7 @@ def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_
         assert (hannes_trades[i].unit_amount is None)
         assert (hannes_trades[i].round == i)
         assert (hannes_trades[i].balance_after is None)
+        assert (hannes_trades[i].balance_before is None)
 
     # The current balance of the trader be equal the initial balance
     assert (hanne.balance == market.initial_balance)
@@ -348,6 +396,8 @@ def test_one_trader_has_made_one_trade_this_round(client, logged_in_user):
     trade.refresh_from_db()
     assert (trade.round == 7)
     assert isinstance(trade.balance_after, Decimal)
+    assert isinstance(trade.balance_before, Decimal)
+    assert (trade.balance_before == TraderFactory.balance)
     assert isinstance(trade.profit, Decimal)
     assert isinstance(trade.units_sold, int)
     assert isinstance(trade.demand, int)

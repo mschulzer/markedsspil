@@ -1,16 +1,106 @@
 from django.test import TestCase
-from ..models import Market, Trader, Trade, RoundStat
+from ..models import Market, Trader, Trade, RoundStat, UnusedCosts, UsedCosts
 from django.contrib.auth import get_user_model
-from decimal import Decimal 
+from decimal import Decimal
 from .factories import MarketFactory, TradeFactory, UserFactory, TraderFactory
 
-### MarketModel ###
-# All relevant properties are currently being tested in the
-# test_factories test suite
+
+### Test MarketModel ###
+# All relevant properties are currently being tested in the test_factories test suite
     
-### TraderModel ###
-# All relevant properties are currently being tested in the
-# test_factories test suite
+### Test TraderModel ###
+# Most relevant properties are currently being tested in the test_factories test suite
+
+def test_prod_cost_algorithm(db):
+    # We start out with a market and unused costs.
+    market = MarketFactory()
+    UnusedCosts.objects.create(
+        market=market, cost=Decimal('20.00'))
+    UnusedCosts.objects.create(
+        market=market, cost=Decimal('30.00'))
+
+    # There really are two unused costs at this point
+    assert (UnusedCosts.objects.all().count() == 2)
+
+    # We create a trader and call the production cost algorithm
+    first_trader = TraderFactory(market=market)
+    first_trader.prod_cost_algorithm()
+
+    # There is now only one unused cost left
+    assert (UnusedCosts.objects.all().count() == 1)
+
+    # There is 1 used cost
+    assert (UsedCosts.objects.all().count() == 1)
+
+    # We create a second trader
+    second_trader = TraderFactory(market=market)
+    second_trader.prod_cost_algorithm()
+
+    # There are now no unused costs left
+    assert (UnusedCosts.objects.all().count() == 0)
+
+    # There are 2 used costs
+    assert (UsedCosts.objects.all().count() == 2)
+
+    # We currently expect one trader with cost 20.00 an another with cost 30.00
+    actual_set_of_trader_costs = {
+        float(first_trader.prod_cost), float(second_trader.prod_cost)}
+    expected_set_of_trader_costs = {20.00, 30.00}
+    assert (actual_set_of_trader_costs == expected_set_of_trader_costs)
+
+    # We create a third trader
+    third_trader = TraderFactory(market=market)
+    third_trader.prod_cost_algorithm()
+
+    # The creating of the third trader should produce a new unused cost (30.00 + 20.00)/2. This cost will be assigned to the third trader
+    # There is now no unused costs
+    assert (UnusedCosts.objects.all().count() == 0)
+
+    # There are 3 used costs
+    assert (UsedCosts.objects.all().count() == 3)
+
+    # We currently expect one trader with cost 20.00 an another with cost 30.00 and a third with 25.00
+    actual_set_of_trader_costs = {
+        float(first_trader.prod_cost), float(second_trader.prod_cost), float(third_trader.prod_cost)}
+    expected_set_of_trader_costs = {20.00, 30.00, 25.00}
+    assert (actual_set_of_trader_costs == expected_set_of_trader_costs)
+
+    # We create a fourth trader
+    fourth_trader = TraderFactory(market=market)
+    fourth_trader.prod_cost_algorithm()
+
+    # The creating of the fourth trader should produce a two new unused cost (20.00 + 25.00)/2 and (25.00+30.00)/2.
+    # One of these new costs should be be assigned to the fourthtrader
+    # There is now one unused costs
+    assert (UnusedCosts.objects.all().count() == 1)
+
+    # There are 4 used costs
+    assert (UsedCosts.objects.all().count() == 4)
+
+    # We produce a fifth trader
+    fifth_trader = TraderFactory(market=market)
+    fifth_trader.prod_cost_algorithm()
+
+    # There should be 0 unused costs at this point
+    assert (UnusedCosts.objects.all().count() == 0)
+
+    # There should be  5 used costs
+    assert (UsedCosts.objects.all().count() == 5)
+
+    # We currently expect one trader with cost 20.00 an another with cost 30.00 and a third with 25.00
+    actual_set_of_trader_costs = {
+        float(first_trader.prod_cost),
+        float(second_trader.prod_cost),
+        float(third_trader.prod_cost),
+        float(fourth_trader.prod_cost),
+        float(fifth_trader.prod_cost)
+    }
+    # The set of assigned costs match our expectations
+    expected_set_of_trader_costs = {20.00, 22.50, 25.00, 27.50, 30.00}
+    assert (actual_set_of_trader_costs ==
+                     expected_set_of_trader_costs)
+
+
 
 ### TradeModel ###
 # Most properties are being tested in the test_factories test suite
@@ -44,8 +134,7 @@ def test_constraint_trade_and_round_unique_together_okay_to_update_trade(db):
     trade.refresh_from_db()
     assert trade.balance_after == 400
 
-
-### RoundStatModel ###
+### Test RoundStatModel ###
 
 def test_object_creation_and_name(db):
     market = MarketFactory()
@@ -77,12 +166,8 @@ def test_market_and_round_uinque_together(db):
     try: 
         RoundStat.objects.create(
             market=market1, round=3, avg_price=100)
-        mgs="No error happend"
+        mgs = "No error happend"
     except:
         mgs = "An error happened"
     finally:
         assert mgs == "An error happened"
-
-
-
-

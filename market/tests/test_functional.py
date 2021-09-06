@@ -78,9 +78,16 @@ def test_round_0_one_forced_move(logged_in_user, client):
 
     klaus = Trader.objects.get(name='Klaus')
 
+    # Since market.min_cost = 11 < market.max_cost = 144, we expect
+    # one trader to have prod_cost = 11 and the other to have prod_cost = 144
+    actual_set_of_trader_costs = {float(marianne.prod_cost), float(klaus.prod_cost)}
+    expected_set_of_trader_costs = {11.00, 144.00}
+    assert (actual_set_of_trader_costs == expected_set_of_trader_costs)
+
+
+    
     # Klaus has not made a trade yet so let's assert that klaus it not ready at this point        
     assert not klaus.is_ready()
-
 
     # Even though Klaus is not ready, the teacher chooses to proceed to the next round:
     url = reverse('market:monitor', args=(market.market_id,))
