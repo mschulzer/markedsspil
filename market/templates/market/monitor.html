@@ -127,13 +127,12 @@
     </div>
 </div>
 
-<h4>Graphs</h4>
-<div id="accordion">
+<div id="accordion" class="mt-5">
     <div class="card">
         <div class="card-header" id="heading_balance">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_balance" aria-expanded="true" aria-controls="collapse_balance">
-                    Balance
+                    Balance history
                 </button>
             </h5>
         </div>
@@ -149,13 +148,13 @@
         <div class="card-header" id="heading_price">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_price" aria-expanded="true" aria-controls="collapse_price">
-                    Price 
+                    Price history
                 </button>
             </h5>
         </div>
         <div id="collapse_price" class="collapse show" aria-labelledby="heading_price">
             <div class="card-body">
-                <div class="mb-5">
+                <div>
                     <canvas id="priceCanvas"></canvas>
                 </div>
             </div>
@@ -165,7 +164,7 @@
         <div class="card-header" id="heading_amount">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_amount" aria-expanded="true" aria-controls="collapse_amount">
-                    Production 
+                    Production history 
                 </button>
             </h5>
         </div>
@@ -286,11 +285,11 @@
         
     function reponsive_display_y_axis_title(){ 
         // Only show y-axis legend on big enough screens 
-        if (window.innerWidth < 800) { 
+        if (window.innerWidth < 600) { 
             return false 
             } 
-            else{
-                 return true
+        else{
+            return true
         }
     }
 
@@ -329,12 +328,13 @@
                 x: {
                     title:{ 
                         text: 'Round',
-                        display: 'true'
+                        display: true
                     }
                 },            
             },  
             plugins: {
                 title: {
+                    display: false,
                     text: "{% translate 'Balance' %}",
                 }
             }
@@ -364,12 +364,13 @@
                 x: {
                     title:{
                         text: 'Round',
-                        display: 'true'
+                        display: true
                     }
                 },         
             },  
             plugins: {
                 title: {
+                    display: false,
                     text: "{% translate 'Unit price' %}",
                 }
             }
@@ -398,12 +399,13 @@
                 x: {
                     title:{ 
                         text: 'Round',
-                        display: 'true'
+                        display: true
                     }
                 },         
             },  
             plugins: {
                 title: {
+                    display: false,
                     text: "{% translate 'Units produced' %}",
                 }
             }
