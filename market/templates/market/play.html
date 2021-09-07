@@ -193,7 +193,8 @@
     const show_formula_breakpoint = 490;
 
   function set_price_label(){
-	  price_label.innerHTML = "{% translate 'Price' %}: " + price_slider.value;
+      price = parseFloat(price_slider.value).toFixed(2)
+	  price_label.innerHTML = "{% translate 'Price (kr.)' %}: " + price;
     }
     
   function set_amount_label(){
