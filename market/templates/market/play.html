@@ -26,7 +26,7 @@
         {% endif %}
 
         {% if wait %}
-            Hi {{ trader.name }}<br class="hide-when-small"><br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+            Hi {{ trader.name }}.<br class="hide-when-small"><br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
             {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
             
             {% comment %} 
@@ -85,31 +85,27 @@
 {% endif %}
 
 <div class="accordion mb-5" id="accordionCharts">
-
-
+    {% if market.game_over %}
     <!-- ScoreBoard -->
     <div class="card" class="mb-2">
         <div class="card-header" id="headingFour">
             <h2 class="mb-0">
                 <button class="btn btn-link btn-block text-left collapsed m-0" type="button" data-toggle="collapse"
                     data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
-                    {% if market.game_over %}
                         {% translate 'Final Scoreboard' %}
-                    {% else %}
-                        {% translate 'Scoreboard' %}
-                    {% endif %}
                 </button>
             </h2>
         </div>
-        <div id="collapseScoreBoard" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+        <div id="collapseScoreBoard" class="collapse show" aria-labelledby="headingThree">
             <div class="card-body px-2 px-sm-5 pt-0 mt-0" id="card_body">
                 {% include 'market/small-trader-table.html' %}
             </div>
         </div>
     </div>
+    {% endif%}
 
     <!-- Balance chart-->
-    <div class="card">
+    {% comment %} <div class="card">
         <div class="card-header" id="headingThree">
             <h2 class="mb-0">
                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
@@ -124,7 +120,7 @@
                 <canvas id="balanceCanvas"></canvas>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     <!-- Price chart-->
     <div class="card">
@@ -137,7 +133,7 @@
             </h2>
         </div>
 
-        <div id="collapsePrice" class="collapse" aria-labelledby="headingOne" data-parent="#accordionCharts">
+        <div id="collapsePrice" class="collapse show" aria-labelledby="headingOne">
             <div class="card-body">
                 <canvas id="priceCanvas"></canvas>
             </div>
@@ -154,7 +150,7 @@
                 </button>
             </h2>
         </div>
-        <div id="collapseProduction" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionCharts">
+        <div id="collapseProduction" class="collapse show" aria-labelledby="headingTwo">
             <div class="card-body">
                 <!-- to make canvas shown by default add .show to the dive above -->
                 <canvas id="unitsCanvas"></canvas>
@@ -354,8 +350,9 @@
         // Here we change this to 5000.00
         return value.toFixed(2) 
     }
-
+    
     // Balance chart 
+    {% comment %} 
     var traderBalanceDataSet = {
         label: "Your balance",
         data: JSON.parse("{{ trader_balance_json }}"),
@@ -401,14 +398,14 @@
                 },  
                 plugins: {
                     title: {
-                        display: true,
+                        display: false,
                         text: "{% translate 'Balance' %}",
                     }
                 }, 
                  
             }
         }     
-    );
+    ); {% endcomment %}
 
     // Price chart
     var dataYourPrice = {
@@ -458,7 +455,7 @@
             },  
             plugins: {
                 title: {
-                    display: true,
+                    display: false,
                     text: "{% translate 'Price history' %}",
                 },
             }
@@ -510,7 +507,7 @@
             },  
             plugins: {
                 title: {
-                    display: true,
+                    display: false,
                     text: "{% translate 'Production history' %}",
                 },
             },

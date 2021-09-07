@@ -447,7 +447,7 @@ msgstr "Samlede produktionsomkostninger"
 
 #: templates/market/play.html:59
 msgid "Balance after production"
-msgstr "Saldo efter produktionsomkostninger"
+msgstr "Saldo efter produktion"
 
 #: templates/market/play.html:62
 msgid "Income if all units are sold"
@@ -467,7 +467,7 @@ msgstr "Prishistorik"
 
 #: templates/market/play.html:102
 msgid "Production history"
-msgstr "Dine produktionstal over tid    "
+msgstr "Produktionstal"
 
 #: templates/market/play.html:120 templates/market/play.html:262
 msgid "Balance history"
@@ -490,8 +490,8 @@ msgid "Units produced"
 msgstr "Produktionsantal"
 
 # templates/market/play.html
-msgid "Scoreboard"
-msgstr "Dine konkurrenter"
+msgid "Final Scoreboard"
+msgstr "Resultater"
 
 #: templates/market/play.html:195
 msgid "Your price"
