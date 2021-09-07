@@ -302,7 +302,7 @@ def play(request):
             if market.game_over():
                 messages.info(request,  mark_safe(
                     # f"The game has ended after {market.max_rounds} rounds!<br><a href='/{market.market_id}/monitor' target='_blank'>Monitor market</a>."))
-                    f"GAME OVER!<br>The game has ended after {market.max_rounds} rounds."))
+                    f"The game has ended after {market.max_rounds} rounds."))
 
             else:  # game is not over
                 if market.round == trader.round_joined:
