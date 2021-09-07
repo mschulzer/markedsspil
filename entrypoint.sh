@@ -16,4 +16,5 @@ django-admin compilemessages
 # cp -rv static/* static_shared/
 
 echo "${0}: Running development server."
-python manage.py testserver testdatabase.json --addrport 0.0.0.0:8000
+#python manage.py testserver testdatabase.json --addrport 0.0.0.0:8000
+python manage.py runserver 0.0.0.0:8000
