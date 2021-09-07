@@ -6,20 +6,18 @@
 {% block title %}{% translate 'Play' %}{% endblock %}
 {% block content %}
     <div class="mt-lg-4"></div>
-
     <p class="pr-2 pl-2 py-3">
         {% if market.round > 0 and not wait and not trades.last.was_forced %}
             <!-- Text with info about last round choices and results.  -->
-            {% blocktranslate with lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-                Last round you produced <b>{{ lastRoundUnits }}</b> and sold
+            {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                Hi {{ name }}.<br class="hide-when-small"><br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
                 <b>{{ lastRoundSold }}</b>
                 {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
                 <b>{{ lastRoundPrice }} </b>kr. and the market
-                average price was <b>{{ lastRoundAvgPrice }}</b> kr.<br class="hide-when-small">
+                average price was <b>{{ lastRoundAvgPrice }}</b> kr.
             {% endblocktranslate %}
-            {% blocktranslate %}
+            <br class="hide-when-small"><br class="hide-when-small">
                 Your profit was
-            {% endblocktranslate %}
             {% if trades.last.profit < 0 %}<b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
         {% endif %}
         
@@ -28,7 +26,7 @@
         {% endif %}
 
         {% if wait %}
-            You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+            Hi {{ trader.name }}<br class="hide-when-small"><br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
             {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
             
             {% comment %} 
