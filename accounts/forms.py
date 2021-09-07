@@ -7,7 +7,7 @@ class CustomUserCreationForm(UserCreationForm):
         model = get_user_model()
         fields = ('email', 'username',)
         widgets = {
-            'email': EmailInput(attrs={'required': True}),
+            'email': EmailInput(attrs={'required': True, 'autofocus': True}),
         }
 
 
