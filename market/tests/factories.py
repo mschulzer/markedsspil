@@ -1,8 +1,6 @@
 import factory
 
-from django.test import TestCase
-from ..models import Market, Trader, Trade, RoundStat
-from django.test import Client
+from ..models import Market, Trader, Trade
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 

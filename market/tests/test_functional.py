@@ -2,13 +2,9 @@
 To only run the tests in this file:
 $ docker-compose run web pytest market/tests/test_functional.py
 """
-
-from django.test import TestCase
 from ..models import Market, Trader, Trade
-from django.test import TestCase
 from django.urls import reverse
-from ..models import Market, Trader, Trade
-from .factories import TraderFactory, UserFactory, MarketFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
+from .factories import TraderFactory, MarketFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
 
 
 ## Two player game
