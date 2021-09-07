@@ -1,8 +1,6 @@
-from django.test import TestCase
-from ..models import Market, Trader, Trade, RoundStat, UnusedCosts, UsedCosts
-from django.contrib.auth import get_user_model
+from ..models import Trade, RoundStat, UnusedCosts, UsedCosts
 from decimal import Decimal
-from .factories import MarketFactory, TradeFactory, UserFactory, TraderFactory
+from .factories import MarketFactory, TradeFactory, TraderFactory
 
 
 ### Test MarketModel ###

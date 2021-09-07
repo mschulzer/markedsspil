@@ -1,43 +1,44 @@
 from django.contrib.auth import get_user_model
-from django.urls import reverse, resolve
 from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory, TraderFactory, UserFactory, MarketFactory
-from ..models import Market, Trader, Trade, RoundStat
+from ..models import Market, Trader, Trade
 from decimal import Decimal
-
-
 import pytest
 
 @pytest.fixture
 def user(db):
     return UserFactory()
 
+
 @pytest.fixture
 def market(db):
     return MarketFactory()
+
 
 @pytest.fixture
 def trade(db):
     return TradeFactory()
 
 ### Test UserFactory ###
-
 def test_sanity_check(user, db):
     assert isinstance(user, get_user_model())
     assert 'john' in user.username
+
 
 def test_can_log_in(client, user, db):
     is_logged_in = client.login(username=user.username,
                                 password='defaultpassword')
     assert is_logged_in
 
-### Test MarketFactory ###
 
+### Test MarketFactory ###
 def test_default_round_is_zero(market):
     assert market.round == 0
+
 
 def test_market_id_created_properly(market):
     assert isinstance(market.market_id, str)
     assert len(market.market_id) == 8
+
 
 def test_instances_of_default_factory_market(market):
     assert isinstance(market, Market)
@@ -51,6 +52,7 @@ def test_instances_of_default_factory_market(market):
     assert isinstance(market.round, int)
     assert isinstance(market.max_rounds, int)
     assert isinstance(market.endless, bool)
+
 
 def test_factory_with_provided_values(db):
     market = MarketFactory(
@@ -82,6 +84,7 @@ def test_factory_with_provided_values(db):
     expected_object_name = f"{market.market_id}[74]:102.2034,304.5003,14.1234"
     assert str(market) == expected_object_name
 
+
 def test_saving_existing_market_does_not_create_new_market_or_new_market_id(db):
     market = MarketFactory()
     expected_market_id = market.market_id
@@ -95,17 +98,16 @@ def test_game_over_method_1(db):
     market = MarketFactory(round=5, max_rounds=5, endless=False)
     assert (market.game_over())
 
-def test_game_over_method_1(db):
-    market = MarketFactory(round=29, max_rounds=5, endless=False)
-    assert (market.game_over())
 
 def test_game_over_method_2(db):
     market = MarketFactory(round=5, max_rounds=5, endless=True)
     assert not (market.game_over())
 
+
 def test_game_over_method_3(db):
     market = MarketFactory(round=5, max_rounds=6, endless=False)
     assert not (market.game_over())
+
 
 def test_game_over_method_4(db):
     market = MarketFactory(round=5, max_rounds=6, endless=True)

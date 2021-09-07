@@ -2,7 +2,6 @@
 To run only this test suite:
 docker-compose exec web python manage.py test market.tests.test_helpers
 """
-from market.models import Market
 from django.test import TestCase
 from ..helpers import create_forced_trade, filter_trades, process_trade, generate_balance_list, generate_cost_list
 from decimal import Decimal

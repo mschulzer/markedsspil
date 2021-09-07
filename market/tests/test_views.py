@@ -8,10 +8,9 @@ $ docker-compose run web pytest market/tests/test_views.py
 To run only one or some tests:
 $ docker-compose run web pytest -k <substring of test function names to run>
 """
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from ..models import Market, Trader, Trade, RoundStat, UsedCosts, UnusedCosts
+from ..models import Market, Trader, Trade, RoundStat, UnusedCosts
 from ..forms import TraderForm
 from ..helpers import filter_trades
 from decimal import Decimal
@@ -37,8 +36,7 @@ def test_home_view_name_and_template(client):
     assertTemplateUsed(response, 'market/home.html')
 
 
-### Test CreateMarketViewGETRequest
-
+### Test Create Market View GET Request
 def test_create_view_url_and_template(client, logged_in_user):
     response = client.get('/create/')
     assert response.status_code == 200
@@ -56,7 +54,7 @@ def test_create_view_login_required(client, logged_in_user):
     assert response.status_code == 302
     assert response['Location'] == '/accounts/login/?next=/create/'
 
-### Test CreateMarketViewPOSTRequest
+### Test Create Market View POST Request
 
 @pytest.fixture
 def create_market_data():
@@ -72,18 +70,6 @@ def create_market_data():
             'max_rounds': 15,
             'endless': False
         }
-
-def test_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
-    """ 
-    A market is created when posting valid data & logged in user is set as market's creator 
-    After successfull creation, client is redirected to monitor page
-    """
-    response = client.post(reverse('market:create'), create_market_data)
-    assert Market.objects.all().count() == 1
-    market = Market.objects.first()
-    assert market.created_by == logged_in_user
-    assert response.status_code == 302
-    assert response['Location'] == reverse('market:monitor', args=(market.market_id,))
 
 
 def test_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
@@ -305,8 +291,9 @@ def test_view_url_exists_at_proper_name_and_uses_proper_template(client, db, log
     assert response.status_code == 200
     assertTemplateUsed(response, 'market/monitor.html'),
 
-def test_user_not_logged_has_no_access(client, db, logged_in_user):
+def test_monitor_view_user_not_logged_in_has_no_access(client, db, logged_in_user):
     """ Other users (e.g. traders) can't in general access the monitor view"""
+    market = MarketFactory(created_by=logged_in_user)
     client.logout()
     other_user = UserFactory(username="olebole")
     client.login(username=other_user.username,
@@ -316,7 +303,7 @@ def test_user_not_logged_has_no_access(client, db, logged_in_user):
     # redirect as no access
     assert (response.status_code == 302)
 
-def test_user_not_logged_has_no_access(client, db, logged_in_user):
+def test_monitor_view_user_has_no_access_to_other_users_market(client, db, logged_in_user):
     """ client who did not create the market only has access to monitor view when the game is over"""
     market = MarketFactory(created_by=logged_in_user)
     client.logout()
@@ -354,7 +341,7 @@ def test_bad_market_id_raises_404(client, db, logged_in_user):
 
 #  MonitorViewPOSTRequests
 
-def test_response_status_code_404_when_market_does_not_exists(client, logged_in_user):
+def test_monitor_view_404_when_market_does_not_exists(client, logged_in_user):
     url = reverse('market:monitor', args=('BADMARKETID',))
     response = client.post(url)
     assert (response.status_code == 404)
@@ -437,7 +424,6 @@ def test_monitor_view_created_forced_moves_for_inactive_player(client, logged_in
     assert (trade.profit is None)
     assert (trade.balance_before == 123456)
     assert (trade.balance_after == 123456)
-
 
     # The balance of trader2 should not be affected by the forced trade
     trader2.refresh_from_db()
@@ -589,9 +575,7 @@ def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(cl
         trader=trader, round=0).count() == 1)
 
     # user goes to play url and should get play-template shown with wait equal true in context
-
-    response = client.get(
-        reverse('market:play'))
+    response = client.get(reverse('market:play'))
     assert (response.status_code == 200)
     assertTemplateUsed(response, 'market/play.html'),
     assert (response.context.get('wait'))
@@ -810,7 +794,7 @@ def test_error_message_to_user_when_invalid_form(client, db):
 
 # Test CurrentRoundView
 
-def test_response_status_code_404_when_market_does_not_exists(client, db):
+def test_current_round_view_404_when_market_does_not_exists(client, db):
     url = reverse('market:current_round', args=('BARMARKETID',))
     response = client.get(url)
     assert (response.status_code == 404)
@@ -831,7 +815,7 @@ def test_returns_correct_non_zero_round(client, db):
 
 # Test MyMarkets
 
-def test_login_required(client, logged_in_user):
+def test_mymarkets_view_login_required(client, logged_in_user):
     """ user not logged in will be redirected to login page """
     client.logout()
     response = client.get(reverse('market:my_markets'))
@@ -840,13 +824,13 @@ def test_login_required(client, logged_in_user):
     assert (response['Location'] ==
                      '/accounts/login/?next=/my_markets/')
 
-def test_no_markets_empty_template(client, logged_in_user):
+def test_mymarkets_view_correct_template(client, logged_in_user):
     """ logged in user will see correct template """
     response = client.get(reverse('market:my_markets'))
     assert (response.status_code == 200)
     assertTemplateUsed(response, 'market/my_markets.html')
 
-def test_no_markets_empty_template(client, logged_in_user):
+def test_mymarkets_view_no_markets_from_other_users(client, logged_in_user):
     """ User should not see markets created by other user """
     market = MarketFactory()  # some market created by anouther user
     response = client.get(reverse('market:my_markets'))
@@ -855,7 +839,7 @@ def test_no_markets_empty_template(client, logged_in_user):
         response, 'You have not yet created a market.')
     assertNotContains(response, market.market_id)
 
-def test_user_has_created_a_market(client, logged_in_user):
+def test_mymarkets_view_user_has_created_a_market(client, logged_in_user):
     """ User has created a market so reponse should contain info on this market """
     market = MarketFactory(created_by=logged_in_user)
     response = client.get(reverse('market:my_markets'))
