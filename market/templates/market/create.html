@@ -6,7 +6,6 @@
 
 {% block content %}
 
-
 <h3 class="mt-5">{% translate 'Create a new market' %}</h3>
 <h6 class="mb-3">{% translate 'Choose a predefined scenario, or create a market with custom settings.' %}</h6>
 
@@ -52,8 +51,11 @@
 
 {% block javascript %}
 <script>
+
 	function adjust_max_round_field(){
-		// This function is also used by market edit template, so should be imported.
+		// This function is also used by market edit template, so it should be imported to keep code DRY.
+ 		upper_limit_on_max_rounds = parseInt("{{ upper_limit_on_max_rounds }}")
+
 		
 		max_rounds_field = document.getElementById('div_id_max_rounds')
 		if (document.getElementById('id_endless').checked){
@@ -63,8 +65,11 @@
 			The value chosen will be disregarded when market.endless = true */	
 			max_rounds = document.getElementById('id_max_rounds')
 			max_rounds.value = parseInt(max_rounds.value)
-			if (max_rounds.value < 1){			
-				max_rounds.value = 15; 
+			if (max_rounds.value < 1){	
+				max_rounds.value = 1; 
+			}
+			else if (max_rounds.value > upper_limit_on_max_rounds){
+				max_rounds.value = upper_limit_on_max_rounds
 			}
 		}
 		else{
