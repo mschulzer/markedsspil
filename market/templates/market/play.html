@@ -54,7 +54,7 @@
          {% translate 'Make your next trade' %}
         </div>
         <div class="card-body">
-            <form action="{% url 'market:play' %}" method="post" class="mb-4" id='trade_form'>
+            <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
                 {% csrf_token %}
                 {{ form|crispy }}
             </form>
@@ -300,7 +300,7 @@
             dataType: 'json',
             success: function (data) {
                 if (data.round > round_num) {
-                    window.location.href = "{% url 'market:play' %}"
+                    window.location.href = "{% url 'market:play' market.market_id %}"
                 }
             }
         });

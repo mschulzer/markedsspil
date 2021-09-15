@@ -18,7 +18,7 @@
                     <!-- Content if client has already joined a market -->
                     <p>Hi, {{ request.session.username }}! You have already joined the {{ market.product_name_singular }} market {{ market.market_id }}. Do you want to return to this market?</p>
                     <div class="d-flex justify-content-center mb-4">
-                        <a href="{% url 'market:play' %}">
+                        <a href="{% url 'market:play' market.market_id %}">
                             <button class="btn btn-primary">
                                 {% translate 'Return to my market' %}
                             </button>

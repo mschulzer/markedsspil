@@ -51,11 +51,7 @@ def test_round_0_one_forced_move(logged_in_user, client):
         'unit_amount': '45'
         }
 
-    client.post(
-        reverse(
-            'market:play'), 
-            post_data
-        )
+    client.post(reverse('market:play', args=(market.market_id,)), post_data)
 
     trade1 = Trade.objects.first()
 

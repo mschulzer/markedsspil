@@ -143,7 +143,7 @@ def join(request):
                     create_forced_trade(
                         trader=new_trader, round_num=round_num, is_new_trader=True)
 
-            return redirect(reverse('market:play'))
+            return redirect(reverse('market:play', args=(market.market_id,)))
 
     elif request.method == 'GET':
         if 'market_id' in request.GET:
@@ -157,8 +157,8 @@ def join(request):
                 market_id=request.session['market_id'])
 
             messages.warning(request, mark_safe(
-                f"Hi {request.session['username']}! You've already joined the {market.product_name_singular}-markedet {market.market_id}. If you submit the form below, you will permanenly lose access to this market. Do you want to return to your current market?<a href='/play'> Return to my market </a>"))
-            # f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet {market.market_id}. Hvis du indsender formularen nedenfor, mister du permanent adgang til dette marked. Vil du tilbage til dit marked?<a href='/play'> Tilbage til mit marked </a>"))
+                f"Hi {request.session['username']}! You've already joined the {market.product_name_singular}-markedet {market.market_id}. If you submit the form below, you will permanenly lose access to this market. Do you want to return to your current market?<a href='/{market.market_id}/play'> Return to my market </a>"))
+            # f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet {market.market_id}. Hvis du indsender formularen nedenfor, mister du permanent adgang til dette marked. Vil du tilbage til dit marked?<a href='/{market.market_id}/play'> Tilbage til mit marked </a>"))
 
     return render(request, 'market/join.html', {'form': form})
 
@@ -241,7 +241,7 @@ def monitor(request, market_id):
         return redirect(reverse('market:monitor', args=(market.market_id,)))
 
 
-def play(request):
+def play(request, market_id):
 
     try:
         trader = Trader.objects.get(id=request.session['trader_id'])
@@ -258,7 +258,7 @@ def play(request):
                 new_trade.round = market.round
                 new_trade.balance_before = trader.balance
                 new_trade.save()
-                return redirect(reverse('market:play'))
+                return redirect(reverse('market:play', args=(market.market_id,)))
         else:
             form = TradeForm(trader)
 

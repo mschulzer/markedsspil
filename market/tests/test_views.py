@@ -243,7 +243,8 @@ def test_new_trader_created_when_form_is_valid(db, client):
     assert (new_trader.balance == market.initial_balance)
     assert ('trader_id' in client.session)
     assert (response.status_code == 302)
-    assert (response['Location'] == reverse('market:play'))
+    assert (response['Location'] == reverse(
+        'market:play', args=(market.market_id,)))
     # Since min_cost == max_cost ==4, the traders prod_cost should equal 4
     assert (new_trader.prod_cost == 4)
 
@@ -279,7 +280,8 @@ def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_
 
     # status code and redirect are corrext
     assert (response.status_code == 302)
-    assert (response['Location'] == reverse('market:play'))
+    assert (response['Location'] == reverse(
+        'market:play', args=(market.market_id,)))
 
 
 # Test MonitorViewGETRequests
@@ -552,7 +554,7 @@ class MonitorViewPostRequestMultipleUserTest(TestCase):
 
 def test_no_trader_id_in_session_redirects_to_join(client):
     # some client who has not joined tries to access the wait page
-    response = client.get(reverse('market:play'))
+    response = client.get(reverse('market:play', args=('SOMEMARKETD',)))
 
     # he should be redirected to the join page
     assert (response.status_code == 302)
@@ -575,7 +577,7 @@ def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(cl
         trader=trader, round=0).count() == 1)
 
     # user goes to play url and should get play-template shown with wait equal true in context
-    response = client.get(reverse('market:play'))
+    response = client.get(reverse('market:play', args=(market.market_id,)))
     assert (response.status_code == 200)
     assertTemplateUsed(response, 'market/play.html'),
     assert (response.context.get('wait'))
@@ -610,7 +612,7 @@ def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_ro
     TradeFactory(trader=trader, round=3, unit_price=Decimal('134.98'))
 
     # user goes to play url
-    response = client.get(reverse('market:play'))
+    response = client.get(reverse('market:play', args=(market.market_id,)))
 
     # The user has not traded in this round so he should get back play template with wait=false in context
     assert (response.status_code == 200)
@@ -651,7 +653,7 @@ def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_
     ForcedTradeFactory(trader=trader, round=3)
 
     # user goes to play url
-    response = client.get(reverse('market:play'))
+    response = client.get(reverse('market:play', args=(market.market_id,)))
 
     # The user has not traded in this round so he should get back play temlpate
     assert (response.status_code == 200)
@@ -688,7 +690,7 @@ def test_form_attributes_are_set_correctly(client, db):
     TradeFactory(trader=trader, round=3, unit_price=4, unit_amount=12)
 
     # user goes to play url
-    response = client.get(reverse('market:play'))
+    response = client.get(reverse('market:play', args=(market.market_id,)))
 
     form = response.context['form']
 
@@ -714,7 +716,7 @@ def test_game_over_when_rounds_equal_max_round(client, db):
     session.save()
 
     # user goes to play url
-    response = client.get(reverse('market:play'))
+    response = client.get(reverse('market:play', args=(market.market_id,)))
 
     # user is informed about the game state
     assertContains(response, "The game has ended")
@@ -729,9 +731,9 @@ def test_game_over_when_rounds_equal_max_round(client, db):
 # PlayViewPOSTRequest
 
 def test_post_market_id_not_found_redirects_to_join(client):
-    # client this to go the play page without having joined a market
+    # client tryes to go the play page without having joined a market
     response = client.post(
-        reverse('market:play'))
+        reverse('market:play', args=('SOMEMARKETID',)))
     # client should be redirected to join
     assert (response.status_code == 302)
     assert (response['Location'] == reverse('market:join'))
@@ -745,7 +747,7 @@ def test_if_all_data_is_good_then_save_trade_and_redirect_to_play(client, db):
 
     # the client sends in a trade form with valid data
     response = client.post(
-        reverse('market:play'), {'unit_price': Decimal('11.00'), 'unit_amount': '45'})
+        reverse('market:play', args=(trader.market.market_id,)), {'unit_price': Decimal('11.00'), 'unit_amount': '45'})
     assert (Trade.objects.all().count() == 1)
 
     # we check that the new trade object has correct properties
@@ -761,7 +763,8 @@ def test_if_all_data_is_good_then_save_trade_and_redirect_to_play(client, db):
 
     # after a successful post request, we should redirect to play
     assert (response.status_code == 302)
-    expected_redirect_url = reverse('market:play')
+    expected_redirect_url = reverse(
+        'market:play', args=(trader.market.market_id,))
     assert (response['Location'] == expected_redirect_url)
 
 def test_error_message_to_user_when_invalid_form(client, db):
@@ -773,7 +776,7 @@ def test_error_message_to_user_when_invalid_form(client, db):
 
     # the client sends in a trade form with invalid data (unit price is blank)
     response = client.post(
-        reverse('market:play'), {'unit_price': '', 'unit_amount': '45'})
+        reverse('market:play', args=('SOMEMARKETID',)), {'unit_price': '', 'unit_amount': '45'})
 
     # The trade is not saved to the database
     assert (Trade.objects.all().count() == 0)
