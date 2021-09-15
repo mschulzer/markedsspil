@@ -319,6 +319,18 @@ def test_name_used_on_another_market_is_no_problem(db):
     assert form.is_valid()
 
 
+def test_new_traders_cant_join_market_that_has_ended(db):
+    "New traders can't join a market that has ended"
+    market = MarketFactory(endless=False, max_rounds=4, round=5)
+    assert market.game_over()
+
+    data = {'name': 'grethen', 'market_id': market.market_id}
+    form = TraderForm(data=data)
+
+    assert form.is_valid() == False
+
+
+
 @pytest.fixture
 def trader_form_data():
     return {

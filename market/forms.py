@@ -126,9 +126,14 @@ class TraderForm(forms.ModelForm):
         cleaned_market_id = cleaned_data.get('market_id')
         if cleaned_name and cleaned_market_id:
             market = Market.objects.get(market_id=cleaned_market_id)
-            if Trader.objects.filter(name=cleaned_name, market=market).exists():
+            if market.game_over():
+                raise forms.ValidationError(
+                    _('This market has has ended. No new traders can join.'))
+
+            elif Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
                     _('There is already a trader with this name on the requested market. Please select another name'))
+
         return cleaned_data
 
 
