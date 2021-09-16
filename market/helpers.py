@@ -175,11 +175,15 @@ def add_graph_context_for_monitor_page(context, market, traders):
     color_for_averages = 'rgb(173,255,47,0.7)'  # yellow
 
     def generate_price_list(trader):
-        trades = Trade.objects.filter(trader=trader)
+        # On the monitor page price graph, we only want to show data for previous rounds. 
+        trades = Trade.objects.filter(
+            trader=trader, round__lte=market.round - 1)
         return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
 
     def generate_amount_list(trader):
-        trades = Trade.objects.filter(trader=trader)
+        # On the monitor page amount graph, we only want to show data for previous rounds.
+        trades = Trade.objects.filter(
+            trader=trader, round__lte=market.round - 1)
         return [float(trade.unit_amount) if trade.unit_amount else None for trade in trades]
 
     def trader_color(i):
@@ -246,15 +250,6 @@ def add_graph_context_for_monitor_page(context, market, traders):
         avg_prices = [float(round_stat.avg_price)
                       for round_stat in round_stats]
 
-        # During the current round, traders will set a price and it makes sense to calculate a temporary avg unit price for the current round on each page reload
-        trades_this_round = filter_trades(market, market.round)
-        if trades_this_round:
-            prices_this_round_so_far = [
-                trade.unit_price for trade in trades_this_round]
-            avg_price_this_round_so_far = float(
-                sum(prices_this_round_so_far)/len(prices_this_round_so_far))
-            avg_prices += [avg_price_this_round_so_far]
-
         priceDataSet.append({
             'label': 'Average',
             'backgroundColor': color_for_averages,
@@ -265,14 +260,6 @@ def add_graph_context_for_monitor_page(context, market, traders):
         # Average units produced
         avg_amounts = [float(round_stat.avg_amount)
                        for round_stat in round_stats]
-
-        # During the current round, traders will set select amounts for this tound and it makes sense to calculate a temporary avg amount for the current round on each page reload
-        if trades_this_round:
-            amounts_this_round_so_far = [
-                trade.unit_amount for trade in trades_this_round]
-            avg_amount_this_round_so_far = float(
-                sum(amounts_this_round_so_far)/len(amounts_this_round_so_far))
-            avg_amounts += [avg_amount_this_round_so_far]
 
         amountDataSet.append({
             'label': 'Avg. amount',
