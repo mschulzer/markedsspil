@@ -161,3 +161,6 @@ else:
 
 # Tell Django what default id fields to create in models
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Decimal separator
+DECIMAL_SEPARATOR = '.'
