@@ -55,11 +55,11 @@ msgstr ""
 
 #: forms.py:18
 msgid "What is the lowest production cost for one unit of the product?"
-msgstr "Hvad er den laveste produktionspris en forhandler kan tildeles?"
+msgstr "Hvad er den laveste produktionsomkostning pr. enhed en forhandler kan tildeles?"
 
 #: forms.py:19
 msgid "What is the highest production cost for one unit of the product?"
-msgstr "Hvad er den højeste produktionspris en forhandler kan tildeles?"
+msgstr "Hvad er den højeste produktionsomkostning pr. enhed en forhandler kan tildeles?"
 
 #: forms.py:22
 msgid "Product name (singular)"
@@ -218,11 +218,11 @@ msgstr "Opret nyt marked"
 
 #: templates/market/create.html:10
 msgid "Choose a predefined scenario, or create a market with custom settings."
-msgstr "Vælg et prædefineret scenarie, eller lav et brugerdefineret marked."
+msgstr "Vælg et prædefineret scenarie eller lav et brugerdefineret marked."
 
 #: templates/market/create.html:14
 msgid "Predefined scenarios"
-msgstr "Prædefinerede scenarier"
+msgstr "Markedsscenarier"
 
 #: templates/market/create.html:18
 msgid "Select scenario (view/edit settings below)"
