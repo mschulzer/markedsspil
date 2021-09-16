@@ -9,7 +9,7 @@ class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
 
-        fields = ['initial_balance', 'min_cost', 'max_cost', 'max_rounds', 'endless',
+        fields = ['max_rounds', 'endless', 'initial_balance', 'min_cost', 'max_cost',
                   'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural']
         help_texts = {
             'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')"),

@@ -23,30 +23,35 @@
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
 						{% if forloop.counter0 == 0 %}checked{% endif%}>
 					<label for="scenario_{{ forloop.counter0 }}" class="mb-0 pb-0">{{ scenario.title }}</label>
-					{% comment %} <p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p> {% endcomment %}
 					<p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p>
 				{% endfor %}
 			</div>
 		</form> 
-		{% comment %} <div class="d-flex justify-content-center">
-			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-2" form="create-market-form">
-		</div>  {% endcomment %}
 	</div>
 </div>
 
 <div class="card mb-3">
-	<div class="card-header">
-		{% translate 'Market details' %}
-	</div>
-	<div class="card-body">
-		<form action="" id="create-market-form" method="post">{% csrf_token %}
+    <div class="card-header" id="headingOne">
+      <h5 class="mb-0">
+        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        	Market Details
+        </button>
+      </h5>
+    </div>
+
+    <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
+      <div class="card-body">
+      		<form action="" id="create-market-form" method="post">{% csrf_token %}
 			{{ form|crispy }}
 		</form>
-		<div class="d-flex justify-content-center">
-			<input onclick="submit_form()" value="{% translate "Create" %}" class="btn btn-primary my-4" form="create-market-form">
-		</div>
-	</div>
+	  </div>
+    </div>
 </div>
+
+<div class="d-flex justify-content-center">
+	<input onclick="submit_form()" value="{% translate "Create" %}" class="btn btn-primary mt-3 mb-4" form="create-market-form">
+</div>
+
 
 {% endblock content %}
 
@@ -87,11 +92,20 @@
 	/* We should NOT fill out form with predefined scenario values after an unsuccesful post-attempt.
 	   Instead, the form will be filled out with the posted values + error messages */
 	{% if not form.errors %}fill_form(scenarios[0]){% endif %}
-
 	
 	document.getElementById('market_radio_form').addEventListener('change', function() {
 		scenario_number = document.querySelector('input[name="scenario"]:checked').value
-			fill_form(scenarios[scenario_number]);
+		scenario = scenarios[scenario_number]
+			fill_form(scenario);
+		if(scenario_number == 2) {
+			// Radio button value changed to 'Custom Scenario'
+			// This should make market details section expanded
+			console.log(document.getElementById('collapseOne').classList.add('show'))
+		}
+		else {
+			console.log(document.getElementById('collapseOne').classList.remove('show'))
+		}
+		console.log(scenario_number)
 	}); 
 
 	document.getElementById('div_id_endless').addEventListener('change', function() {
