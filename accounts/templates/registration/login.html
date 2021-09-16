@@ -7,11 +7,14 @@
 {% block content %}
 <div class="container">
     <h3>{% translate 'LogIn_Title' %}</h3>
- 	
+    <p class="mb-4">
+    In order to host a market you need an account.<i> Traders joining a market don't need an account.</i>
+    </p>
+
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        <div class="mt-3 mb-4">
+        <div class="mt-3 mb-4 d-flex justify-content-center">
             <button class="btn btn-primary" type="submit">{% translate 'LogIn_Title' %}</button>
         </div>
     </form>
