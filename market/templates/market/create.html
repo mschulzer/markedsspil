@@ -100,12 +100,11 @@
 		if(scenario_number == 2) {
 			// Radio button value changed to 'Custom Scenario'
 			// This should make market details section expanded
-			console.log(document.getElementById('collapseOne').classList.add('show'))
+			document.getElementById('collapseOne').classList.add('show')
 		}
 		else {
-			console.log(document.getElementById('collapseOne').classList.remove('show'))
+			document.getElementById('collapseOne').classList.remove('show')
 		}
-		console.log(scenario_number)
 	}); 
 
 	document.getElementById('div_id_endless').addEventListener('change', function() {
@@ -119,6 +118,15 @@
         el.value = parseFloat(el.value).toFixed(2);
     };
 
+
+	{% if form.errors %}
+		// If there are errors in the form, the market details should expand, making the errors messages visible. 
+		document.getElementById('collapseOne').classList.add('show')
+	{% endif %}
+
 </script>
 
+
 {% endblock javascript %}
+
+
