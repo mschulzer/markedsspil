@@ -48,8 +48,6 @@
 	</div>
 </div>
 
-
-
 {% endblock content %}
 
 {% block javascript %}
@@ -63,17 +61,26 @@
 	scenarios = {{ scenarios_json|safe }}
 
 	function fill_form(scenario){
+		console.log("fill_form")
 		// toFixed(2) ensures two decimals on initial rendering of form
 		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
 		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
-		document.getElementById('id_initial_balance').value=scenario.initial_balance.toFixed(2); 
 		document.getElementById('id_alpha').value=scenario.alpha
 		document.getElementById('id_beta').value=scenario.beta
-		document.getElementById('id_theta').value=scenario.theta
-		document.getElementById('id_min_cost').value=scenario.min_cost.toFixed(2); 
-		document.getElementById('id_max_cost').value=scenario.max_cost.toFixed(2);
+		document.getElementById('id_theta').value=scenario.theta	
 		document.getElementById('id_max_rounds').value=scenario.max_rounds
 		document.getElementById('id_endless').checked=scenario.endless
+		if (scenario.initial_balance == ""){
+			// User has chosen the "custom scenario"
+			document.getElementById('id_initial_balance').value=scenario.initial_balance; 
+			document.getElementById('id_min_cost').value=scenario.min_cost; 
+			document.getElementById('id_max_cost').value=scenario.max_cost;
+		}
+		else{ 
+			document.getElementById('id_initial_balance').value=scenario.initial_balance.toFixed(2); 
+			document.getElementById('id_min_cost').value=scenario.min_cost.toFixed(2); 
+			document.getElementById('id_max_cost').value=scenario.max_cost.toFixed(2);
+		}
 		adjust_max_round_field()
 	}
 
