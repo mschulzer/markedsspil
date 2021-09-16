@@ -143,7 +143,19 @@ def test_max_rounds_cant_be_zero(form_data):
     assert not (is_valid)
     assert ('max_rounds' in form.errors)
 
-def test_max_rounds_cant_non_integer(form_data):
+
+def test_max_rounds_cant_be_chosen_bigger_than_the_upper_limit(form_data):
+    """ a form with max_rounds chosen bigger than the limit should not be valid """
+    form_data['max_rounds'] = Market.UPPER_LIMIT_ON_MAX_ROUNDS + 1
+    form = MarketForm(data=form_data)
+
+    is_valid = form.is_valid()
+
+    assert not (is_valid)
+    assert ('max_rounds' in form.errors)
+
+
+def test_max_rounds_cant_be_non_integer(form_data):
     """ max_rounds has to be an integer """
     form_data['max_rounds'] = 3.54
     form = MarketForm(data=form_data)

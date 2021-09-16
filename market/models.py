@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from decimal import Decimal
 from random import randint as random_integer
 from random import choice
@@ -23,6 +23,9 @@ class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
     product_name_singular = models.CharField(max_length=16)
     product_name_plural = models.CharField(max_length=16)
+
+    # set the upper bound for max_rounds on finite games
+    UPPER_LIMIT_ON_MAX_ROUNDS = 100
 
     # w/ below settings, alpha, beta and theta has to be positive numbers <= 9999999999.9999
     # When specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
@@ -55,7 +58,7 @@ class Market(models.Model):
     # Note that if max_rounds = n, then the last being played will be the round stored in the database as round n-1
     # If endless is True, any value of max_rounds will be disregarded.
     max_rounds = models.IntegerField(
-        validators=[MinValueValidator(1)])
+        validators=[MinValueValidator(1), MaxValueValidator(UPPER_LIMIT_ON_MAX_ROUNDS)])
 
     # endless indicates whether or not the game should go on indefinitely.
     endless = models.BooleanField()

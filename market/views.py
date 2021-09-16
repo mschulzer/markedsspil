@@ -37,7 +37,11 @@ def market_edit(request, market_id):
     else:  # request.method = 'GET'
         form = MarketUpdateForm(instance=market)
 
-    context = {"form": form, "market": market}
+    context = {
+        "form": form,
+        "market": market,
+        "upper_limit_on_max_rounds": Market.UPPER_LIMIT_ON_MAX_ROUNDS
+    }
 
     return render(request, "market/market_edit.html", context)
 
@@ -105,8 +109,12 @@ def create(request):
     elif request.method == 'GET':
         form = MarketForm()
 
-    context = {'form': form, 'scenarios': SCENARIOS,
-               'scenarios_json': json.dumps(SCENARIOS)}
+    context = {
+        'form': form,
+        'scenarios': SCENARIOS,
+        'scenarios_json': json.dumps(SCENARIOS),
+        'upper_limit_on_max_rounds': Market.UPPER_LIMIT_ON_MAX_ROUNDS
+    }
 
     return render(request, 'market/create.html', context)
 

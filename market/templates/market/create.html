@@ -1,11 +1,11 @@
 {% extends "market/base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 {% load i18n %}
 
 {% block title %}{% translate 'Create a new market' %}{% endblock %}
 
 {% block content %}
-
 
 <h3 class="mt-5">{% translate 'Create a new market' %}</h3>
 <h6 class="mb-3">{% translate 'Choose a predefined scenario, or create a market with custom settings.' %}</h6>
@@ -28,9 +28,9 @@
 				{% endfor %}
 			</div>
 		</form> 
-		<div class="d-flex justify-content-center">
+		{% comment %} <div class="d-flex justify-content-center">
 			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-2" form="create-market-form">
-		</div> 
+		</div>  {% endcomment %}
 	</div>
 </div>
 
@@ -43,34 +43,22 @@
 			{{ form|crispy }}
 		</form>
 		<div class="d-flex justify-content-center">
-			<input type="submit" value="{% translate "Create" %}" class="btn btn-primary my-4" form="create-market-form">
+			<input onclick="submit_form()" value="{% translate "Create" %}" class="btn btn-primary my-4" form="create-market-form">
 		</div>
 	</div>
 </div>
 
+
+
 {% endblock content %}
 
 {% block javascript %}
+
+<!-- Import scripts shared with market-edit page -->
+<script src="{% static "create-update-market-helpers.js" %}"></script>
+
 <script>
-	function adjust_max_round_field(){
-		// This function is also used by market edit template, so should be imported.
-		
-		max_rounds_field = document.getElementById('div_id_max_rounds')
-		if (document.getElementById('id_endless').checked){
-			max_rounds_field.style.visibility = "hidden";
-			/* max_rounds has to be a non-blank positive integer, even if game is endless.
-			If user has typed an invalid max_rounds value, we have to change this. 
-			The value chosen will be disregarded when market.endless = true */	
-			max_rounds = document.getElementById('id_max_rounds')
-			max_rounds.value = parseInt(max_rounds.value)
-			if (max_rounds.value < 1){			
-				max_rounds.value = 15; 
-			}
-		}
-		else{
-			max_rounds_field.style.visibility = "";
-		}
-	}		
+	market_form = document.getElementById('create-market-form');
    
 	scenarios = {{ scenarios_json|safe }}
 
