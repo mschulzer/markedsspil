@@ -19,5 +19,7 @@ pytest-django = "*"
 python_version = "3.9"
 # This is to allow black to be installed, as it only exists as a prerelease
 
+sqlparse = ">=0.4.2"
+
 [pipenv]
 allow_prereleases = true
