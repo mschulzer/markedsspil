@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(os.environ.get("DEBUG", default=0))
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(" ")
 
 # Where to find translation files
 LOCALE_PATHS = ( os.path.join(os.path.dirname(os.path.realpath(__name__)), 'locale'), )
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # Third-party
     'crispy_forms',
+    'django_extensions',
 
     # Local
     'market.apps.MarketConfig',
