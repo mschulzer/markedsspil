@@ -6,6 +6,17 @@
 
 {% block content %}
 
+{% if request.session.market_id %}
+	<!-- Top colored message: Warn users who have already joined a market -->
+    <div class="alert alert-warning">
+		Hi {{ request.session.username }}! You've already joined the {{ market.product_name_plural}} market {{ market.market_id }}. 
+		If you submit the form below, you will permanenly lose access to this market. 
+		Do you want to return to your current market?
+		<a href="{% url 'market:play' market.market_id %}">Return to my market </a>
+	</div>
+{% endif %}
+    
+
 <div class="container">
 	<h4 class="mb-3 mb-lg-4 mt-4">{% translate 'Join a market' %}</h4>
 
