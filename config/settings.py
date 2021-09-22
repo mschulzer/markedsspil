@@ -29,21 +29,26 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 # Where to find translation files
-LOCALE_PATHS = ( os.path.join(os.path.dirname(os.path.realpath(__name__)), 'locale'), )
+LOCALE_PATHS = (os.path.join(os.path.dirname(
+    os.path.realpath(__name__)), 'locale'), )
 
 # Application definition
 
 INSTALLED_APPS = [
-    # Built-in 
+    # Built-in
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+
 
     # Third-party
     'crispy_forms',
+    'allauth',
+    'allauth.account',
 
     # Local
     'market.apps.MarketConfig',
@@ -53,7 +58,7 @@ INSTALLED_APPS = [
 # django-crispy-forms
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-MIDDLEWARE = [    
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -69,7 +74,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [str(BASE_DIR.joinpath('accounts', 'templates'))],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -138,12 +143,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # The model we want to use for user accounts
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-# After login, redirect to home
-LOGIN_REDIRECT_URL = 'market:home'
-
-# After logout, redirect to home
-LOGOUT_REDIRECT_URL = 'market:home'
-
 # Email settings
 DEFAULT_FROM_EMAIL = 'Markedsspillet <markedsspillet@dataekspeditioner.dk>'
 
@@ -164,3 +163,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Decimal separator
 DECIMAL_SEPARATOR = '.'
+
+
+# django-allauth config
+LOGIN_REDIRECT_URL = 'market:home'
+ACCOUNT_LOGOUT_REDIRECT = 'market:home'
+SITE_ID = 1  # new
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',  # new
+)
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+# other options: 'none', 'optional', 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = True

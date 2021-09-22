@@ -8,6 +8,7 @@ django-crispy-forms = "==1.9.2"
 gunicorn = "*"
 django = "~=3.2"
 factory-boy = "*"
+django-allauth = "==0.42.0"
 
 [dev-packages]
 black = "*"
@@ -18,7 +19,6 @@ pytest-django = "*"
 [requires]
 python_version = "3.9"
 # This is to allow black to be installed, as it only exists as a prerelease
-
 sqlparse = ">=0.4.2"
 
 [pipenv]

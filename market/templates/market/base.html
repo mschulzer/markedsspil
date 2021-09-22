@@ -33,12 +33,12 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    {{ user.username }}
+                                    Konto
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                                     <a class="dropdown-item"
                                         href="{% url 'market:my_markets' %}">{% translate 'My markets' %}</a>
-                                    <a class="dropdown-item" href="{% url 'logout' %}">{% translate 'Log Out' %}</a>
+                                    <a class="dropdown-item" href="{% url 'account_logout' %}">{% translate 'Log Out' %}</a>
                                 </div>
                             </li>
                         {% endif %}
