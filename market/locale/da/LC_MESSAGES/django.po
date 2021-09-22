@@ -42,7 +42,7 @@ msgid ""
 "How much should the demand of a single trader's product be reduced, "
 "when she/he raises their unit price by one?"
 msgstr ""
-"Hvor meget skal efterspørgslen på en forhandlers produkt mindskes, hvis de "
+"Hvor meget skal efterspørgslen på en forhandlers produkt mindskes, hvis forhandleren "
 "øger prisen pr. stk. med en?"
 
 #: forms.py:17
