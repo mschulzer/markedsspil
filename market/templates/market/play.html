@@ -201,9 +201,15 @@
 
 {% block javascript %}
 
+<script>
+// Display currency amount with 2 decimals
+function prettify (num) {
+    return num.toFixed(2);
+}
+</script>
+
 {% if not wait %}
 <script>
-
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
     var amount_label = labels[1]
@@ -217,48 +223,93 @@
     var balance_after_production = document.getElementById('balance_after_production');
     var profit_best_case = document.getElementById('profit_best_case')
     var profit_worst_case = document.getElementById('profit_worst_case')
+    var market_max_cost = parseFloat("{{ trader.market.max_cost }}".replace(',', '.'));
+    var market_average_price = parseFloat("{{ round_stats.all.last.avg_price }}".replace(',', '.'));
+    var round = "{{ trader.market.round }}";
 
     // only show calculations when screen width is bigger than this number
     const show_formula_breakpoint = 490;
 
-  function set_price_label(){
-      price = parseFloat(price_slider.value).toFixed(2)
-	  price_label.innerHTML = "{% translate 'Price (kr.)' %}: " + price;
+    function initializeRangeSliders() {
+        var $priceslider = $(".price-slider");
+        var $productionslider = $(".production-slider");
+
+        // Custom Marks using code from http://ionden.com/a/plugins/ion.rangeSlider/showcase.html#a_marks
+        var min = $priceslider.attr("min");
+        var max = $priceslider.attr("max");
+        function convertToPercent (num) {
+	    var percent = ((num - min) / (max - min)) * 100;
+	    return percent;
+        }
+
+        function addMark ($slider, value, description) {
+            var left = convertToPercent(value);
+            var html = '<span class="slider_mark" style="left: ' + left + '%"> '
+                       + value
+                       + ' kr. (' + description + ')</span>';
+            $slider.append(html);
+        }
+
+        $priceslider.ionRangeSlider({
+          skin: "round",
+          type: "single",
+          grid : true,
+          min: min,
+          max: max,
+          hide_min_max : true,
+          step: 0.1,
+          from: unit_prod_cost,
+          prettify : prettify ,
+          postfix : " kr.",
+          onStart: function (data) {
+              addMark(data.slider, unit_prod_cost, "din produktionspris");
+              if (round > 0) {
+    	          addMark(data.slider, market_average_price, "markedsgennemsnit.");
+              }
+          }
+        });
+
+        $productionslider.ionRangeSlider({
+          skin: "round",
+          type: "single",
+          grid : true,
+          min: $productionslider.attr("min"),
+          max: $productionslider.attr("max"),
+          hide_min_max : true,
+          step: 1,
+          from: 0,
+          postfix : " stk."
+        });
     }
-    
-  function set_amount_label(){
-	  amount_label.innerHTML = "{% translate 'Amount' %}: " + amount_slider.value;
-        //amount_label.innerHTML = "Amount: " + amount_slider.value;
-    }
-    
+
     function set_total_cost(){
         amount = amount_slider.value; 
-        total_prod_cost.innerHTML = (amount * unit_prod_cost).toFixed(2);
+        total_prod_cost.innerHTML = prettify(amount * unit_prod_cost);
         if ($(window).width() > show_formula_breakpoint) {
             formula = document.getElementById('total_prod_cost_formula')
-            formula.innerHTML = `${amount} * ${unit_prod_cost.toFixed(2)} = `;
+            formula.innerHTML = `${amount} * ${prettify(unit_prod_cost)} = `;
         } 
     }
     
     function set_potential_income(){
         amount = amount_slider.value;
         price = parseFloat(price_slider.value);
-        income_best_case.innerHTML = (amount*price).toFixed(2);
+        income_best_case.innerHTML = prettify(amount*price);
         
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('income_best_case_formula')
-            formula.innerHTML = `${amount} * ${price.toFixed(2)} = `; 
+            formula.innerHTML = `${amount} * ${prettify(price)} = `; 
         }
     }
 
     function set_balance_after_production(){
         amount = amount_slider.value;
         costs = amount * unit_prod_cost;
-        balance_after_production.innerHTML = (balance - costs).toFixed(2);
+        balance_after_production.innerHTML = prettify(balance - costs);
 
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('balance_after_production_formula')
-            formula.innerHTML = `${balance.toFixed(2)} - ${costs.toFixed(2)} = `;
+            formula.innerHTML = `${prettify(balance)} - ${prettify(costs)} = `;
         } 
     }
  
@@ -281,31 +332,28 @@
         } else{
             profit_worst_case.style.color = 'green'
         }
-        profit_best_case.innerHTML = best_case_profit.toFixed(2);
-        profit_worst_case.innerHTML = (-expences).toFixed(2);
+        profit_best_case.innerHTML = prettify(best_case_profit);
+        profit_worst_case.innerHTML = prettify(-expences);
 
         if ($(window).width() > show_formula_breakpoint) { 
-            document.getElementById('profit_best_case_formula').innerHTML = `${best_case_income.toFixed(2)} - ${expences.toFixed(2)} = `;
-            document.getElementById('profit_worst_case_formula').innerHTML = `0.00 - ${expences.toFixed(2)} = `;
+            document.getElementById('profit_best_case_formula').innerHTML = `${prettify(best_case_income)} - ${prettify(expences)} = `;
+            document.getElementById('profit_worst_case_formula').innerHTML = `0.00 - ${prettify(expences)} = `;
         }     
     }
 
-    set_price_label();
-    set_amount_label();
+    initializeRangeSliders();
     set_total_cost(); 
     set_potential_income()
     set_balance_after_production()
     set_potential_profit()
 
     price_slider.oninput = function () {
-        set_price_label();
         set_potential_income();
         set_balance_after_production()
         set_potential_profit();
     }
 
     amount_slider.oninput = function () {
-        set_amount_label();
         set_total_cost();
         set_potential_income();
         set_balance_after_production()
@@ -379,7 +427,7 @@
     function format_amount_labels(value, index, values){
         // Default format of 5000 on axis is 5,000. 
         // Here we change this to 5000.00
-        return value.toFixed(2) 
+        return prettify(value);
     }
     
     // Balance chart 
