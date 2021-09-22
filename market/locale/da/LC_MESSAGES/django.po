@@ -35,7 +35,7 @@ msgid ""
 "How big should the demand for a trader's product be, if all traders set their price to 0?"
 msgstr ""
 "Hvor stor skal efterspørgslen på produktet være, hvis alle forhandlere "
-"sætter prisen til 0?"
+"sætter prisen til 0 kr?"
 
 #: forms.py:16
 msgid ""
@@ -43,7 +43,7 @@ msgid ""
 "when she/he raises their unit price by one?"
 msgstr ""
 "Hvor meget skal efterspørgslen på en forhandlers produkt mindskes, hvis forhandleren "
-"øger prisen pr. stk. med en?"
+"øger enhedsprisen med 1 kr?"
 
 #: forms.py:17
 msgid ""
@@ -51,7 +51,7 @@ msgid ""
 "when the market's average price goes up by one?"
 msgstr ""
 "Hvor meget skal efterspørgslen på en forhandlers produkt øges, hvis den "
-"gennemsnitlige markedspris stiger med 1?"
+"gennemsnitlige markedspris stiger med 1 kr?"
 
 #: forms.py:18
 msgid "What is the lowest production cost for one unit of the product?"
