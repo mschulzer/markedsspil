@@ -2,8 +2,13 @@
 {% load i18n %}
 
 {% block title %}{% translate 'Monitor' %}{% endblock %}
-{% block content %}
 {% load custom_tags %}
+
+{% block content %}
+<!-- Top colored message -->
+{% if market.game_over %}
+    <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
+{% endif %}
 
 <!-- Page heading-->
 <h2 class="mb-3 mt-lg-5">{{ market.product_name_singular|title }} Market <span class="text-black-50">[{{ market.market_id }}]</span></h2>      

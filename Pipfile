@@ -15,6 +15,7 @@ black = "*"
 flake8 = "*"
 pytest = "*"
 pytest-django = "*"
+django-extensions = "*"
 
 [requires]
 python_version = "3.9"
