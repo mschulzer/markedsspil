@@ -167,6 +167,9 @@ DECIMAL_SEPARATOR = '.'
 
 
 # django-allauth config
+# More configuration options for allauth:
+# https: // django-allauth.readthedocs.io/en/latest/configuration.html
+
 LOGIN_REDIRECT_URL = 'market:home'
 ACCOUNT_LOGOUT_REDIRECT = 'market:home'
 SITE_ID = 1  # new
