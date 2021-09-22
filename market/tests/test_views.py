@@ -120,7 +120,7 @@ def test_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_i
     response = client.post(reverse('market:create'), create_market_data)
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
-    assertContains(response, "Min cost can&#x27;t be bigger than max cost")
+    assertContains(response, "Max cost must be bigger than min cost")
 
 def test_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
     """ data is invalid """
@@ -884,7 +884,7 @@ def test_user_has_no_permission_to_edit_other_market(client, logged_in_user):
 def test_valid_post_data_updates_market_and_redirects(client, logged_in_user):
     market = MarketFactory(created_by=logged_in_user, alpha=105.55)
     data = {'product_name_singular': 'surdejsbolle',
-            'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 10, 'theta': 32,
+            'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 34, 'theta': 32,
             'endless' : True, 'initial_balance' : 53, 'max_rounds': 12,
             'min_cost': 35, 'max_cost': 3565}
 
@@ -907,7 +907,7 @@ def test_invalid_post_data_does_not_update_market(client, logged_in_user):
     client.login(username='somename', password='testpass123')
 
     data = {'product_name_singular': 'surdejsbolle',
-            'product_name_plural': 'surdejsboller', 'alpha': -14, 'beta': 10, 'theta': 32,
+            'product_name_plural': 'surdejsboller', 'alpha': -14, 'beta': 34, 'theta': 32,
             'endless' : True, 'initial_balance' : 53, 'max_rounds': 12,
             'min_cost': 35, 'max_cost': 3565}
     
