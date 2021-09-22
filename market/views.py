@@ -123,6 +123,7 @@ def join(request):
 
     if request.method == 'POST':
         form = TraderForm(request.POST)
+        context = {'form': form}
         if form.is_valid():
             market = Market.objects.get(
                 market_id=form.cleaned_data['market_id'])
@@ -152,15 +153,13 @@ def join(request):
         else:
             form = TraderForm()
 
+        context = {'form': form}
         if 'market_id' in request.session:
             market = Market.objects.get(
                 market_id=request.session['market_id'])
+            context['market'] = market
 
-            messages.warning(request, mark_safe(
-                f"Hi {request.session['username']}! You've already joined the {market.product_name_singular}-markedet {market.market_id}. If you submit the form below, you will permanenly lose access to this market. Do you want to return to your current market?<a href='/{market.market_id}/play'> Return to my market </a>"))
-            # f"Hej {request.session['username']}! Du deltager allerede i {market.product_name_singular}-markedet {market.market_id}. Hvis du indsender formularen nedenfor, mister du permanent adgang til dette marked. Vil du tilbage til dit marked?<a href='/{market.market_id}/play'> Tilbage til mit marked </a>"))
-
-    return render(request, 'market/join.html', {'form': form})
+    return render(request, 'market/join.html', context)
 
 
 def monitor(request, market_id):
@@ -184,10 +183,6 @@ def monitor(request, market_id):
     }
 
     if request.method == "GET":
-        if market.game_over():
-            messages.success(request, mark_safe(
-                "The game has ended after {0} rounds!".format(market.round)
-            ))
 
         # add context for graphs
         context = add_graph_context_for_monitor_page(context, market, traders)
@@ -222,7 +217,7 @@ def monitor(request, market_id):
         assert(len(all_trades_this_round) == len(traders)
                ), f"Number of trades in this round does not equal num traders ."
 
-        # data for charts
+        # save data for charts
         round_stat = RoundStat.objects.create(
             market=market, round=market.round, avg_price=avg_price)
 
@@ -242,7 +237,7 @@ def monitor(request, market_id):
 
 
 def play(request, market_id):
-
+    # The market_id is not used in the function. But we need is as a parameter because we want it in the url on the player page.
     try:
         trader = Trader.objects.get(id=request.session['trader_id'])
     except:
@@ -300,36 +295,6 @@ def play(request, market_id):
 
         if trades.filter(round=market.round).exists():
             context['wait'] = True
-            messages.success(
-                request,
-                _("You made a trade!")
-            )
-
-        else:
-            # player should not be waiting
-            if market.game_over():
-                messages.info(request,  mark_safe(
-                    # f"The game has ended after {market.max_rounds} rounds!<br><a href='/{market.market_id}/monitor' target='_blank'>Monitor market</a>."))
-                    f"The game has ended after {market.max_rounds} rounds."))
-
-            else:  # game is not over
-                if market.round == trader.round_joined:
-                    # a verbose & enthusiastic message welcoming new traders
-                    if market.endless:
-                        messages.success(
-                            request, _("Hi {0}! You are now ready for round {1} on the {2} market {3}.").format(trader.name, market.round + 1, market.product_name_singular, market.market_id))
-                    else:
-                        messages.success(
-                            request, _("Hi {0}! You are now ready for round {1} out of {2} on the {3} market {4}.").format(trader.name, market.round + 1, market.max_rounds, market.product_name_singular, market.market_id))
-                else:
-                    # a less verbose and less enthusiastic message for other traders
-                    if market.endless:
-                        messages.success(
-                            request, _("You are now ready for round {0}.").format(market.round + 1))
-                    else:
-                        if not messages.get_messages(request):
-                            messages.success(
-                                request, _("You are now ready for round {0} out of {1}.").format(market.round + 1, market.max_rounds))
 
         return render(request, 'market/play.html', context)
 

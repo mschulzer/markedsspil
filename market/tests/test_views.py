@@ -582,11 +582,8 @@ def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(cl
     assertTemplateUsed(response, 'market/play.html'),
     assert (response.context.get('wait'))
 
-    # there should now be a message saying that the user i waiting
-    html = response.content.decode('utf8')
-    message = list(response.context.get('messages'))[0]
-    assert (message.tags == "success")
-    assert ("You made a trade!" in message.message)
+    # there should now be a message saying that the user is waiting
+    assertContains(response, "wait")
 
     # This is round 0, so no data from last round should be shown
     assertNotContains(response, 'Text with info about last round choices and results')

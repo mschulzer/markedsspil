@@ -5,6 +5,33 @@
 
 {% block title %}{% translate 'Play' %}{% endblock %}
 {% block content %}
+
+    <!-- Top colored message -->
+    {% if wait %}
+        <div class="alert alert-success">You made a trade!</div>
+    {% else %} 
+        {% if market.game_over %}
+            <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
+        {% else %}
+             {% if market.round == trader.round_joined %}
+                <!-- a verbose & enthusiastic message welcoming new traders -->
+                {% if market.endless %}
+                    <div class="alert alert-success">Hi {{ trader.name }}! You are now ready for round {{ market.round|add:1 }} on the {{ market.product_name_singular }} market {{ market.market_id }}.</div>
+                {% else %}
+                    <div class="alert alert-success">Hi {{ trader.name }}! You are now ready for round {{ market.round|add:1 }} out of {{ market.max_rounds }} on the {{ market.product_name_singular }} market {{ market.market_id }}.</div>
+                {% endif %}                
+            {% else %}
+                <!-- a less verbose and less enthusiastic message for other traders -->
+                {% if market.endless %}
+                    <div class="alert alert-success">Your are now ready for round {{ market.round|add:1 }}.</div>
+                {% else %}
+                    <div class="alert alert-success">Your are now ready for round {{ market.round|add:1 }} out of {{ market.max_rounds }}.</div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+    <!-- Paragraph with info about what just happened and current status -->
     <div class="mt-lg-4"></div>
     <p class="pr-2 pl-2 py-3">
         {% if market.round > 0 and not wait and not trades.last.was_forced %}
@@ -48,6 +75,7 @@
 
 <div class="mt-lg-4"></div>
 
+<!-- Next trade form -->
 {% if not wait and not market.game_over %}
     <div class="card mb-4">
         <div class="card-header">
@@ -84,6 +112,7 @@
     </div>
 {% endif %}
 
+<!-- Scoreboards and charts -->
 <div class="accordion mb-5" id="accordionCharts">
     {% if market.game_over %}
     <!-- ScoreBoard -->
