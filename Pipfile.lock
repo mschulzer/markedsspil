@@ -1,11 +1,7 @@
 {
     "_meta": {
         "hash": {
-<<<<<<< HEAD
-            "sha256": "af8df4382291c45cc753239e861e424d0163e27f93c8425ae3ab11c07d9dd128"
-=======
-            "sha256": "a9de4547e1ae38e2376b1d40121a44828168c2892f42e4bbc288bb38159edc6a"
->>>>>>> master
+            "sha256": "0c2a78be3b7c41684579293db0167b0be7592de7afb26e9424ceb0225a47c767"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -320,11 +316,11 @@
         },
         "pyparsing": {
             "hashes": [
-                "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1",
-                "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"
+                "sha256:14e99e14e11a14cadf4d99effd4c5c30a9f46b116551ee69b4e5f8f6004f62d5",
+                "sha256:61b247121581f50c7988eece6ebb2d87ccc3be46c5552daf910d56e20cf6da75"
             ],
-            "markers": "python_version >= '2.6' and python_version not in '3.0, 3.1, 3.2, 3.3'",
-            "version": "==2.4.7"
+            "markers": "python_version >= '3.5'",
+            "version": "==3.0.0rc1"
         },
         "pytest": {
             "hashes": [
@@ -341,13 +337,6 @@
             ],
             "index": "pypi",
             "version": "==4.4.0"
-        },
-        "pytz": {
-            "hashes": [
-                "sha256:83a4a90894bf38e243cf052c8b58f381bfe9a7a483f6a9cab140bc7f702ac4da",
-                "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"
-            ],
-            "version": "==2021.1"
         },
         "regex": {
             "hashes": [

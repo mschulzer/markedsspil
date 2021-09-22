@@ -28,7 +28,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write("Adding test users")
 
-        person = UserFactory(username="test",
+        person = UserFactory(email="test@m.dk",
                              password="test")
         
         # self.stdout.write("Deleting old data...")

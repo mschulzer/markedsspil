@@ -47,12 +47,9 @@ INSTALLED_APPS = [
 
     # Third-party
     'crispy_forms',
-<<<<<<< HEAD
     'allauth',
     'allauth.account',
-=======
     'django_extensions',
->>>>>>> master
 
     # Local
     'market.apps.MarketConfig',
