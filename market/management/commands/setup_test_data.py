@@ -4,7 +4,7 @@ import random
 from django.db import transaction
 from django.core.management.base import BaseCommand
 
-from market.tests.factories import (UserFactory)
+from market.tests.factories import UserFactory, MarketFactory
 
 
 # from forum.models import User, Thread, Club, Comment
@@ -30,6 +30,10 @@ class Command(BaseCommand):
 
         person = UserFactory(username="test",
                              password="test")
+
+        self.stdout.write("Adding test markets")
+        market1 = MarketFactory(market_id="FOO", created_by=person)
+        market2 = MarketFactory(market_id="BAR", created_by=person)
         
         # self.stdout.write("Deleting old data...")
         # models = [User, Thread, Comment, Club]
