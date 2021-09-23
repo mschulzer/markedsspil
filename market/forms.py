@@ -155,35 +155,35 @@ class TradeForm(forms.ModelForm):
         model = Trade
         fields = ('unit_price', 'unit_amount')
         widgets = {
-            'unit_price': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class': 'slider', 'step': 0.1}),
-            'unit_amount': forms.NumberInput(attrs={'type': 'range', 'min': 0, 'class': 'slider', 'step': 1}),
-        }
-        labels = {
-            'unit_price': _('Price')+': ',
-            'unit_amount': _('Amount')+': '
-        }
-        help_texts = {
-            'unit_amount': ('How many units do you want to produce?'),
+            'unit_price': forms.NumberInput(attrs={'type': 'text', 'class': 'price-slider'}),
+            'unit_amount': forms.NumberInput(attrs={'type': 'text', 'class': 'production-slider'}),
         }
 
-    def __init__(self, trader=None, *args, **kwargs):
+    def __init__(self, trader=None, market_average=None, *args, **kwargs):
         super(TradeForm, self).__init__(*args, **kwargs)
 
         if trader:
             # traders can set the price of a product up to 5 times market's maximal prod cost
-            self.fields['unit_price'].widget.attrs['max'] = 5 * \
-                trader.market.max_cost
+            self.fields['unit_price'].widget.attrs['min'] = 0
+            self.fields['unit_price'].widget.attrs['max'] = 5 * trader.market.max_cost
 
             # make sure, trader can't choose to produce an amount of units, he can't afford
             if trader.prod_cost > 0:
                 max_unit_amount = floor((trader.balance/trader.prod_cost))
             else:  # if prod_cost is 0 (this is currently not allowed to happen)
                 max_unit_amount = 10000  # this number is arbitrary
+            self.fields['unit_amount'].widget.attrs['min'] = 0
             self.fields['unit_amount'].widget.attrs['max'] = max_unit_amount
 
-            self.fields['unit_price'].help_text = (_("Set a price for one {0} (your cost pr. {0} is <b>{1}</b> kr.)")).format(
-                trader.market.product_name_singular, trader.prod_cost)
-            self.fields['unit_amount'].help_text = (
+            # Only show market average after round 0
+            if trader.market.round > 0 and market_average is not None:
+                self.fields['unit_price'].widget.attrs['marketavg'] = market_average
+
+            # Labels
+            self.fields['unit_price'].label = (
+                _("Set your price for one {0}")).format(trader.market.product_name_singular)
+
+            self.fields['unit_amount'].label = (
                 _("How many {0} do you want to produce?")).format(trader.market.product_name_plural)
 
             # Set default value of price slider equal to the trader's prod cost
