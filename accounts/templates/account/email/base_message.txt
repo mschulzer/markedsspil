@@ -1,0 +1,13 @@
+
+{% load i18n %}
+
+{% autoescape off %}
+
+{% translate 'Hello from Markedsspillet.dk!' %}
+
+{% block content %}{% endblock %}
+
+{% translate 'Thank you for using markedsspillet!' %}
+
+{% endautoescape %} 
+

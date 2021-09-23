@@ -2,13 +2,13 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-{% block title %}Log In{% endblock title %}
+{% block title %}{% translate 'Log In' %}{% endblock title %}
 
 {% block content %}
 <div class="container">
     <h3>{% translate 'LogIn_Title' %}</h3>
     <p class="mb-4">
-    In order to host a market you need an account.<i> Traders joining a market don't need an account.</i>
+    In order to host a market you need an account.<i> Traders joining a market don't need an account.</i> 
     </p>
 
     <form method="post">
@@ -18,8 +18,7 @@
             <button class="btn btn-primary" type="submit">{% translate 'LogIn_Title' %}</button>
         </div>
     </form>
-
-    <p>{% translate 'ForgotPassword' %} <a href="{% url 'password_reset' %}">{% translate 'ResetPassword' %}</a></p>
-    <p>{% translate 'HaveNoAccount' %} <a href="{% url 'signup' %}">{% translate 'SignUp' %}</a></p>
+    <p>{% translate 'ForgotPassword' %} <a href="{% url 'account_reset_password' %}">{% translate 'ResetPassword' %}</a></p>
+    <p>{% translate 'HaveNoAccount' %} <a href="{% url 'account_signup' %}">{% translate 'SignUp' %}</a></p>
 </div>
 {% endblock content %}

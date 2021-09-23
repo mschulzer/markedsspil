@@ -41,3 +41,6 @@ msgstr "Opret en ny bruger."
 #: templates/registration/signup.html:8 templates/registration/signup.html:12
 msgid "SignUp_Title"
 msgstr "Opret ny bruger"
+
+msgid "Reset password"
+msgstr "Nulstilling af password"
