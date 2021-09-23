@@ -31,179 +31,142 @@
         {% endif %}
     {% endif %}
 
-    <!-- Paragraph with info about what just happened and current status -->
-    <div class="mt-lg-4"></div>
-    <p class="pr-2 pl-2 py-3">
-        {% if market.round > 0 and not wait and not trades.last.was_forced %}
-            <!-- Text with info about last round choices and results.  -->
-            {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-                Hi {{ name }}.<br class="hide-when-small"><br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
-                <b>{{ lastRoundSold }}</b>
-                {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
-                <b>{{ lastRoundPrice }} </b>kr. and the market
-                average price was <b>{{ lastRoundAvgPrice }}</b> kr.
-            {% endblocktranslate %}
-            <br class="hide-when-small"><br class="hide-when-small">
-                Your profit was
-            {% if trades.last.profit < 0 %}<b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
-        {% endif %}
-        
-        {% if trades.last.was_forced %}
-            {% translate "You didn't make a trade last round." %} 
-        {% endif %}
+    
 
-        {% if wait %}
-            Hi {{ trader.name }}.<br class="hide-when-small"><br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
-            {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
+<div class="row mt-lg-4" >    
+    <div class="col-12 col-lg-6">
+
+        <!-- Paragraph with info about what just happened and current status -->
+        <p class="pr-2 pl-2 py-3 alert alert-warning"> <!-- # style="background-color:#fadb6f">-->
+            {% if market.round > 0 and not wait and not trades.last.was_forced %}
+                <!-- Text with info about last round choices and results.  -->
+                {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                    Hi {{ name }}. <br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
+                    <b>{{ lastRoundSold }}</b>
+                    {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b> baguettes. Your price was
+                    <b>{{ lastRoundPrice }} </b>kr. and the market
+                    average price was <b>{{ lastRoundAvgPrice }}</b> kr.
+                {% endblocktranslate %}
+                    Your profit was
+                {% if trades.last.profit < 0 %}<b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
+            {% endif %}
             
-            {% comment %} 
-            Suggested translation:
-            Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
-            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
-            {% endcomment %}
+            {% if trades.last.was_forced %}
+                {% translate "You didn't make a trade last round." %} 
+            {% endif %}
 
-            <br><br>
-            <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
-                   
-        {% else %}
-        {% blocktranslate with balance=trader.balance %}
-            Your current balance is <b style="color:green">{{ balance }}</b> kr.
-        {% endblocktranslate %} 
-        
+            {% if wait %}
+                Hi {{ trader.name }}.<br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+                {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
+                
+                {% comment %} 
+                Suggested translation:
+                Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
+                {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
+                {% endcomment %}
+            <br class="hide-when-small"> 
+                <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
+                    
+            {% else %}
+            {% blocktranslate with balance=trader.balance %}
+                Your current balance is <b style="color:green">{{ balance }}</b> kr.
+            {% endblocktranslate %} 
+            
+            {% endif %}
+        </p>
+
+        {% if not wait and not market.game_over %}
+            <!-- Next trade form -->
+            <div class="card mb-3">
+                <div class="card-header">
+                {% translate 'Make your next trade' %}
+                </div>
+                <div class="card-body pb-2">
+                    <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                    </form>
+                    <div class="d-flex justify-content-center mt-4 mb-4">
+                        <input type="submit" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" form="trade_form">
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <ul class="text-secondary">
+                            <li>
+                                {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
+                            </li>
+                            <li>
+                                {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
+                            </li>
+                            <li>
+                                {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
+                            </li>
+                            <li>
+                                {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
+                            </li>
+                            <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         {% endif %}
-    </p>
+        {% if market.game_over %}
+            <!-- ScoreBoard -->
+            <table class="table table-sm" >
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">{% translate 'Trader name' %}</th>
+                        <th scope="col">{% translate 'Final alance' %}</th>
+                    </tr>
+                </thead>
 
-<div class="mt-lg-4"></div>
-
-<!-- Next trade form -->
-{% if not wait and not market.game_over %}
-    <div class="card mb-4">
-        <div class="card-header">
-         {% translate 'Make your next trade' %}
-        </div>
-        <div class="card-body">
-            <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
-                {% csrf_token %}
-                {{ form|crispy }}
-            </form>
-            <div class="d-flex justify-content-center mt-4 mb-4">
-                <input type="submit" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" form="trade_form">
-            </div>
-
-            <div class="d-flex justify-content-center">
-                <ul class="text-secondary">
-                    <li>
-                        {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
-                    </li>
-                    <li>
-                        {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
-                    </li>
-                    <li>
-                        {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
-                    </li>
-                    <li>
-                        {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
-                    </li>
-                    <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-{% endif %}
-
-<!-- Scoreboards and charts -->
-<div class="accordion mb-5" id="accordionCharts">
-    {% if market.game_over %}
-    <!-- ScoreBoard -->
-    <div class="card" class="mb-2">
-        <div class="card-header" id="headingFour">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed m-0" type="button" data-toggle="collapse"
-                    data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
-                        {% translate 'Final Scoreboard' %}
-                </button>
-            </h2>
-        </div>
-        <div id="collapseScoreBoard" class="collapse show" aria-labelledby="headingThree">
-            <div class="card-body px-2 px-sm-5 pt-0 mt-0" id="card_body">
-                {% include 'market/small-trader-table.html' %}
-            </div>
-        </div>
-    </div>
-    {% endif%}
-
-    <!-- Balance chart-->
-    {% comment %} <div class="card">
-        <div class="card-header" id="headingThree">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseThree">
-                    {% translate 'Balance history' %}
-                </button>
-            </h2>
-        </div>
-
-        <div id="collapseBalance" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
-            <div class="card-body">
-                <canvas id="balanceCanvas"></canvas>
-            </div>
-        </div>
-    </div> {% endcomment %}
-
-    <!-- Price chart-->
-    <div class="card">
-        <div class="card-header" id="headingOne">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapsePrice" aria-expanded="false" aria-controls="collapseOne">
-                    {% translate 'Price history' %}
-                </button>
-            </h2>
-        </div>
-
-        <div id="collapsePrice" class="collapse show" aria-labelledby="headingOne">
-            <div class="card-body">
-                <canvas id="priceCanvas"></canvas>
-            </div>
-        </div>
+                <div class="mb-5">
+                    {% for trader in traders %}
+                        {% if request.session.username == trader.name %}
+                        <tr style="background-color:rgb(75,192,192,0.1)">
+                            <td scope="row">{{ forloop.counter }}</td>
+                            <td>You</td>
+                            <td>{{ trader.balance }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td scope="row">{{ forloop.counter }}</td>
+                            <td>{{ trader.name }}</td>
+                            <td>{{ trader.balance }}</td>
+                        </tr> 
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </table>
+        {% endif%}
     </div>
 
-    <!-- Units chart-->
-    <div class="card">
-        <div class="card-header" id="headingTwo">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
-                    data-target="#collapseProduction" aria-expanded="true" aria-controls="collapseTwo">
-                    {% translate 'Production history' %}
-                </button>
-            </h2>
-        </div>
-        <div id="collapseProduction" class="collapse show" aria-labelledby="headingTwo">
-            <div class="card-body">
-                <!-- to make canvas shown by default add .show to the dive above -->
-                <canvas id="unitsCanvas"></canvas>
-            </div>
-        </div>
-    </div>
+    <!-- Scoreboards and charts -->
+    <div class="col-12 col-lg-6 mt-3 mt-lg-0">
+      
+        <!-- Price chart-->
+        <canvas class="mt-2 mb-0 mb-lg-4" id="priceCanvas">
+        </canvas>
 
+        <!-- Units chart-->
+        <canvas class="mt-2 mb-4" id="unitsCanvas"></canvas>
+    </div>
 </div>
-
-<div 
-    hx-get="{% url 'market:small_trader_table' market.market_id %}"
-    hx-trigger="every 2s"
-    hx-swap ="innerHTML"
-    hx-target="#card_body">
-</div>  
-
-
 {% endblock content %}
 
 {% block javascript %}
 
+<script>
+// Display currency amount with 2 decimals
+function prettify (num) {
+    return num.toFixed(2);
+}
+</script>
+
 {% if not wait %}
 <script>
-
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
     var amount_label = labels[1]
@@ -217,48 +180,93 @@
     var balance_after_production = document.getElementById('balance_after_production');
     var profit_best_case = document.getElementById('profit_best_case')
     var profit_worst_case = document.getElementById('profit_worst_case')
+    var market_max_cost = parseFloat("{{ trader.market.max_cost }}".replace(',', '.'));
+    var market_average_price = parseFloat("{{ round_stats.all.last.avg_price }}".replace(',', '.'));
+    var round = "{{ trader.market.round }}";
 
     // only show calculations when screen width is bigger than this number
     const show_formula_breakpoint = 490;
 
-  function set_price_label(){
-      price = parseFloat(price_slider.value).toFixed(2)
-	  price_label.innerHTML = "{% translate 'Price (kr.)' %}: " + price;
+    function initializeRangeSliders() {
+        var $priceslider = $(".price-slider");
+        var $productionslider = $(".production-slider");
+
+        // Custom Marks using code from http://ionden.com/a/plugins/ion.rangeSlider/showcase.html#a_marks
+        var min = $priceslider.attr("min");
+        var max = $priceslider.attr("max");
+        function convertToPercent (num) {
+	    var percent = ((num - min) / (max - min)) * 100;
+	    return percent;
+        }
+
+        function addMark ($slider, value, description) {
+            var left = convertToPercent(value);
+            var html = '<span class="slider_mark" style="left: ' + left + '%"> '
+                       + value
+                       + ' kr. (' + description + ')</span>';
+            $slider.append(html);
+        }
+
+        $priceslider.ionRangeSlider({
+          skin: "round",
+          type: "single",
+          grid : true,
+          min: min,
+          max: max,
+          hide_min_max : true,
+          step: 0.1,
+          from: unit_prod_cost,
+          prettify : prettify ,
+          postfix : " kr.",
+          onStart: function (data) {
+              addMark(data.slider, unit_prod_cost, "din produktionspris");
+              if (round > 0) {
+    	          addMark(data.slider, market_average_price, "markedsgennemsnit.");
+              }
+          }
+        });
+
+        $productionslider.ionRangeSlider({
+          skin: "round",
+          type: "single",
+          grid : true,
+          min: $productionslider.attr("min"),
+          max: $productionslider.attr("max"),
+          hide_min_max : true,
+          step: 1,
+          from: 0,
+          postfix : " stk."
+        });
     }
-    
-  function set_amount_label(){
-	  amount_label.innerHTML = "{% translate 'Amount' %}: " + amount_slider.value;
-        //amount_label.innerHTML = "Amount: " + amount_slider.value;
-    }
-    
+
     function set_total_cost(){
         amount = amount_slider.value; 
-        total_prod_cost.innerHTML = (amount * unit_prod_cost).toFixed(2);
+        total_prod_cost.innerHTML = prettify(amount * unit_prod_cost);
         if ($(window).width() > show_formula_breakpoint) {
             formula = document.getElementById('total_prod_cost_formula')
-            formula.innerHTML = `${amount} * ${unit_prod_cost.toFixed(2)} = `;
+            formula.innerHTML = `${amount} * ${prettify(unit_prod_cost)} = `;
         } 
     }
     
     function set_potential_income(){
         amount = amount_slider.value;
         price = parseFloat(price_slider.value);
-        income_best_case.innerHTML = (amount*price).toFixed(2);
+        income_best_case.innerHTML = prettify(amount*price);
         
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('income_best_case_formula')
-            formula.innerHTML = `${amount} * ${price.toFixed(2)} = `; 
+            formula.innerHTML = `${amount} * ${prettify(price)} = `; 
         }
     }
 
     function set_balance_after_production(){
         amount = amount_slider.value;
         costs = amount * unit_prod_cost;
-        balance_after_production.innerHTML = (balance - costs).toFixed(2);
+        balance_after_production.innerHTML = prettify(balance - costs);
 
         if ($(window).width() > show_formula_breakpoint) { 
             formula = document.getElementById('balance_after_production_formula')
-            formula.innerHTML = `${balance.toFixed(2)} - ${costs.toFixed(2)} = `;
+            formula.innerHTML = `${prettify(balance)} - ${prettify(costs)} = `;
         } 
     }
  
@@ -281,31 +289,28 @@
         } else{
             profit_worst_case.style.color = 'green'
         }
-        profit_best_case.innerHTML = best_case_profit.toFixed(2);
-        profit_worst_case.innerHTML = (-expences).toFixed(2);
+        profit_best_case.innerHTML = prettify(best_case_profit);
+        profit_worst_case.innerHTML = prettify(-expences);
 
         if ($(window).width() > show_formula_breakpoint) { 
-            document.getElementById('profit_best_case_formula').innerHTML = `${best_case_income.toFixed(2)} - ${expences.toFixed(2)} = `;
-            document.getElementById('profit_worst_case_formula').innerHTML = `0.00 - ${expences.toFixed(2)} = `;
+            document.getElementById('profit_best_case_formula').innerHTML = `${prettify(best_case_income)} - ${prettify(expences)} = `;
+            document.getElementById('profit_worst_case_formula').innerHTML = `0.00 - ${prettify(expences)} = `;
         }     
     }
 
-    set_price_label();
-    set_amount_label();
+    initializeRangeSliders();
     set_total_cost(); 
     set_potential_income()
     set_balance_after_production()
     set_potential_profit()
 
     price_slider.oninput = function () {
-        set_price_label();
         set_potential_income();
         set_balance_after_production()
         set_potential_profit();
     }
 
     amount_slider.oninput = function () {
-        set_amount_label();
         set_total_cost();
         set_potential_income();
         set_balance_after_production()
@@ -333,7 +338,6 @@
             }
         });
     }
-
     window.setInterval(check_for_next_round, 1000);
 </script>
 
@@ -377,11 +381,11 @@
     function format_amount_labels(value, index, values){
         // Default format of 5000 on axis is 5,000. 
         // Here we change this to 5000.00
-        return value.toFixed(2) 
+        return prettify(value);
     }
-    
-    // Balance chart 
+
     {% comment %} 
+    // Balance chart 
     var traderBalanceDataSet = {
         label: "Your balance",
         data: JSON.parse("{{ trader_balance_json }}"),
@@ -434,7 +438,8 @@
                  
             }
         }     
-    ); {% endcomment %}
+    ); 
+    {% endcomment %}
 
     // Price chart
     var dataYourPrice = {
@@ -484,7 +489,7 @@
             },  
             plugins: {
                 title: {
-                    display: false,
+                    display: true,
                     text: "{% translate 'Price history' %}",
                 },
             }
@@ -536,7 +541,7 @@
             },  
             plugins: {
                 title: {
-                    display: false,
+                    display: true,
                     text: "{% translate 'Production history' %}",
                 },
             },

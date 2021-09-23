@@ -61,17 +61,6 @@ def trader_table(request, market_id):
 
 
 @require_GET
-def small_trader_table(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    traders = Trader.objects.filter(market=market).order_by('-balance')
-    context = {
-        'traders': traders,
-        'market': market
-    }
-    return render(request, 'market/small-trader-table.html', context)
-
-
-@require_GET
 def home(request):
     context = {}
     if 'market_id' in request.session:
@@ -245,6 +234,9 @@ def play(request, market_id):
     else:
         market = trader.market
 
+        round_stats = RoundStat.objects.filter(market=market)
+        trades = Trade.objects.filter(trader=trader)
+
         if request.method == 'POST':
             form = TradeForm(data=request.POST)
             if form.is_valid():
@@ -255,10 +247,11 @@ def play(request, market_id):
                 new_trade.save()
                 return redirect(reverse('market:play', args=(market.market_id,)))
         else:
-            form = TradeForm(trader)
-
-        round_stats = RoundStat.objects.filter(market=market)
-        trades = Trade.objects.filter(trader=trader)
+            if market.round > 0 and round_stats.last() is not None:
+                market_average = round_stats.last().avg_price
+                form = TradeForm(trader, market_average)
+            else:
+                form = TradeForm(trader)
 
         # Set x-axis for graphs
         if market.endless:
