@@ -2,13 +2,13 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-{% block title %}Log In{% endblock title %}
+{% block title %}{% translate 'Log In' %}{% endblock title %}
 
 {% block content %}
 <div class="container">
     <h3>{% translate 'LogIn_Title' %}</h3>
     <p class="mb-4">
-    In order to host a market you need an account.<i> Traders joining a market don't need an account.</i>
+    In order to host a market you need an account.<i> Traders joining a market don't need an account.</i> 
     </p>
 
     <form method="post">
