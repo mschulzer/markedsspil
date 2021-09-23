@@ -1,9 +1,5 @@
 
-{% comment %} 
-We don't want the below login confirmation message. Instead, we will add the login confirmation to the email_confirmation_sent.txt-file.
-
 {% load account %}
 {% load i18n %}
 {% user_display user as name %}
-{% blocktrans %}Successfully signed in as {{name}}.{% endblocktrans %} 
-{% endcomment %}
+{% blocktrans %}You successfully signed in.{% endblocktrans %} 
