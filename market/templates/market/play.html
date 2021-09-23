@@ -37,13 +37,13 @@
     <div class="col-12 col-lg-6">
 
         <!-- Paragraph with info about what just happened and current status -->
-        <p class="pr-2 pl-2 py-3" style="background-color:#fadb6f">
+        <p class="pr-2 pl-2 py-3 alert alert-warning"> <!-- # style="background-color:#fadb6f">-->
             {% if market.round > 0 and not wait and not trades.last.was_forced %}
                 <!-- Text with info about last round choices and results.  -->
                 {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-                    Hi {{ name }}. Last round you produced <b>{{ lastRoundUnits }}</b> and sold
+                    Hi {{ name }}. <br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
                     <b>{{ lastRoundSold }}</b>
-                    {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
+                    {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b> baguettes. Your price was
                     <b>{{ lastRoundPrice }} </b>kr. and the market
                     average price was <b>{{ lastRoundAvgPrice }}</b> kr.
                 {% endblocktranslate %}
@@ -56,7 +56,7 @@
             {% endif %}
 
             {% if wait %}
-                Hi {{ trader.name }}. You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+                Hi {{ trader.name }}.<br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
                 
                 {% comment %} 
@@ -64,7 +64,7 @@
                 Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
                 {% endcomment %}
-
+            <br class="hide-when-small"> 
                 <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
                     
             {% else %}
@@ -75,14 +75,13 @@
             {% endif %}
         </p>
 
-
         {% if not wait and not market.game_over %}
             <!-- Next trade form -->
-            <div class="card mb-sm-4">
+            <div class="card mb-3">
                 <div class="card-header">
                 {% translate 'Make your next trade' %}
                 </div>
-                <div class="card-body">
+                <div class="card-body pb-2">
                     <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
                         {% csrf_token %}
                         {{ form|crispy }}
@@ -119,7 +118,7 @@
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">{% translate 'Trader name' %}</th>
-                        <th scope="col">{% translate 'Balance' %}</th>
+                        <th scope="col">{% translate 'Final alance' %}</th>
                     </tr>
                 </thead>
 
@@ -145,38 +144,16 @@
     </div>
 
     <!-- Scoreboards and charts -->
-    <div class="col-12 col-lg-6">
+    <div class="col-12 col-lg-6 mt-3 mt-lg-0">
+      
+        <!-- Price chart-->
+        <canvas class="mt-2 mb-0 mb-lg-4" id="priceCanvas">
+        </canvas>
 
-
-
-            <!-- Balance chart-->
-            {% comment %} <div class="card">
-                <div class="card-header" id="headingThree">
-                    <h2 class="mb-0">
-                        <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                            data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseThree">
-                            {% translate 'Balance history' %}
-                        </button>
-                    </h2>
-                </div>
-
-                <div id="collapseBalance" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
-                    <div class="card-body">
-                        <canvas id="balanceCanvas"></canvas>
-                    </div>
-                </div>
-            </div> {% endcomment %}
-
-            <!-- Price chart-->
-                    <canvas id="priceCanvas"></canvas>
-
-            <!-- Units chart-->
-            
-                        <canvas id="unitsCanvas"></canvas>
-            
+        <!-- Units chart-->
+        <canvas class="mt-2 mb-4" id="unitsCanvas"></canvas>
     </div>
 </div>
-
 {% endblock content %}
 
 {% block javascript %}
@@ -313,7 +290,6 @@
             }
         });
     }
-
     window.setInterval(check_for_next_round, 1000);
 </script>
 
@@ -359,9 +335,9 @@
         // Here we change this to 5000.00
         return value.toFixed(2) 
     }
-    
-    // Balance chart 
+
     {% comment %} 
+    // Balance chart 
     var traderBalanceDataSet = {
         label: "Your balance",
         data: JSON.parse("{{ trader_balance_json }}"),
@@ -414,7 +390,8 @@
                  
             }
         }     
-    ); {% endcomment %}
+    ); 
+    {% endcomment %}
 
     // Price chart
     var dataYourPrice = {
