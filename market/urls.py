@@ -17,9 +17,6 @@ urlpatterns = [
     # htmx inclusion templates
     path('<market_id>/monitor/trader-table/',
          views.trader_table, name='trader_table'),
-
-    path('<market_id>/small-trader-table/',
-         views.small_trader_table, name='small_trader_table'),
     # APIs
     path('<market_id>/current-round/', views.current_round, name='current_round'),
     #path('<market_id>/download/', views.download, name='download'),

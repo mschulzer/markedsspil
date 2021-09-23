@@ -61,17 +61,6 @@ def trader_table(request, market_id):
 
 
 @require_GET
-def small_trader_table(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-    traders = Trader.objects.filter(market=market).order_by('-balance')
-    context = {
-        'traders': traders,
-        'market': market
-    }
-    return render(request, 'market/small-trader-table.html', context)
-
-
-@require_GET
 def home(request):
     context = {}
     if 'market_id' in request.session:
