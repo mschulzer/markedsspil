@@ -76,8 +76,6 @@
         </p>
 
 
-
-
         {% if not wait and not market.game_over %}
             <!-- Next trade form -->
             <div class="card mb-sm-4">
@@ -116,8 +114,33 @@
         {% endif %}
         {% if market.game_over %}
             <!-- ScoreBoard -->
-           {% include 'market/small-trader-table.html' %}
-            </div>
+            <table class="table table-sm" >
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">{% translate 'Trader name' %}</th>
+                        <th scope="col">{% translate 'Balance' %}</th>
+                    </tr>
+                </thead>
+
+                <div class="mb-5">
+                    {% for trader in traders %}
+                        {% if request.session.username == trader.name %}
+                        <tr style="background-color:rgb(75,192,192,0.1)">
+                            <td scope="row">{{ forloop.counter }}</td>
+                            <td>You</td>
+                            <td>{{ trader.balance }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td scope="row">{{ forloop.counter }}</td>
+                            <td>{{ trader.name }}</td>
+                            <td>{{ trader.balance }}</td>
+                        </tr> 
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </table>
         {% endif%}
     </div>
 
@@ -153,14 +176,6 @@
             
     </div>
 </div>
-
-<div 
-    hx-get="{% url 'market:small_trader_table' market.market_id %}"
-    hx-trigger="every 2s"
-    hx-swap ="innerHTML"
-    hx-target="#card_body">
-</div>  
-
 
 {% endblock content %}
 
