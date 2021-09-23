@@ -315,7 +315,6 @@
 </script>
 {% endif %}
 
-{% if wait %}
 <script>
     round_num = parseInt("{{ market.round }}");
     market_id = "{{ market.market_id }}";
@@ -337,7 +336,6 @@
 
     window.setInterval(check_for_next_round, 1000);
 </script>
-{% endif %}
 
 
 <!-- import Chart.js library -->
