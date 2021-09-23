@@ -186,3 +186,5 @@ ACCOUNT_UNIQUE_EMAIL = True
 # other options: 'none', 'optional', 'mandatory'
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Markedsspillet.dk]"
