@@ -84,11 +84,26 @@ def test_min_cost_bigger_than_max_cost_is_invalid(form_data):
     form_data['max_cost'] = 2 # min_cost = 3
     form = MarketForm(data=form_data)
     assert not form.is_valid()
-    assert "Min cost can&#x27;t be bigger than max cost" in str(form)
+    assert "Max cost must be bigger than min cost" in str(form)
     with pytest.raises(ValidationError):
         form.clean()
     with pytest.raises(ValueError):
         form.save()
+
+
+def test_theta_bigger_than_beta_is_invalid(form_data):
+    """ form is invalid id theta >= beta """
+    form_data['theta'] = 7  # beta = 5.033
+    form = MarketForm(data=form_data)
+    assert not form.is_valid()
+    assert "Beta must be bigger than theta" in str(
+        form)
+    with pytest.raises(ValidationError):
+        form.clean()
+    with pytest.raises(ValueError):
+        form.save()
+
+
 
 
 def test_blank_field_is_invalid():

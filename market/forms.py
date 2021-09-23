@@ -42,13 +42,26 @@ class MarketForm(forms.ModelForm):
         }
 
     def clean(self):
-        """ Form is invalid if min cost > max cost """
+        """ 
+        Form validation that depends on more than one input value. 
+        Error message will be shown on top of the form. 
+        """
+        # min cost < max cost
         cleaned_data = super().clean()
         min_cost = cleaned_data.get("min_cost")
         max_cost = cleaned_data.get("max_cost")
         if min_cost and max_cost:
             if min_cost > max_cost:
-                raise ValidationError("Min cost can't be bigger than max cost")
+                raise ValidationError(
+                    "Max cost must be bigger than min cost")
+
+        # theta < beta
+        beta = cleaned_data.get("beta")
+        theta = cleaned_data.get("theta")
+        if beta and theta:
+            if theta >= beta:
+                raise ValidationError("Beta must be bigger than theta")
+
         return cleaned_data
 
     def clean_max_rounds(self):

@@ -309,7 +309,7 @@
     balance_labels = JSON.parse("{{ round_labels_json }}") // labels on x-axis
     
     {% if not market.endless %}
-        balance_labels.push("Final")
+        balance_labels.unshift("Start")
     {% endif %}
 
     var balanceChart = new Chart(document.getElementById('balanceCanvas'), {
