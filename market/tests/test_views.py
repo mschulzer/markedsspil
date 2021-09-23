@@ -784,12 +784,10 @@ def test_error_message_to_user_when_invalid_form(client, db):
     form = response.context['form']
 
     # Validation error msgs shown for unit price
-    assert(
-        'name="unit_price" min="0" class="slider numberinput form-control is-invalid' in str(form))
+    assert 'This field is required.</li></ul><input type="text" name="unit_price"' in str(form)
 
     # Validation error msgs not shown for unit amount
-    assert not(
-        'name="unit_amount" min="0" class="slider numberinput form-control is-invalid' in str(form))
+    assert 'This field is required.</li></ul><input type="text" name="unit_amount"' not in str(form)
 
 
 # Test CurrentRoundView

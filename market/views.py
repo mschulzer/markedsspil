@@ -258,11 +258,11 @@ def play(request, market_id):
                 new_trade.save()
                 return redirect(reverse('market:play', args=(market.market_id,)))
         else:
-            if market.round == 0:
-                form = TradeForm(trader)
-            else:
+            if market.round > 0 and round_stats.last() is not None:
                 market_average = round_stats.last().avg_price
                 form = TradeForm(trader, market_average)
+            else:
+                form = TradeForm(trader)
 
         # Set x-axis for graphs
         if market.endless:
