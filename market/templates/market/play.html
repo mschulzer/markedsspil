@@ -31,162 +31,127 @@
         {% endif %}
     {% endif %}
 
-    <!-- Paragraph with info about what just happened and current status -->
-    <div class="mt-lg-4"></div>
-    <p class="pr-2 pl-2 py-3">
-        {% if market.round > 0 and not wait and not trades.last.was_forced %}
-            <!-- Text with info about last round choices and results.  -->
-            {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-                Hi {{ name }}.<br class="hide-when-small"><br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
-                <b>{{ lastRoundSold }}</b>
-                {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
-                <b>{{ lastRoundPrice }} </b>kr. and the market
-                average price was <b>{{ lastRoundAvgPrice }}</b> kr.
-            {% endblocktranslate %}
-            <br class="hide-when-small"><br class="hide-when-small">
-                Your profit was
-            {% if trades.last.profit < 0 %}<b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
-        {% endif %}
-        
-        {% if trades.last.was_forced %}
-            {% translate "You didn't make a trade last round." %} 
-        {% endif %}
+    
 
-        {% if wait %}
-            Hi {{ trader.name }}.<br class="hide-when-small"><br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
-            {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
+<div class="row mt-lg-4" >    
+    <div class="col-12 col-lg-6">
+
+        <!-- Paragraph with info about what just happened and current status -->
+        <p class="pr-2 pl-2 py-3" style="background-color:#fadb6f">
+            {% if market.round > 0 and not wait and not trades.last.was_forced %}
+                <!-- Text with info about last round choices and results.  -->
+                {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                    Hi {{ name }}. Last round you produced <b>{{ lastRoundUnits }}</b> and sold
+                    <b>{{ lastRoundSold }}</b>
+                    {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b>. Your price was
+                    <b>{{ lastRoundPrice }} </b>kr. and the market
+                    average price was <b>{{ lastRoundAvgPrice }}</b> kr.
+                {% endblocktranslate %}
+                    Your profit was
+                {% if trades.last.profit < 0 %}<b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
+            {% endif %}
             
-            {% comment %} 
-            Suggested translation:
-            Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
-            {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
-            {% endcomment %}
+            {% if trades.last.was_forced %}
+                {% translate "You didn't make a trade last round." %} 
+            {% endif %}
 
-            <br><br>
-            <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
-                   
-        {% else %}
-        {% blocktranslate with balance=trader.balance %}
-            Your current balance is <b style="color:green">{{ balance }}</b> kr.
-        {% endblocktranslate %} 
-        
+            {% if wait %}
+                Hi {{ trader.name }}. You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+                {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
+                
+                {% comment %} 
+                Suggested translation:
+                Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
+                {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
+                {% endcomment %}
+
+                <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
+                    
+            {% else %}
+            {% blocktranslate with balance=trader.balance %}
+                Your current balance is <b style="color:green">{{ balance }}</b> kr.
+            {% endblocktranslate %} 
+            
+            {% endif %}
+        </p>
+
+
+
+
+        {% if not wait and not market.game_over %}
+            <!-- Next trade form -->
+            <div class="card mb-sm-4">
+                <div class="card-header">
+                {% translate 'Make your next trade' %}
+                </div>
+                <div class="card-body">
+                    <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                    </form>
+                    <div class="d-flex justify-content-center mt-4 mb-4">
+                        <input type="submit" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" form="trade_form">
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <ul class="text-secondary">
+                            <li>
+                                {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
+                            </li>
+                            <li>
+                                {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
+                            </li>
+                            <li>
+                                {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
+                            </li>
+                            <li>
+                                {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
+                            </li>
+                            <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         {% endif %}
-    </p>
-
-<div class="mt-lg-4"></div>
-
-<!-- Next trade form -->
-{% if not wait and not market.game_over %}
-    <div class="card mb-4">
-        <div class="card-header">
-         {% translate 'Make your next trade' %}
-        </div>
-        <div class="card-body">
-            <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
-                {% csrf_token %}
-                {{ form|crispy }}
-            </form>
-            <div class="d-flex justify-content-center mt-4 mb-4">
-                <input type="submit" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" form="trade_form">
+        {% if market.game_over %}
+            <!-- ScoreBoard -->
+           {% include 'market/small-trader-table.html' %}
             </div>
-
-            <div class="d-flex justify-content-center">
-                <ul class="text-secondary">
-                    <li>
-                        {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
-                    </li>
-                    <li>
-                        {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
-                    </li>
-                    <li>
-                        {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
-                    </li>
-                    <li>
-                        {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
-                    </li>
-                    <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-{% endif %}
-
-<!-- Scoreboards and charts -->
-<div class="accordion mb-5" id="accordionCharts">
-    {% if market.game_over %}
-    <!-- ScoreBoard -->
-    <div class="card" class="mb-2">
-        <div class="card-header" id="headingFour">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed m-0" type="button" data-toggle="collapse"
-                    data-target="#collapseScoreBoard" aria-expanded="false" aria-controls="collapseFour">
-                        {% translate 'Final Scoreboard' %}
-                </button>
-            </h2>
-        </div>
-        <div id="collapseScoreBoard" class="collapse show" aria-labelledby="headingThree">
-            <div class="card-body px-2 px-sm-5 pt-0 mt-0" id="card_body">
-                {% include 'market/small-trader-table.html' %}
-            </div>
-        </div>
-    </div>
-    {% endif%}
-
-    <!-- Balance chart-->
-    {% comment %} <div class="card">
-        <div class="card-header" id="headingThree">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseThree">
-                    {% translate 'Balance history' %}
-                </button>
-            </h2>
-        </div>
-
-        <div id="collapseBalance" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
-            <div class="card-body">
-                <canvas id="balanceCanvas"></canvas>
-            </div>
-        </div>
-    </div> {% endcomment %}
-
-    <!-- Price chart-->
-    <div class="card">
-        <div class="card-header" id="headingOne">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
-                    data-target="#collapsePrice" aria-expanded="false" aria-controls="collapseOne">
-                    {% translate 'Price history' %}
-                </button>
-            </h2>
-        </div>
-
-        <div id="collapsePrice" class="collapse show" aria-labelledby="headingOne">
-            <div class="card-body">
-                <canvas id="priceCanvas"></canvas>
-            </div>
-        </div>
+        {% endif%}
     </div>
 
-    <!-- Units chart-->
-    <div class="card">
-        <div class="card-header" id="headingTwo">
-            <h2 class="mb-0">
-                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
-                    data-target="#collapseProduction" aria-expanded="true" aria-controls="collapseTwo">
-                    {% translate 'Production history' %}
-                </button>
-            </h2>
-        </div>
-        <div id="collapseProduction" class="collapse show" aria-labelledby="headingTwo">
-            <div class="card-body">
-                <!-- to make canvas shown by default add .show to the dive above -->
-                <canvas id="unitsCanvas"></canvas>
-            </div>
-        </div>
-    </div>
+    <!-- Scoreboards and charts -->
+    <div class="col-12 col-lg-6">
 
+
+
+            <!-- Balance chart-->
+            {% comment %} <div class="card">
+                <div class="card-header" id="headingThree">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
+                            data-target="#collapseBalance" aria-expanded="false" aria-controls="collapseThree">
+                            {% translate 'Balance history' %}
+                        </button>
+                    </h2>
+                </div>
+
+                <div id="collapseBalance" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+                    <div class="card-body">
+                        <canvas id="balanceCanvas"></canvas>
+                    </div>
+                </div>
+            </div> {% endcomment %}
+
+            <!-- Price chart-->
+                    <canvas id="priceCanvas"></canvas>
+
+            <!-- Units chart-->
+            
+                        <canvas id="unitsCanvas"></canvas>
+            
+    </div>
 </div>
 
 <div 
@@ -486,7 +451,7 @@
             },  
             plugins: {
                 title: {
-                    display: false,
+                    display: true,
                     text: "{% translate 'Price history' %}",
                 },
             }
@@ -538,7 +503,7 @@
             },  
             plugins: {
                 title: {
-                    display: false,
+                    display: true,
                     text: "{% translate 'Production history' %}",
                 },
             },
