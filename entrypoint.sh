@@ -18,8 +18,5 @@ python manage.py compilemessages
 echo "${0}: populating test database"
 python manage.py setup_test_data
 
-echo "${0}: adding site name to test database"
-python manage.py setup_site_data
-
 echo "${0}: Running development server."
 python manage.py runserver 0.0.0.0:8000

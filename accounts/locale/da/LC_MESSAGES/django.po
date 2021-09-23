@@ -42,5 +42,5 @@ msgstr "Opret en ny bruger."
 msgid "SignUp_Title"
 msgstr "Opret ny bruger"
 
-msgid "Reset password for markedsspillet.dk"
-msgstr "Nulstilling af password for markedsspillet.dk"
+msgid "Reset password"
+msgstr "Nulstilling af password"
