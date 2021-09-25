@@ -134,14 +134,14 @@ max_price = {{ max_price|to_float }}
 # current round
 round = {{ market.round|add:1 }}
 
-# market average price last round (only defined when round > 1)
+# market average price last round (will be None in first round)
 {% if market.round > 0 %}
 avg_price = {{ round_stats.all.last.avg_price|to_float }}
 {% else %}
 avg_price = None
 {% endif %}
 
-# demand for your baguettes last round (only defined when round > 1)
+# demand for your baguettes last round (will be None in first round)
 {% if market.round > 0 %}
 demand_last_round = {{ trades.last.demand }}
 {% else %}
