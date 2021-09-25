@@ -15,6 +15,10 @@ from .market_settings import SCENARIOS
 from django.utils.translation import gettext as _
 
 
+def skulpt(request):
+    return render(request, 'market/skulpt.html', {'x': 5})
+
+
 @login_required
 def market_edit(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
