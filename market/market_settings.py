@@ -17,7 +17,8 @@ SCENARIOS = [
         "min_cost": 8,
         "max_cost": 8,
         "max_rounds": 15,
-        "endless": False
+        "endless": False,
+        "allow_robots": False
     },
     {
         "title": _("Scenario 2: Some traders have an advantage"),
@@ -31,7 +32,9 @@ SCENARIOS = [
         "min_cost": 5,
         "max_cost": 15,
         "max_rounds": 15,
-        "endless": False
+        "endless": False,
+        "allow_robots": False
+
     },
     {
         "title": _("Custom scenario"),
@@ -45,6 +48,7 @@ SCENARIOS = [
         "min_cost": "",
         "max_cost": "",
         "max_rounds": "",
-        "endless": False
+        "endless": False,
+        "allow_robots": False
     }
 ]

@@ -1,6 +1,7 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
 {% load custom_tags %}
+{% load static%}
 {% load i18n %}
 
 {% block title %}{% translate 'Play' %}{% endblock %}
@@ -29,9 +30,7 @@
                 {% endif %}
             {% endif %}
         {% endif %}
-    {% endif %}
-
-    
+    {% endif %}   
 
 <div class="row mt-lg-4" >    
     <div class="col-12 col-lg-6">
@@ -106,11 +105,89 @@
                             </li>
                             <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
                             </li>
-                        </ul>
+                        </ul>        
                     </div>
                 </div>
+
             </div>
+
+{% if market.allow_robots %}
+            <div class="card mb-3 p-3 pb-0">
+                <h3>Trade algorithm</h3>
+                <p>Use Python to automate your trade decisions!</p>
+                <textarea id="code_before" class="bg-light" readonly class="w-100" rows="6">
+"""
+Below we define some useful constants that you can use in your script. The value of these constants will change from round to round.
+""" 
+# your current balance
+balance = {{ trader.balance|to_float }}
+
+# your production cost pr. unit (fixed)
+prod_cost = {{ trader.prod_cost|to_float }}
+
+# the maximal number of {{ market.product_name_plural }} you can afford to produce
+max_amount = {{ max_amount }}
+
+# the maximal price pr. {{ market.product_name_singular }} you can choose (fixed)
+max_price = {{ max_price|to_float }}
+
+# current round
+round = {{ market.round|add:1 }}
+
+# market average price last round (only defined when round > 1)
+{% if market.round > 0 %}
+avg_price = {{ round_stats.all.last.avg_price|to_float }}
+{% else %}
+avg_price = None
+{% endif %}
+
+# demand for your baguettes last round (only defined when round > 1)
+{% if market.round > 0 %}
+demand_last_round = {{ trades.last.demand }}
+{% else %}
+demand_last_round = None
+{% endif %}
+</textarea>
+<p class="mt-3">Your code goes here:</p>
+<textarea id="client_code" class="w-100" rows="7">
+import random
+
+# price for one {{ market.product_name_singular }}
+price_choice = random.uniform(0, max_price)
+
+# number of {{ market.product_name_plural }}  to produce 
+amount_choice = random.randint(0, max_amount)</textarea>
+<div class="d-flex justify-content-between p-3 pb-0">
+    <button class="btn btn-outline-primary" type="button" onclick="runit(submit=false)">Test output</button> 
+
+    <button class="btn btn-outline-warning" type="button" onclick="runit(submit=true)">Make Single Trade</button> 
+
+    <button class="btn btn-outline-danger" type="button" onclick="runit()">Autoplay entire game</button> 
+</div>
+<textarea id="code_after" class="bg-light p-0 m-0" cols="40" rows="10" style="visibility:hidden; display:none;" readonly>#
+print("")
+print("Your algorithm produced these raw values:")
+try:
+    price_choice
+    print("Price:", price_choice)
+except:
+    print("Price: Not defined in your script!")
+
+try:
+    amount_choice
+    print("Amount: ", amount_choice)
+except:
+    print("Amount: Not defined in your script!")</textarea>
+
+                    
+            <pre id="output">
+                <!-- Python print statements in text-area will have output here-->
+            </pre> 
+            <div id="cleaned_values"></div>                   
+            </div> <!-- end of algoritm card-->
         {% endif %}
+{% endif %}
+
         {% if market.game_over %}
             <!-- ScoreBoard -->
             <table class="table table-sm" >
@@ -141,15 +218,15 @@
                 </div>
             </table>
         {% endif%}
-    </div>
+    </div><!-- end of column -->
 
     <!-- Scoreboards and charts -->
-    <div class="col-12 col-lg-6 mt-3 mt-lg-0">
+    <div class="col-12 col-lg-6 mt-3 mt-lg-0 ">
       
         <!-- Price chart-->
         <canvas class="mt-2 mb-0 mb-lg-4" id="priceCanvas">
         </canvas>
-
+        
         <!-- Units chart-->
         <canvas class="mt-2 mb-4" id="unitsCanvas"></canvas>
     </div>
@@ -318,6 +395,114 @@ function prettify (num) {
     }
     
 </script>
+{% endif %}
+
+{% if market.allow_robots %}
+<script type="text/javascript"> 
+    // output functions are configurable.  This one just appends some text
+    // to a pre element.
+    function outf(text) { 
+        var mypre = document.getElementById("output"); 
+        mypre.innerHTML = mypre.innerHTML + text; 
+    } 
+    function builtinRead(x) {
+        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+                throw "File not found: '" + x + "'";
+        return Sk.builtinFiles["files"][x];
+    }
+
+    // Here's everything you need to run a python program in skulpt
+    // grab the code from your textarea
+    // get a reference to your pre element for output
+    // configure the output function
+    // call Sk.importMainWithBody()
+    function runit(submit=false) { 
+        document.getElementById("cleaned_values").innerHTML = ""
+        var code_before = document.getElementById("code_before").value;         
+        var client_code = document.getElementById("client_code").value; 
+        var code_after = document.getElementById("code_after").value;         
+        prog = code_before + client_code + code_after
+        console.log(prog)
+
+        var mypre = document.getElementById("output"); 
+        mypre.innerHTML = ''; 
+        Sk.pre = "output";
+        Sk.configure({output:outf, read:builtinRead}); 
+        var myPromise = Sk.misceval.asyncToPromise(function() {
+            return Sk.importMainWithBody("<stdin>", false, prog, true);
+        });
+        myPromise.then(
+            function(mod) {
+                console.log('Skulpt: Python code parsed successfully');
+                max_amount = Sk.ffi.remapToJs(Sk.globals["max_amount"])
+                max_price = Sk.ffi.remapToJs(Sk.globals["max_price"])               
+        
+                // clean price_choice
+                price_choice = Sk.ffi.remapToJs(Sk.globals["price_choice"])
+                console.log("Input price_choice =", price_choice)
+                if (!price_choice){
+                    price_choice = 0
+                    console.log("price_choice not defined ... set to 0")
+                    //mypre.innerHTML += "price_choice not defined in your script. Price will be set to 0"
+               }
+                if(price_choice < 0){
+                    price_choice = 0
+                    console.log("price_choice negative ... set to 0")
+                }
+                if(price_choice > max_price ){
+                    price_choice = max_price
+                    console.log("price_choice bigger than max_price ... set to max_price")
+                }
+                if(!(typeof price_choice == 'number')){
+                    price_choice = 0
+                    console.log("price_choice not a number ... set to zero")
+                }
+                price_choice = price_choice.toFixed(2)
+                console.log("Cleaned price_choise = ", price_choice)
+                
+                // clean amount_choice
+                amount_choice = Sk.ffi.remapToJs(Sk.globals["amount_choice"])
+                console.log("Input amount_choice =", amount_choice)
+                if (!amount_choice){
+                    amount_choice = 0
+                    console.log(`amount_choice not defined... set to 0`)
+               }
+                if(amount_choice < 0){
+                    amount_choice = 0
+                    console.log("amount_choice negative ... set to 0")
+                }
+                if(amount_choice > max_amount ){
+                    amount_choice = max_amount
+                    console.log("amount_choice bigger than max_price ... set to max_amount")
+                }
+                if(!(typeof amount_choice == 'number')){
+                    amount_choice = 0
+                    console.log("amount_choice not a number ... set to zero")
+                }
+                amount_choice = Math.round(amount_choice);
+                console.log("Cleaned amount_choise = ", amount_choice)
+
+                
+                
+                mypre.innerHTML += `<br>Your algorithm would result in these valid choices:<br>Price pr {{ market.product_name_singular }}: ${price_choice} kr.<br>Number of {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
+                if (submit){     
+                    var amount_slider = document.getElementById("id_unit_amount");
+                    var price_slider = document.getElementById("id_unit_price");
+                    amount_slider.value = amount_choice
+                    price_slider.value = price_choice
+                    document.getElementById('trade_form').submit()
+                }
+            },
+            function(err) {
+                console.log("Python error: " + err.toString());
+                mypre.innerHTML += err.toString()
+        });
+    } 
+    </script> 
+
+    <!-- Skulpt -->
+    <script src="{% static "skulpt/skulpt.min.js" %}"></script>
+    <script src="{% static "skulpt/skulpt-stdlib.js" %}"></script>
 {% endif %}
 
 <script>
@@ -547,6 +732,7 @@ function prettify (num) {
             },
         }
     });
+                
 </script>
 
 {% endblock javascript%}
