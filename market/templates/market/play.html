@@ -6,7 +6,6 @@
 
 {% block title %}{% translate 'Play' %}{% endblock %}
 {% block content %}
-
     <!-- Top colored message -->
     {% if wait %}
         <div class="alert alert-success">You made a trade!</div>
@@ -57,19 +56,20 @@
             {% if wait %}
                 Hi {{ trader.name }}.<br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
-                
                 {% comment %} 
                 Suggested translation:
                 Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
                 {% endcomment %}
-            <br class="hide-when-small"> 
+                {% blocktranslate with balance=trader.balance %}
+                    Your current balance is <b style="color:green">{{ balance }}</b> kr.
+                {% endblocktranslate %}                 
                 <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
                     
             {% else %}
-            {% blocktranslate with balance=trader.balance %}
-                Your current balance is <b style="color:green">{{ balance }}</b> kr.
-            {% endblocktranslate %} 
+                {% blocktranslate with balance=trader.balance %}
+                    Your current balance is <b style="color:green">{{ balance }}</b> kr.
+                {% endblocktranslate %} 
             
             {% endif %}
         </p>
@@ -162,7 +162,7 @@ amount_choice = random.randint(0, max_amount)</textarea>
 
     <button class="btn btn-outline-warning" type="button" onclick="runit(submit=true)">Make Single Trade</button> 
 
-    <button class="btn btn-outline-danger" type="button" onclick="runit()">Autoplay entire game</button> 
+    <button class="btn btn-outline-danger" type="button" onclick="runit(submit=true, auto_play=true)">Autoplay entire game</button> 
 </div>
 <textarea id="code_after" class="bg-light p-0 m-0" cols="40" rows="10" style="visibility:hidden; display:none;" readonly>#
 print("")
@@ -185,8 +185,12 @@ except:
             </pre> 
             <div id="cleaned_values"></div>                   
             </div> <!-- end of algoritm card-->
-        {% endif %}
-{% endif %}
+            
+           
+
+        {% endif %}<!-- end of 'if market.allow_robots' -->
+
+{% endif %} 
 
         {% if market.game_over %}
             <!-- ScoreBoard -->
@@ -195,7 +199,7 @@ except:
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">{% translate 'Trader name' %}</th>
-                        <th scope="col">{% translate 'Final alance' %}</th>
+                        <th scope="col">{% translate 'Final balance' %}</th>
                     </tr>
                 </thead>
 
@@ -416,13 +420,12 @@ function prettify (num) {
     // get a reference to your pre element for output
     // configure the output function
     // call Sk.importMainWithBody()
-    function runit(submit=false) { 
+    function runit(submit=false, auto_play=false) { 
         document.getElementById("cleaned_values").innerHTML = ""
         var code_before = document.getElementById("code_before").value;         
         var client_code = document.getElementById("client_code").value; 
         var code_after = document.getElementById("code_after").value;         
         prog = code_before + client_code + code_after
-        console.log(prog)
 
         var mypre = document.getElementById("output"); 
         mypre.innerHTML = ''; 
@@ -481,10 +484,10 @@ function prettify (num) {
                 }
                 amount_choice = Math.round(amount_choice);
                 console.log("Cleaned amount_choise = ", amount_choice)
-
                 
-                
-                mypre.innerHTML += `<br>Your algorithm would result in these valid choices:<br>Price pr {{ market.product_name_singular }}: ${price_choice} kr.<br>Number of {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
+                if (auto_play){
+                    document.getElementById("id_auto_play").value = true
+                }
                 if (submit){     
                     var amount_slider = document.getElementById("id_unit_amount");
                     var price_slider = document.getElementById("id_unit_price");
@@ -492,12 +495,16 @@ function prettify (num) {
                     price_slider.value = price_choice
                     document.getElementById('trade_form').submit()
                 }
+                else{
+                    mypre.innerHTML += `<br>Your algorithm would have resulted in these valid choices:<br>Price pr {{ market.product_name_singular }}: ${price_choice} kr.<br>Number of {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
+                }
             },
             function(err) {
                 console.log("Python error: " + err.toString());
                 mypre.innerHTML += err.toString()
         });
     } 
+   
     </script> 
 
     <!-- Skulpt -->
@@ -735,4 +742,11 @@ function prettify (num) {
                 
 </script>
 
+ {% if trader.auto_play and not wait and not market.game_over%}
+    <script>
+        runit(submit=true)
+    </script>
+{% endif %}
+
+  
 {% endblock javascript%}

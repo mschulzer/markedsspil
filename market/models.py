@@ -106,6 +106,8 @@ class Trader(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
+    auto_play = models.BooleanField(default=False)
+
     class Meta:
         # There can only be one trader with a given name in a given market.
         # Specifying the constraint here to discover bugs in code during development

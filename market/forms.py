@@ -153,6 +153,9 @@ class TraderForm(forms.ModelForm):
 
 
 class TradeForm(forms.ModelForm):
+    auto_play = forms.BooleanField(
+        widget=forms.HiddenInput(), required=False, initial=False)
+
     class Meta:
         model = Trade
         fields = ('unit_price', 'unit_amount')

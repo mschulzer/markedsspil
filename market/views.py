@@ -16,10 +16,6 @@ from .market_settings import SCENARIOS
 from django.utils.translation import gettext as _
 
 
-def skulpt(request):
-    return render(request, 'market/skulpt.html', {'x': 5})
-
-
 @login_required
 def market_edit(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
@@ -250,8 +246,15 @@ def play(request, market_id):
                 new_trade.round = market.round
                 new_trade.balance_before = trader.balance
                 new_trade.save()
+
+                auto_play = form.cleaned_data['auto_play']
+                if auto_play:
+                    trader.auto_play = True
+                    trader.save()
                 return redirect(reverse('market:play', args=(market.market_id,)))
-        else:
+
+        elif request.method == 'GET':
+
             if market.round > 0 and round_stats.last() is not None:
                 market_average = round_stats.last().avg_price
                 form = TradeForm(trader, market_average)
