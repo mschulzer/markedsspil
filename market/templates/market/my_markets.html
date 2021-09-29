@@ -19,6 +19,7 @@
                     <th>{% translate 'Initial balance' %}</th>
                     <th>{% translate 'Cost/unit' %}</th>
                     <th>{% translate 'Parameters' %}</th>
+                    <th>{% translate 'Allow robots' %}</th>
                     <th>{% translate 'Progression' %}</th>
                 </tr>
             </thead>
@@ -39,6 +40,13 @@
                         Alpha: {{ market.alpha }}<br>
                         Beta: {{ market.beta }}<br>
                         Theta: {{ market.theta }}<br>
+                    </td>
+                    <td>
+                        {% if market.allow_robots %}
+                            Yes
+                        {% else %}
+                            No
+                        {% endif %}
                     </td>
                     {% if market.game_over %}
                         <td>Game is over</td>
