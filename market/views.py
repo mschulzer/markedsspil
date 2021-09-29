@@ -1,3 +1,4 @@
+from math import floor
 from django.utils.safestring import mark_safe
 import json
 from django.shortcuts import render, redirect, get_object_or_404
@@ -245,8 +246,15 @@ def play(request, market_id):
                 new_trade.round = market.round
                 new_trade.balance_before = trader.balance
                 new_trade.save()
+
+                auto_play = form.cleaned_data['auto_play']
+                if auto_play:
+                    trader.auto_play = True
+                    trader.save()
                 return redirect(reverse('market:play', args=(market.market_id,)))
-        else:
+
+        elif request.method == 'GET':
+
             if market.round > 0 and round_stats.last() is not None:
                 market_average = round_stats.last().avg_price
                 form = TradeForm(trader, market_average)
@@ -267,6 +275,8 @@ def play(request, market_id):
             'trades': trades,
             'wait': False,
             'traders': Trader.objects.filter(market=market).order_by('-balance'),
+            'max_amount': floor(trader.balance/trader.prod_cost),
+            'max_price': 5 * market.max_cost,
 
             # Labels for x-axis for graphs
             'round_labels_json': json.dumps(round_labels),

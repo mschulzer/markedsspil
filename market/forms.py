@@ -10,7 +10,7 @@ class MarketForm(forms.ModelForm):
         model = Market
 
         fields = ['max_rounds', 'endless', 'initial_balance', 'min_cost', 'max_cost',
-                  'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural']
+                  'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural', 'allow_robots']
         help_texts = {
             'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')"),
             'product_name_plural': _("The name of the product being traded in plural form (e.g. 'baguettes')"),
@@ -22,6 +22,7 @@ class MarketForm(forms.ModelForm):
             'max_cost': _("What is the highest production cost for one unit of the product?"),
             'max_rounds': _(f"How many rounds should be played before the game ends? Choose number between 1 and {Market.UPPER_LIMIT_ON_MAX_ROUNDS}"),
             'endless': _("The game should go on for an indefinite number of rounds"),
+            'allow_robots': _("Allow players to use trade algorithms")
         }
         labels = {
             'product_name_singular': _('Product name (singular)'),
@@ -34,6 +35,7 @@ class MarketForm(forms.ModelForm):
             'max_cost': _('Max. prod. cost'),
             'endless': _('Endless'),
             'max_rounds': _('Max rounds'),
+            'allow_robots': _('Allow robots')
         }
         widgets = {
             'initial_balance': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),
@@ -151,6 +153,9 @@ class TraderForm(forms.ModelForm):
 
 
 class TradeForm(forms.ModelForm):
+    auto_play = forms.BooleanField(
+        widget=forms.HiddenInput(), required=False, initial=False)
+
     class Meta:
         model = Trade
         fields = ('unit_price', 'unit_amount')
