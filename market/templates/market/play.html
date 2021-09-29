@@ -233,6 +233,9 @@ except:
         
         <!-- Units chart-->
         <canvas class="mt-2 mb-4" id="unitsCanvas"></canvas>
+    
+       <!-- Balance chart-->
+        <canvas class="mt-2 mb-4" id="balanceCanvas"></canvas>
     </div>
 </div>
 {% endblock content %}
@@ -576,7 +579,6 @@ function prettify (num) {
         return prettify(value);
     }
 
-    {% comment %} 
     // Balance chart 
     var traderBalanceDataSet = {
         label: "Your balance",
@@ -589,12 +591,14 @@ function prettify (num) {
         label: "{% translate 'Market average balance' %}",
         data: JSON.parse("{{ avg_balance_json }}"),
         lineTension: 0,
-        borderColor: secondColor,
+        borderColor: thirdColor,
     };
     
     balance_labels = JSON.parse("{{ round_labels_json }}") // labels on x-axis
-    balance_labels.push('Final')
-
+    {% if not market.endless %}
+        balance_labels.unshift("Start")
+    {% endif %}
+    
     var lineChart = new Chart(document.getElementById('balanceCanvas'), {
             type: 'line',
             data: {
@@ -631,7 +635,7 @@ function prettify (num) {
             }
         }     
     ); 
-    {% endcomment %}
+
 
     // Price chart
     var dataYourPrice = {
