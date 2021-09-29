@@ -198,8 +198,8 @@ msgstr "Deltag"
 
 #: templates/market/base.html:31 templates/market/create.html:29
 #: templates/market/create.html:42 templates/market/home.html:37
-msgid "Create"
-msgstr "Opret"
+msgid "Create market"
+msgstr "Opret marked"
 
 
 #: templates/market/base.html:41 
