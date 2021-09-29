@@ -34,7 +34,7 @@ def test_round_0_one_forced_move(logged_in_user, client):
 
     # A player named Marianne joins the market:
     client.post(
-        reverse('market:join'),
+        reverse('market:home'),
         {
             'name': 'Marianne',
             'market_id': market.market_id,
@@ -61,7 +61,7 @@ def test_round_0_one_forced_move(logged_in_user, client):
 
     # Now a player called Klaus joins the game
     client.post(
-        reverse('market:join'),
+        reverse('market:home'),
         {
             'name': 'Klaus',
             'market_id': market.market_id,

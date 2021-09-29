@@ -5,7 +5,8 @@
 {% block title %}{% translate 'Log Out' %}{% endblock %}
 
 {% block content %}
-  <h1>{% translate 'Log Out' %}</h1>
+  <h2>{% translate 'Log Out' %}</h2>
+  You are currently logged in as {{ user.email }}.
   <p>{% translate 'Are you sure you want to log out?' %}</p>
   <form method="post" action="{% url 'account_logout' %}">
     {% csrf_token %}

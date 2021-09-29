@@ -61,13 +61,48 @@ def trader_table(request, market_id):
     return render(request, 'market/trader-table.html', context)
 
 
-@require_GET
 def home(request):
-    context = {}
-    if 'market_id' in request.session:
-        market = Market.objects.get(
-            market_id=request.session['market_id'])
-        context['market'] = market
+
+    if request.method == 'POST':
+        form = TraderForm(request.POST)
+        context = {'form': form}
+        if form.is_valid():
+            market = Market.objects.get(
+                market_id=form.cleaned_data['market_id'])
+
+            new_trader = form.save(commit=False)
+            new_trader.market = market
+            new_trader.balance = market.initial_balance
+            new_trader.round_joined = market.round
+            new_trader.save()
+
+            request.session['trader_id'] = new_trader.pk
+            request.session['username'] = form.cleaned_data['name']
+            request.session['market_id'] = form.cleaned_data['market_id']
+
+            # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1
+            if market.round > 0:
+                for round_num in range(market.round):
+                    create_forced_trade(
+                        trader=new_trader, round_num=round_num, is_new_trader=True)
+
+            return redirect(reverse('market:play', args=(market.market_id,)))
+    else:
+        context = {}
+
+        if 'market_id' in request.session:
+            market = Market.objects.get(
+                market_id=request.session['market_id'])
+            context['market'] = market
+
+        if 'market_id' in request.GET:
+            form = TraderForm(
+                initial={'market_id': request.GET['market_id']})
+        else:
+            form = TraderForm()
+
+        context['form'] = form
+
     return render(request, 'market/home.html', context)
 
 
@@ -107,49 +142,6 @@ def create(request):
     }
 
     return render(request, 'market/create.html', context)
-
-
-def join(request):
-
-    if request.method == 'POST':
-        form = TraderForm(request.POST)
-        context = {'form': form}
-        if form.is_valid():
-            market = Market.objects.get(
-                market_id=form.cleaned_data['market_id'])
-
-            new_trader = form.save(commit=False)
-            new_trader.market = market
-            new_trader.balance = market.initial_balance
-            new_trader.round_joined = market.round
-            new_trader.save()
-
-            request.session['trader_id'] = new_trader.pk
-            request.session['username'] = form.cleaned_data['name']
-            request.session['market_id'] = form.cleaned_data['market_id']
-
-            # if player joins a game in round n>0, create forced trades for round 0,1,..,n-1
-            if market.round > 0:
-                for round_num in range(market.round):
-                    create_forced_trade(
-                        trader=new_trader, round_num=round_num, is_new_trader=True)
-
-            return redirect(reverse('market:play', args=(market.market_id,)))
-
-    elif request.method == 'GET':
-        if 'market_id' in request.GET:
-            form = TraderForm(
-                initial={'market_id': request.GET['market_id']})
-        else:
-            form = TraderForm()
-
-        context = {'form': form}
-        if 'market_id' in request.session:
-            market = Market.objects.get(
-                market_id=request.session['market_id'])
-            context['market'] = market
-
-    return render(request, 'market/join.html', context)
 
 
 def monitor(request, market_id):
@@ -231,7 +223,8 @@ def play(request, market_id):
     try:
         trader = Trader.objects.get(id=request.session['trader_id'])
     except:
-        return redirect(reverse('market:join'))
+        # if not trader in session return to home:
+        return redirect(reverse('market:home'))
     else:
         market = trader.market
 
