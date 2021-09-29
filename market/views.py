@@ -266,7 +266,8 @@ def play(request, market_id):
     try:
         trader = Trader.objects.get(id=request.session['trader_id'])
     except:
-        return redirect(reverse('market:join'))
+        # if not trader in session return to home:
+        return redirect(reverse('market:home'))
     else:
         market = trader.market
 
