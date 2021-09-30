@@ -13,7 +13,7 @@
         {% if market.game_over %}
             <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
         {% else %}
-             {% if market.round == trader.round_joined %}
+            {% if market.round == trader.round_joined %}
                 <!-- a verbose & enthusiastic message welcoming new traders -->
                 {% if market.endless %}
                     <div class="alert alert-success">Hi {{ trader.name }}! You are now ready for round {{ market.round|add:1 }} on the {{ market.product_name_singular }} market {{ market.market_id }}.</div>
@@ -35,25 +35,33 @@
     <div class="col-12 col-lg-6">
 
         <!-- Paragraph with info about what just happened and current status -->
-        <p class="pr-2 pl-2 py-3 alert alert-warning"> <!-- # style="background-color:#fadb6f">-->
-            {% if market.round > 0 and not wait and not trades.last.was_forced %}
-                <!-- Text with info about last round choices and results.  -->
-                {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-                    Hi {{ name }}. <br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
-                    <b>{{ lastRoundSold }}</b>
-                    {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b> baguettes. Your price was
-                    <b>{{ lastRoundPrice }} </b>kr. and the market
-                    average price was <b>{{ lastRoundAvgPrice }}</b> kr.
-                {% endblocktranslate %}
-                    Your profit was
-                {% if trades.last.profit < 0 %}<b style="color:red">{% else %} <b style="color:green">{% endif %}{{ trades.last.profit }}</b> kr.
-            {% endif %}
+        <p class="pr-2 pl-2 py-3 alert alert-warning"> 
+            {% if not wait %}
+                
+                {% if market.round == trader.round_joined  %}
+                    Your fixed production cost pr. unit is <b>{{ trader.prod_cost }}</b> kr. <br>
+                    <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
+                {% elif not trades.last.was_forced %}
+                    <!-- Text with info about last round choices and results.  -->
+                    {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                        Hi {{ name }}. <br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
+                        <b>{{ lastRoundSold }}</b>
+                        {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b> baguettes. Your price was
+                        <b>{{ lastRoundPrice }} </b>kr. and the market
+                        average price was <b>{{ lastRoundAvgPrice }}</b> kr.
+                    {% endblocktranslate %}
+                        Your profit was
+                    {% if trades.last.profit < 0 %}<b style="color:red">
+                    {% else %} <b style="color:green">
+                    {% endif %}{{ trades.last.profit }}</b> kr.
+                {% endif %}
+                
+                {% if trades.last.was_forced and trader.round_joined < market.round %}
+                    {% translate "You didn't make a trade last round." %} 
+                {% endif %}
             
-            {% if trades.last.was_forced %}
-                {% translate "You didn't make a trade last round." %} 
-            {% endif %}
-
-            {% if wait %}
+            {% else %} 
+                <!-- wait is true -->
                 Hi {{ trader.name }}.<br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
                 {% comment %} 
@@ -65,12 +73,12 @@
                     Your current balance is <b style="color:green">{{ balance }}</b> kr.
                 {% endblocktranslate %}                 
                 <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
-                    
-            {% else %}
+            {% endif %}
+
+            {% if not wait %}
                 {% blocktranslate with balance=trader.balance %}
                     Your current balance is <b style="color:green">{{ balance }}</b> kr.
-                {% endblocktranslate %} 
-            
+                {% endblocktranslate %}             
             {% endif %}
         </p>
 
@@ -92,18 +100,18 @@
                     <div class="d-flex justify-content-center">
                         <ul class="text-secondary">
                             <li>
-                                {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b>
+                                {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b> kr.
                             </li>
                             <li>
-                                {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b>
+                                {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b> kr.
                             </li>
                             <li>
-                                {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b>
+                                {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b> kr.
                             </li>
                             <li>
-                                {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b>
+                                {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b> kr. 
                             </li>
-                            <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b>
+                            <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b> kr.
                             </li>
                         </ul>        
                     </div>
@@ -627,7 +635,7 @@ function prettify (num) {
                 },  
                 plugins: {
                     title: {
-                        display: false,
+                        display: true,
                         text: "{% translate 'Balance' %}",
                     }
                 }, 
@@ -738,7 +746,7 @@ function prettify (num) {
             plugins: {
                 title: {
                     display: true,
-                    text: "{% translate 'Production history' %}",
+                    text: "{% translate 'Your production history' %}",
                 },
             },
         }

@@ -139,17 +139,24 @@ def generate_cost_list(trader):
     The i'th entry of the list is the prod_cost in the i'th round. It should be either None, 
     if the trader has not joined yet, or equal to the trader's fixed prod. cost. 
 
-    For a trader, who joins the game in the first round, the resulting list
+    For a trader who joins the game in the first round the resulting list
     should loook something like this
     [8, 8, 8,...,8] 
 
     For a trader who joined the game in "round 3" (market.round=2), 
     the list should look something like this: 
-    [None, None, 8, 8, 8, ...,8] 
+    [None, None, 8, 8, 8, ...,8]
+
+    If the game is endless (unlimited number of rounds), the length of the cost list
+    should be current_round +1. Else the lenght of the cost list should be equal 
+    to the total number of rounds of the game (market.max_rounds + 1)
     """
     prod_cost = float(trader.prod_cost)
 
-    prod_cost_list = [prod_cost for _ in range(trader.market.round + 1)]
+    if trader.market.endless:
+        prod_cost_list = [prod_cost for _ in range(trader.market.round + 1)]
+    else:
+        prod_cost_list = [prod_cost for _ in range(trader.market.max_rounds)]
 
     if trader.round_joined > 0:
         for i in range(trader.round_joined):

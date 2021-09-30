@@ -466,8 +466,8 @@ msgid "Price history"
 msgstr "Prishistorik"
 
 #: templates/market/play.html:102
-msgid "Production history"
-msgstr "Produktionstal"
+msgid "Your production history"
+msgstr "Dine produktionstal"
 
 #: templates/market/play.html:120 templates/market/play.html:262
 msgid "Balance history"

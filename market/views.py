@@ -63,9 +63,9 @@ def trader_table(request, market_id):
 
 def home(request):
 
+    context = {}
     if request.method == 'POST':
         form = TraderForm(request.POST)
-        context = {'form': form}
         if form.is_valid():
             market = Market.objects.get(
                 market_id=form.cleaned_data['market_id'])
@@ -87,22 +87,22 @@ def home(request):
                         trader=new_trader, round_num=round_num, is_new_trader=True)
 
             return redirect(reverse('market:play', args=(market.market_id,)))
-    else:
-        context = {}
 
-        if 'market_id' in request.session:
-            market = Market.objects.get(
-                market_id=request.session['market_id'])
-            context['market'] = market
-
+    else:  # request.method == 'GET':
         if 'market_id' in request.GET:
+            # The client is following an invitation link to the market. Therefore we fill out the market_id field in the form
             form = TraderForm(
                 initial={'market_id': request.GET['market_id']})
         else:
             form = TraderForm()
 
-        context['form'] = form
+    if 'market_id' in request.session:
+        # The client has already joined a market. We add this market to the context to notify the client about this
+        market = Market.objects.get(
+            market_id=request.session['market_id'])
+        context['market'] = market
 
+    context['form'] = form
     return render(request, 'market/home.html', context)
 
 
