@@ -285,7 +285,7 @@ function prettify (num) {
 }
 </script>
 
-{% if not wait %}
+{% if not wait and not market.game_over%}
 <script>
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
@@ -310,7 +310,7 @@ function prettify (num) {
            document.getElementById("warning_button").click();
         }
         else{
-
+             
             document.getElementById('trade_form').submit()
         }
     }
