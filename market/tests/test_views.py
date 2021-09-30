@@ -710,8 +710,8 @@ def test_form_attributes_are_set_correctly(client, db):
 
     form = response.context['form']
 
-    # we expect the max input value of unit_price to be 5* market.max_cost = 15
-    assert ('max="15.00"' in str(form))
+    # we expect the max input value of unit_price to be 4* market.max_cost = 12
+    assert ('max="12.00"' in str(form))
     assert not ('max="16.00"' in str(form))
 
     # we expect the max input value of unit_amount to be floor(trader.balance/trader.prod_cost) = floor(101/2) = 50.00

@@ -168,9 +168,10 @@ class TradeForm(forms.ModelForm):
         super(TradeForm, self).__init__(*args, **kwargs)
 
         if trader:
-            # traders can set the price of a product up to 5 times market's maximal prod cost
+            # traders can set the price of a product up to 4 times market's maximal prod cost
             self.fields['unit_price'].widget.attrs['min'] = 0
-            self.fields['unit_price'].widget.attrs['max'] = 5 * trader.market.max_cost
+            self.fields['unit_price'].widget.attrs['max'] = 4 * \
+                trader.market.max_cost
 
             # make sure, trader can't choose to produce an amount of units, he can't afford
             if trader.prod_cost > 0:

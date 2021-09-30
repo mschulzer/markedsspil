@@ -91,4 +91,11 @@
     </div>
 </div>
 
+{% if request.session.market_id %}
+<script>
+    // if client has already joined a game, fill out name field
+    document.getElementById('id_name').value = "{{ request.session.username }}"
+</script>
+{% endif %}
+
 {% endblock %}

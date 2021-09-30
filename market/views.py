@@ -87,21 +87,18 @@ def home(request):
                         trader=new_trader, round_num=round_num, is_new_trader=True)
 
             return redirect(reverse('market:play', args=(market.market_id,)))
+
     else:
-        context = {}
+        context = {'form': TraderForm()}
 
-        if 'market_id' in request.session:
-            market = Market.objects.get(
-                market_id=request.session['market_id'])
-            context['market'] = market
+    if 'market_id' in request.session:
+        market = Market.objects.get(
+            market_id=request.session['market_id'])
+        context['market'] = market
 
-        if 'market_id' in request.GET:
-            form = TraderForm(
-                initial={'market_id': request.GET['market_id']})
-        else:
-            form = TraderForm()
-
-        context['form'] = form
+    if 'market_id' in request.GET:
+        form = TraderForm(
+            initial={'market_id': request.GET['market_id']})
 
     return render(request, 'market/home.html', context)
 
