@@ -6,6 +6,7 @@
 
 {% block title %}{% translate 'Play' %}{% endblock %}
 {% block content %}
+
     <!-- Top colored message -->
     {% if wait %}
         <div class="alert alert-success">You made a trade!</div>
@@ -148,6 +149,9 @@
             </div>
 
 {% if market.allow_robots %}
+    </div> <!-- end column-->
+    <div class="col-12 col-lg-6 mt-3 mt-lg-0 ">
+
             <div class="card mb-3 p-3 pb-0">
                 <h3>Trade algorithm</h3>
                 <p>Use Python to automate your trade decisions!</p>
@@ -194,11 +198,15 @@ price_choice = random.uniform(0, max_price)
 # number of {{ market.product_name_plural }}  to produce 
 amount_choice = random.randint(0, max_amount)</textarea>
 <div class="d-flex justify-content-between p-3 pb-0">
-    <button class="btn btn-outline-primary" type="button" onclick="runit(submit=false)">Test output</button> 
-
-    <button class="btn btn-outline-warning" type="button" onclick="runit(submit=true)">Make Single Trade</button> 
-
-    <button class="btn btn-outline-danger" type="button" onclick="runit(submit=true, auto_play=true)">Autoplay entire game</button> 
+    <button class="btn btn-outline-primary" type="button" onclick="runit()">
+    Test output
+    </button> 
+    <button class="btn btn-outline-danger" type="button" onclick="runit(submit=true)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+            <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
+        </svg>
+        Autoplay remaining rounds
+    </button> 
 </div>
 <textarea id="code_after" class="bg-light p-0 m-0" cols="40" rows="10" style="visibility:hidden; display:none;" readonly>#
 print("")
@@ -223,8 +231,8 @@ except:
             </div> <!-- end of algoritm card-->
             
            
-
-        {% endif %}<!-- end of 'if market.allow_robots' -->
+    </div> <!-- end of column-->
+{% endif %}<!-- end of 'if market.allow_robots' -->
 
 {% endif %} 
 
@@ -472,7 +480,7 @@ function prettify (num) {
     // get a reference to your pre element for output
     // configure the output function
     // call Sk.importMainWithBody()
-    function runit(submit=false, auto_play=false) { 
+    function runit(submit=false) { 
         document.getElementById("cleaned_values").innerHTML = ""
         var code_before = document.getElementById("code_before").value;         
         var client_code = document.getElementById("client_code").value; 
@@ -535,11 +543,8 @@ function prettify (num) {
                     console.log("amount_choice not a number ... set to zero")
                 }
                 amount_choice = Math.round(amount_choice);
-                console.log("Cleaned amount_choise = ", amount_choice)
+                console.log("Cleaned amount_choice = ", amount_choice)
                 
-                if (auto_play){
-                    document.getElementById("id_auto_play").value = true
-                }
                 var $price_slider = $("#id_unit_price").data("ionRangeSlider");
                 var $amount_slider = $("#id_unit_amount").data("ionRangeSlider");
                 $price_slider.update({
@@ -549,6 +554,7 @@ function prettify (num) {
                     from: amount_choice
                 });
                 if (submit){     
+                    document.getElementById("id_auto_play").value = true
                     document.getElementById('trade_form').submit()
                 }
                 else{
