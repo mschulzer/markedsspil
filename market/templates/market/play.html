@@ -332,9 +332,9 @@ function prettify (num) {
 	    return percent;
         }
 
-        function addMark ($slider, value, description) {
+        function addMark ($slider, value, description, color) {
             var left = convertToPercent(value);
-            var html = '<span class="slider_mark" style="left: ' + left + '%"> '
+            var html = '<span class="slider_mark" style="left: ' + left + '%; background-color: ' + color + ';"> '
                        + value
                        + ' kr. (' + description + ')</span>';
             $slider.append(html);
@@ -352,9 +352,9 @@ function prettify (num) {
           prettify : prettify ,
           postfix : " kr.",
           onStart: function (data) {
-              addMark(data.slider, unit_prod_cost, "din produktionspris");
+              addMark(data.slider, unit_prod_cost, "din produktionspris", "#e1e1e1");
               if (round > 0) {
-    	          addMark(data.slider, market_average_price, "markedsgennemsnit.");
+    	          addMark(data.slider, market_average_price, "markedsgennemsnit.", "#add2f7");
               }
           }
         });
@@ -513,7 +513,7 @@ function prettify (num) {
                     console.log("price_choice not a number ... set to zero")
                 }
                 price_choice = price_choice.toFixed(2)
-                console.log("Cleaned price_choise = ", price_choice)
+                console.log("Cleaned price_choice = ", price_choice)
                 
                 // clean amount_choice
                 amount_choice = Sk.ffi.remapToJs(Sk.globals["amount_choice"])
@@ -540,11 +540,15 @@ function prettify (num) {
                 if (auto_play){
                     document.getElementById("id_auto_play").value = true
                 }
+                var $price_slider = $("#id_unit_price").data("ionRangeSlider");
+                var $amount_slider = $("#id_unit_amount").data("ionRangeSlider");
+                $price_slider.update({
+                    from: price_choice
+                });
+                $amount_slider.update({
+                    from: amount_choice
+                });
                 if (submit){     
-                    var amount_slider = document.getElementById("id_unit_amount");
-                    var price_slider = document.getElementById("id_unit_price");
-                    amount_slider.value = amount_choice
-                    price_slider.value = price_choice
                     document.getElementById('trade_form').submit()
                 }
                 else{
@@ -679,10 +683,9 @@ function prettify (num) {
                         display: true,
                         text: "{% translate 'Balance' %}",
                     }
-                }, 
-                 
+                },
             }
-        }     
+        }
     ); 
 
 
