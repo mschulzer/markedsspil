@@ -62,7 +62,7 @@
             
             {% else %} 
                 <!-- wait is true -->
-                Hi {{ trader.name }}.<br class="hide-when-small"> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+                Hi {{ trader.name }},<br><br> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
                 {% comment %} 
                 Suggested translation:
@@ -72,7 +72,7 @@
                 {% blocktranslate with balance=trader.balance %}
                     Your current balance is <b style="color:green">{{ balance }}</b> kr.
                 {% endblocktranslate %}                 
-                <i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
+                <br><br><i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
             {% endif %}
 
             {% if not wait %}
@@ -94,7 +94,8 @@
                         {{ form|crispy }}
                     </form>
                     <div class="d-flex justify-content-center mt-4 mb-4">
-                        <input type="submit" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" form="trade_form">
+                        <input type="button" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" onclick="make_trade_button_handler()">
+                        <button class="btn btn-warning" data-toggle="modal" data-target="#confirmationPopUp" id="warning_button" style="display:none">
                     </div>
 
                     <div class="d-flex justify-content-center">
@@ -114,6 +115,33 @@
                             <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b> kr.
                             </li>
                         </ul>        
+                    </div>
+                </div>
+
+                <!-- Pop-up confirmation when player tries to submit trade where price < prod_cost -->
+                <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">{% translate 'Confirm your trade' %}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                {% blocktranslate %}
+                                Your choice of price per unit is lower than your fixed production cost per unit. This is guaranteed to make a loss. 
+                                <br><br>
+                                Are you sure you want to proceed with this trade?
+                                {% endblocktranslate %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+                                <button type="submit" class="btn btn-danger"
+                                    form="trade_form">{% translate 'Proceed' %}</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -257,7 +285,7 @@ function prettify (num) {
 }
 </script>
 
-{% if not wait %}
+{% if not wait and not market.game_over%}
 <script>
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
@@ -275,6 +303,19 @@ function prettify (num) {
     var market_max_cost = parseFloat("{{ trader.market.max_cost }}".replace(',', '.'));
     var market_average_price = parseFloat("{{ round_stats.all.last.avg_price }}".replace(',', '.'));
     var round = "{{ trader.market.round }}";
+
+    function make_trade_button_handler(){
+
+        if(price_slider.value < unit_prod_cost){
+           document.getElementById("warning_button").click();
+        }
+        else{
+             
+            document.getElementById('trade_form').submit()
+        }
+    }
+
+
 
     // only show calculations when screen width is bigger than this number
     const show_formula_breakpoint = 490;
