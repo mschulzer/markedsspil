@@ -33,7 +33,7 @@ def test_context_form_when_market_id_is_in_GET(client):
         reverse('market:home') + "?market_id=KXZCVCZL")
     assert response.status_code == 200
     assert isinstance(response.context['form'], TraderForm)
-    assertContains(response, 'name="market_id" value="KXZCVCZL"')
+    assertContains(response, "KXZCVCZL")
 
 
 def test_home_view_name_and_template(client):
