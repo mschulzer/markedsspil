@@ -269,7 +269,7 @@ def play(request, market_id):
             'wait': False,
             'traders': Trader.objects.filter(market=market).order_by('-balance'),
             'max_amount': floor(trader.balance/trader.prod_cost),
-            'max_price': 5 * market.max_cost,
+            'max_price': 4 * market.max_cost,
 
             # Labels for x-axis for graphs
             'round_labels_json': json.dumps(round_labels),
