@@ -107,10 +107,17 @@ def home(request):
 
 
 @login_required
-@require_GET
 def my_markets(request):
+
+    if request.method == "POST":
+        delete_market_id = request.POST['delete_market_id']
+        market = get_object_or_404(Market, market_id=delete_market_id)
+        market.deleted = True
+        market.save()
+        return HttpResponseRedirect(reverse('market:my_markets'))
+
     markets = Market.objects.filter(
-        created_by=request.user).order_by('-created_at')
+        created_by=request.user, deleted=False).order_by('-created_at')
     return render(request, 'market/my_markets.html', {'markets': markets})
 
 

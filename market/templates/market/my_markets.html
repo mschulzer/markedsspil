@@ -7,7 +7,9 @@
 <h3 class="mt-5 mb-3">
     {% translate 'Your markets' %}
 </h3>
+
 {% if markets %}
+
     <div class="table-responsive">
         <table class="table table-sm table-striped" >
 
@@ -15,52 +17,94 @@
                 <tr>
                     <th>{% translate 'Market' %}</th>
                     <th>{% translate 'Created at' %}</th>
-                    <th>{% translate 'Product' %}</th>
-                    <th>{% translate 'Initial balance' %}</th>
-                    <th>{% translate 'Cost/unit' %}</th>
-                    <th>{% translate 'Parameters' %}</th>
-                    <th>{% translate 'Allow robots' %}</th>
+                    <th>{% translate 'Num participants' %}</th>
                     <th>{% translate 'Progression' %}</th>
+                    <th>{% translate 'Settings' %}</th>
+                    <th></th>
                 </tr>
             </thead>
             {% for market in markets %}
-
                 <tr>
                     <td><a href="{% url 'market:monitor' market.market_id %}">{{ market.market_id }}</a></td>                    
                     </td>
                     <td>{{ market.created_at }}</td>
-                    <td>{{ market.product_name_plural }}</td>
-                    <td>{{ market.initial_balance }}</td>
                     <td>
-                        Min: {{ market.min_cost }}<br>
-                        Max: {{ market.max_cost }}<br>
-
+                        {{ market.trader_set.count }}
                     </td>
                     <td>
+                        {% if market.game_over %}
+                            Game is over
+                        {% else %}
+                            {% if market.endless %}
+                            Endless
+                            {% else %}
+                            Round {{ market.round|add:1 }}/{{ market.max_rounds  }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        Product: {{ market.product_name_plural }}<br>
+                        {% translate 'Initial balance' %}: {{ market.initial_balance }}<br>
                         Alpha: {{ market.alpha }}<br>
                         Beta: {{ market.beta }}<br>
                         Theta: {{ market.theta }}<br>
+                        Min cost: {{ market.min_cost }}<br>
+                        Max cost: {{ market.max_cost }}<br>
+                        Robots:   
+                            {% if market.allow_robots %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                    </td>          
+                    <td>  
+                        <button class="btn btn-warning" onclick="prepare_delete('{{ market.market_id }}')">
+                            Delete market
+                        </button>                       
                     </td>
-                    <td>
-                        {% if market.allow_robots %}
-                            Yes
-                        {% else %}
-                            No
-                        {% endif %}
-                    </td>
-                    {% if market.game_over %}
-                        <td>Game is over</td>
-                    {% else %}
-                        {% if market.endless %}
-                        <td>Endless</td>
-                        {% else %}
-                        <td>Round {{ market.round|add:1 }}/{{ market.max_rounds  }}</td>
-                        {% endif %}
-                    {% endif %}
                 </tr>
             {% endfor %}
         </table>
     </div>
+
+    <form id="delete_market_form" action="" method="POST">
+        {% csrf_token %}
+        <input id="delete_market_id" type="hidden" name="delete_market_id" value="">
+    </form>
+
+    <script>
+        function prepare_delete(market_id){
+            document.getElementById('delete_market_id').value = market_id
+            document.getElementById('modal-body').innerHTML = `Are you sure you want to delete the market ${market_id}?` 
+            $('#confirmationPopUp').modal('show');
+        }
+    </script>
+    
+    <!-- Pop-up confirmation before delete -->
+    <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">{% translate 'Delete market' %}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"
+                        onclick="document.getElementById('delete_market_form').submit()">{% translate 'Delete' %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
 {% else %}
     <p>{% translate 'You have not yet created a market.' %}</p>
 {% endif %}
