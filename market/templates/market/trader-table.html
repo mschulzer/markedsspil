@@ -67,8 +67,10 @@
                         Finish Round {{ market.round|add:1 }}
                     </button>
                     {% if market.round > 0 %}
-                        <script>
-                            next_round()
+                        <script> 
+                            if(auto_finish_round){
+                                next_round()
+                            }
                         </script>
                     {% endif %}
                 {% endif %}

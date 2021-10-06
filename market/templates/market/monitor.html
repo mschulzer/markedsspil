@@ -5,6 +5,8 @@
 {% load custom_tags %}
 
 {% block content %}
+
+
 <!-- Top colored message -->
 {% if market.game_over %}
     <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
@@ -24,6 +26,7 @@
         Market Details
     </a>
 </div>
+
 
 <!-- Join Link Collapse Content-->
 <div class="collapse my-1" id="collapseJoin" >
@@ -91,7 +94,7 @@
     </span>
 </h4> 
 
-<div id="trader_table" class="mb-5">
+<div id="trader_table" class="mb-2">
     {% include 'market/trader-table.html' %}
 </div>
 
@@ -103,6 +106,32 @@
     hx-target="#trader_table">
 </div>
 {% endif %}
+
+{% if market.round > 0 %}
+<!-- Autoplay on/off -->
+<script>
+    // Should round be finished automatically when all traders are ready?
+    var auto_finish_round = true 
+    function toggle_auto_finish_round(){
+        toggle_btn = document.getElementById("toggle_auto_finish_btn");
+        if (auto_finish_round){
+            auto_finish_round = false;
+            toggle_btn.innerHTML = "Start Auto Pilot"
+            toggle_btn.title= "Finish each round automatically when all traders are ready"
+        }
+        else{
+            auto_finish_round = true;
+            toggle_btn.innerHTML = "Pause Auto Pilot"
+            toggle_btn.title= "Press this button to pause the game"
+        }
+    }
+</script>
+
+<div class="d-flex justify-content-center">
+    <button id="toggle_auto_finish_btn" class="btn btn-secondary" onclick="toggle_auto_finish_round()" data-toggle="tooltip" title="Press this button to pause the game" data-placement="bottom">Pause Auto Pilot</button>
+</div>
+{% endif %}
+
 
 <!-- Pop-up confirmation -->
 <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
