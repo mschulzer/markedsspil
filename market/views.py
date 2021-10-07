@@ -172,13 +172,10 @@ def monitor(request, market_id):
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
-        # If the post request is about changing the monitor auto pilor
+        # If the post request is about changing the monitor_auto_pilot setting
         if request.POST.get('toggle_auto_pilot'):
-            # Toggle true/false setting, save to db and redirect
-            if market.monitor_auto_pilot:
-                market.monitor_auto_pilot = False
-            else:
-                market.monitor_auto_pilot = True
+            # Toggle monitor_auto_pilot true/false setting, save to db and redirect
+            market.monitor_auto_pilot = not market.monitor_auto_pilot
             market.save()
             return redirect(reverse('market:monitor', args=(market.market_id,)))
 
