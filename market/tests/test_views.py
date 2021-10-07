@@ -451,6 +451,23 @@ def test_monitor_view_created_forced_moves_for_inactive_player(client, logged_in
     assert (market.round == 8)
 
 
+def test_monitor_view_change_start_auto_pilot(client, logged_in_user):
+    """ Post request with toggle_auto_pilot should change the market's auto_pilot setting """
+    market = MarketFactory(
+        round=7, created_by=logged_in_user, monitor_auto_pilot=False)
+    assert market.monitor_auto_pilot is False
+    url = reverse('market:monitor', args=(market.market_id,))
+    response = client.post(url, {'toggle_auto_pilot': True})
+    market.refresh_from_db()
+    assert market.monitor_auto_pilot is True
+    response = client.post(url, {'toggle_auto_pilot': True})
+    market.refresh_from_db()
+    assert market.monitor_auto_pilot is False
+
+
+
+
+
 class MonitorViewPostRequestMultipleUserTest(TestCase):
 
     @classmethod

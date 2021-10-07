@@ -67,8 +67,12 @@ class Market(models.Model):
     created_by = models.ForeignKey(
         get_user_model(), null=True, on_delete=models.SET_NULL)
 
-    # Allow algoritmic trades?
+    # Allow algorithmic trades?
     allow_robots = models.BooleanField(default=False)
+
+    # Finish each round automatically when all traders are ready?
+    monitor_auto_pilot = models.BooleanField(default=False)
+
 
     def game_over(self):
         if not self.endless and (self.round >= self.max_rounds):
