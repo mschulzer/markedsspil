@@ -7,7 +7,7 @@
 {% block title %}{% translate 'Play' %}{% endblock %}
 {% block content %}
 
-    <!-- Top colored message -->
+    <!-- Top status message to player about round number and game progression -->
     {% if wait %}
         <div class="alert alert-success">You made a trade!</div>
     {% else %} 
@@ -37,24 +37,65 @@
 
         <!-- Paragraph with info about what just happened and current status -->
         <p class="pr-2 pl-2 py-3 alert alert-warning"> 
+           
+            {% if not market.round == trader.round_joined %}
+                Hi {{ trader.name }}. 
+            {% endif %}
+
             {% if not wait %}
                 
                 {% if market.round == trader.round_joined  %}
-                    Your fixed production cost pr. unit is <b>{{ trader.prod_cost }}</b> kr. <br>
+                    Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. <br>
                     <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
+                
                 {% elif not trades.last.was_forced %}
-                    <!-- Text with info about last round choices and results.  -->
-                    {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-                        Hi {{ name }}. <br class="hide-when-small"> Last round you produced <b>{{ lastRoundUnits }}</b> and sold
-                        <b>{{ lastRoundSold }}</b>
-                        {{ unitsPlural }}. The demand was <b>{{ lastRoundDemand }}</b> baguettes. Your price was
-                        <b>{{ lastRoundPrice }} </b>kr. and the market
-                        average price was <b>{{ lastRoundAvgPrice }}</b> kr.
-                    {% endblocktranslate %}
+                    
+                        <!-- Text with info about last round choices and results.  -->
+                     
+                        {% if trades.last.unit_amount < trades.last.demand %}
+                            
+                            {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                    
+                            Last round you sold <b>{{ lastRoundSold }}</b> 
+                            of the <b>{{ lastRoundUnits }}</b> {{ unitsPlural }} you produced. 
+                            You cold have sold <b>{{ lastRoundDemand }}</b> {{ unitsPlural }}.
+                            
+                            {% endblocktranslate %}
+
+                        {% elif trades.last.unit_amount == trades.last.demand %}
+
+                            {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                    
+                            Last round you sold all the <b>{{ lastRoundSold }}</b> 
+                            {{ unitsPlural }} you produced. 
+                            You coldn't have sold more {{ unitsPlural }}. 
+                    
+                            {% endblocktranslate %}
+
+                        {% else %} 
+
+                            {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                    
+                            Last round you sold <b>{{ lastRoundSold }}</b> 
+                            of the <b>{{ lastRoundUnits }}</b> {{ unitsPlural }} you produced.
+                    
+                            {% endblocktranslate %}
+
+                        {% endif %}
+
+                        {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural unitsSingular=market.product_name_singular lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                
+                            Your price per {{ unitsSingular }} was <b>{{ lastRoundPrice }} </b>kr. 
+                            and the market average price was <b>{{ lastRoundAvgPrice }}</b> kr.
+                
+                        {% endblocktranslate %}
+                        
+                    
                         Your profit was
-                    {% if trades.last.profit < 0 %}<b style="color:red">
-                    {% else %} <b style="color:green">
-                    {% endif %}{{ trades.last.profit }}</b> kr.
+                        {% if trades.last.profit < 0 %}<b style="color:red">
+                        {% else %} <b style="color:green">
+                        {% endif %}{{ trades.last.profit }}</b> kr.
+                
                 {% endif %}
                 
                 {% if trades.last.was_forced and trader.round_joined < market.round %}
@@ -63,7 +104,7 @@
             
             {% else %} 
                 <!-- wait is true -->
-                Hi {{ trader.name }},<br><br> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+                <br><br> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
                 {% comment %} 
                 Suggested translation:
@@ -162,13 +203,13 @@ Below we define some useful constants that you can use in your script. The value
 # your current balance
 balance = {{ trader.balance|to_float }}
 
-# your production cost pr. unit (fixed)
+# your production cost per unit (fixed)
 prod_cost = {{ trader.prod_cost|to_float }}
 
 # the maximal number of {{ market.product_name_plural }} you can afford to produce
 max_amount = {{ max_amount }}
 
-# the maximal price pr. {{ market.product_name_singular }} you can choose (fixed)
+# the maximal price per {{ market.product_name_singular }} you can choose (fixed)
 max_price = {{ max_price|to_float }}
 
 # current round
@@ -181,7 +222,7 @@ avg_price = {{ round_stats.all.last.avg_price|to_float }}
 avg_price = None
 {% endif %}
 
-# demand for your baguettes last round (will be None in first round)
+# demand for your {{ market.product_name_plural }} last round (will be None in first round)
 {% if market.round > 0 %}
 demand_last_round = {{ trades.last.demand }}
 {% else %}

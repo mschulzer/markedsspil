@@ -108,10 +108,17 @@ def home(request):
 
 
 @login_required
-@require_GET
 def my_markets(request):
+
+    if request.method == "POST":
+        delete_market_id = request.POST['delete_market_id']
+        market = get_object_or_404(Market, market_id=delete_market_id)
+        market.deleted = True
+        market.save()
+        return HttpResponseRedirect(reverse('market:my_markets'))
+
     markets = Market.objects.filter(
-        created_by=request.user).order_by('-created_at')
+        created_by=request.user, deleted=False).order_by('-created_at')
     return render(request, 'market/my_markets.html', {'markets': markets})
 
 
@@ -173,8 +180,8 @@ def monitor(request, market_id):
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
-        # If the post request is about removing a trader from the market
 
+        # If the post request is about removing a trader from the market
         if request.POST.get('remove_trader_id'):
             delete_trader_id = request.POST.get('remove_trader_id')
             trader = get_object_or_404(Trader, id=delete_trader_id)
@@ -187,9 +194,15 @@ def monitor(request, market_id):
                # Keep trader in database, but flag him as removed
                 trader.removed_from_market = True
                 trader.save()
+
+        # If the post request is about changing the monitor_auto_pilot setting
+        if request.POST.get('toggle_auto_pilot'):
+            # Toggle monitor_auto_pilot true/false setting, save to db and redirect
+            market.monitor_auto_pilot = not market.monitor_auto_pilot
+            market.save()
             return redirect(reverse('market:monitor', args=(market.market_id,)))
 
-        # The host has pressed the 'next round' button
+        # The post request is about finishing the current round (e.g. the host has pressed 'next round' button)
         real_trades = filter_trades(market=market, round=market.round)
 
         for trade in real_trades:

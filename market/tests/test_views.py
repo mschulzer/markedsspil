@@ -490,6 +490,19 @@ def test_remove_trader_from_market_in_round_0(client, logged_in_user):
     # Redirect after database update
     assert (response.status_code == 302)
 
+def test_monitor_view_change_start_auto_pilot(client, logged_in_user):
+    """ Post request with toggle_auto_pilot should change the market's auto_pilot setting """
+    market = MarketFactory(
+        round=7, created_by=logged_in_user, monitor_auto_pilot=False)
+    assert market.monitor_auto_pilot is False
+    url = reverse('market:monitor', args=(market.market_id,))
+    response = client.post(url, {'toggle_auto_pilot': True})
+    market.refresh_from_db()
+    assert market.monitor_auto_pilot is True
+    response = client.post(url, {'toggle_auto_pilot': True})
+    market.refresh_from_db()
+    assert market.monitor_auto_pilot is False
+
 
 class MonitorViewPostRequestMultipleUserTest(TestCase):
 
@@ -913,6 +926,21 @@ def test_mymarkets_view_user_has_created_a_market(client, logged_in_user):
     assertNotContains(
         response, 'You have not yet created a market.')
     assertContains(response, market.market_id)
+
+
+def test_market_gets_deleted_on_post_request(client, logged_in_user):
+    """ Market with given ID gets 'deleted' on post request """
+    market = MarketFactory(created_by=logged_in_user)
+    assert market.deleted is False
+
+    response = client.post(reverse('market:my_markets'), {
+                           'delete_market_id': market.market_id})
+
+    market.refresh_from_db()
+
+    assert market.deleted is True
+    assert (response.status_code == 302)
+
 
 
 # Test TraderTable

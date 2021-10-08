@@ -369,7 +369,7 @@ msgstr "Oprettet af"
 
 #: templates/market/my_markets.html:15
 msgid "Created at"
-msgstr "Oprettelsesdato"
+msgstr "Oprettet"
 
 #: templates/market/my_markets.html:16
 msgid "ID"

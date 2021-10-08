@@ -5,6 +5,8 @@
 {% load custom_tags %}
 
 {% block content %}
+
+
 <!-- Top colored message -->
 {% if market.game_over %}
     <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
@@ -24,6 +26,7 @@
         Market Details
     </a>
 </div>
+
 
 <!-- Join Link Collapse Content-->
 <div class="collapse my-1" id="collapseJoin" >
@@ -91,19 +94,17 @@
     </span>
 </h4> 
 
-<div id="trader_table" class="mb-5">
+<div id="trader_table" class="mb-3">
     {% include 'market/trader-table.html' %}
 </div>
 
 {% if not market.game_over %}
     <!-- Next round form and next round pop-up confirmation -->
-
     <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
             {% csrf_token %}
     </form>
-
   
-    <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="nextRoundConfirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -131,44 +132,75 @@
         </div>
     </div>
 
+  
+    <!-- Remove trader form and pop-up confirmation -->
+    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="remove_trader_form">
+        {% csrf_token %}
+        <input type="hidden" id="remove_trader_id" name="remove_trader_id" value="">
+    </form>
+
+    <div class="modal fade" id="removeTraderConfirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="removeTraderModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="removeTraderModalLabel">{% translate 'Remove trader' %}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="remove-trader-modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"
+                        onclick="document.getElementById('remove_trader_form').submit()">
+                        {% translate 'Proceed' %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Update trader status table every x seconds. Will only trigger next round when given criteria are met -->
+  
     <div 
         hx-get="{% url 'market:trader_table' market.market_id %}"
         hx-trigger="every 1s"
         hx-target="#trader_table">
     </div>
 
+    {% if market.round > 0 %}
+        <!-- Autoplay on/off -->
+
+        <div class="d-flex justify-content-center">
+            <button id="toggle_auto_finish_btn" class="btn btn-secondary" onclick="toggle_monitor_auto_pilot()" data-toggle="tooltip" 
+                {% if market.monitor_auto_pilot %}
+                    title="Press this button to pause the auto pilot"> 
+                    Pause Game
+                {% else %}
+                    title="Finish each round automatically when all traders are ready">
+                    Start Auto Pilot
+                {% endif %}
+            </button>
+        </div>
+
+        <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="toggle_auto_pilot_form">
+            {% csrf_token %}
+            <input type="hidden" name="toggle_auto_pilot" id="toggle_auto_pilot" value="true">
+        </form>
+
+        <script>
+            // Should round be finished automatically when all traders are ready?
+            function toggle_monitor_auto_pilot(){
+                document.getElementById('toggle_auto_pilot_form').submit()
+            }
+        </script>
+
+    {% endif %}
 {% endif %}
 
-
-<!-- Remove trader form and pop-up confirmation -->
-<form action="{% url 'market:monitor' market.market_id %}" method="POST" id="remove_trader_form">
-    {% csrf_token %}
-    <input type="hidden" id="remove_trader_id" name="remove_trader_id" value="">
-</form>
-
-<div class="modal fade" id="removeTraderConfirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="removeTraderModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="removeTraderModalLabel">{% translate 'Remove trader' %}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="remove-trader-modal-body">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
-                <button type="button" class="btn btn-danger" data-dismiss="modal"
-                    onclick="document.getElementById('remove_trader_form').submit()">
-                    {% translate 'Proceed' %}
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div id="accordion" class="mt-5">
     <div class="card">
