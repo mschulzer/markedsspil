@@ -73,6 +73,8 @@ class Market(models.Model):
     # Finish each round automatically when all traders are ready?
     monitor_auto_pilot = models.BooleanField(default=False)
 
+    # When a user 'deletes' one of his markets, we don't actually delete it, but set this value to True:
+    deleted = models.BooleanField(default=False)
 
     def game_over(self):
         if not self.endless and (self.round >= self.max_rounds):
