@@ -106,7 +106,11 @@ class Trader(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
+    # If auto_play is true, the trade algorithm will play all remaining rounds automatically in a game with robots
     auto_play = models.BooleanField(default=False)
+
+    # removed_from_market should be True if the host has deleted the trader
+    removed_from_market = models.BooleanField(default=False)
 
     class Meta:
         # There can only be one trader with a given name in a given market.

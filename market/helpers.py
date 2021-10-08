@@ -54,6 +54,11 @@ def create_forced_trade(trader, round_num, is_new_trader):
         balance_after = trader.balance
         balance_before = trader.balance
 
+    if trader.removed_from_market:
+        # If the trader has been removed from market, we set the balance after to None.
+        # This will remove the trader's balance from the balance graph in all rounds following the deletion of the trader
+        balance_after = None
+
     forced_trade = Trade.objects.create(
         round=round_num,
         trader=trader,
@@ -101,7 +106,7 @@ def generate_balance_list(trader):
 
     balance_list = [initial_balance] + \
         [float(trade.balance_after)
-         if trade.balance_after else None for trade in trades]
+         if (trade.balance_after != None) else None for trade in trades]
 
     if trader.round_joined > 0:
         balance_list[0] = None
@@ -164,7 +169,7 @@ def generate_cost_list(trader):
     return prod_cost_list
 
 
-def add_graph_context_for_monitor_page(context, market, traders):
+def add_graph_context_for_monitor_page(context, market, traders, active_traders):
     """ 
     This function produces all the data for the graphs on the monitor pages
     """
@@ -185,13 +190,14 @@ def add_graph_context_for_monitor_page(context, market, traders):
         # On the monitor page price graph, we only want to show data for previous rounds. 
         trades = Trade.objects.filter(
             trader=trader, round__lte=market.round - 1)
-        return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
+        return [float(trade.unit_price) if (trade.unit_price != None) else None for trade in trades]
 
     def generate_amount_list(trader):
         # On the monitor page amount graph, we only want to show data for previous rounds.
         trades = Trade.objects.filter(
             trader=trader, round__lte=market.round - 1)
-        return [float(trade.unit_amount) if trade.unit_amount else None for trade in trades]
+
+        return [float(trade.unit_amount) if (trade.unit_amount != None) else None for trade in trades]
 
     def trader_color(i):
         """

@@ -96,38 +96,75 @@
 </div>
 
 {% if not market.game_over %}
-<!-- Update trader status table every x seconds -->
-<div 
-    hx-get="{% url 'market:trader_table' market.market_id %}"
-    hx-trigger="every 1s"
-    hx-target="#trader_table">
-</div>
+    <!-- Next round form and next round pop-up confirmation -->
+
+    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
+            {% csrf_token %}
+    </form>
+
+  
+    <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">{% translate 'Confirm next round' %}</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {% blocktranslate %}
+                    Not all traders in your market are ready for next round.
+                    <br><br>
+                    If you choose to proceed now, these players will enter next round without having traded and with unchanged balance.
+                    <br><br>
+                    Proceed to next round?
+                    {% endblocktranslate %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"
+                        onclick="next_round()">{% translate 'Proceed' %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update trader status table every x seconds. Will only trigger next round when given criteria are met -->
+    <div 
+        hx-get="{% url 'market:trader_table' market.market_id %}"
+        hx-trigger="every 1s"
+        hx-target="#trader_table">
+    </div>
+
 {% endif %}
 
-<!-- Pop-up confirmation -->
-<div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+
+<!-- Remove trader form and pop-up confirmation -->
+<form action="{% url 'market:monitor' market.market_id %}" method="POST" id="remove_trader_form">
+    {% csrf_token %}
+    <input type="hidden" id="remove_trader_id" name="remove_trader_id" value="">
+</form>
+
+<div class="modal fade" id="removeTraderConfirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="removeTraderModalLabel"
     aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">{% translate 'Confirm next round' %}</h5>
+                <h5 class="modal-title" id="removeTraderModalLabel">{% translate 'Remove trader' %}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                {% blocktranslate %}
-                Not all traders in your market are ready for next round.
-                <br><br>
-                If you choose to proceed now, these players will enter next round without having traded and with unchanged balance.
-                <br><br>
-                Proceed to next round?
-                {% endblocktranslate %}
+            <div class="modal-body" id="remove-trader-modal-body">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
                 <button type="button" class="btn btn-danger" data-dismiss="modal"
-                    onclick="next_round()">{% translate 'Proceed' %}</button>
+                    onclick="document.getElementById('remove_trader_form').submit()">
+                    {% translate 'Proceed' %}
+                </button>
             </div>
         </div>
     </div>
@@ -258,6 +295,19 @@
 {% endblock %}
 
 {% block javascript %}
+
+<script>
+    function next_round() {
+        document.getElementById("finish_round_form").submit();
+    }
+
+    function prepare_remove_trader(trader_id, trader_name){
+        document.getElementById('remove_trader_id').value = trader_id;          
+        document.getElementById('remove-trader-modal-body').innerHTML = `You are about to permanently remove the trader <b>${trader_name}</b> from the market. Are you sure you want to proceed?` 
+        $('#removeTraderConfirmationPopUp').modal('show'); 
+    }
+</script>
+
 <script>
     function copy_join_link() {
         // From w3schools

@@ -50,7 +50,8 @@ def market_edit(request, market_id):
 @require_GET
 def trader_table(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
-    traders = Trader.objects.filter(market=market).order_by('-balance')
+    traders = Trader.objects.filter(
+        market=market, removed_from_market=False).order_by('-balance')
     num_ready_traders = filter_trades(
         market=market, round=market.round).count()
     context = {
@@ -152,26 +153,42 @@ def monitor(request, market_id):
         if not market.game_over():
             return HttpResponseRedirect(reverse('market:home'))
 
-    traders = Trader.objects.filter(market=market).order_by('-balance')
+    traders = Trader.objects.filter(
+        market=market).order_by('-balance')
 
     context = {
         'market': market,
-        'traders': traders,
+        'traders': traders.filter(removed_from_market=False),
         'num_ready_traders': filter_trades(market=market, round=market.round).count(),
         'rounds': range(1, market.round + 1),
         'show_stats_fields': ['balance_before', 'unit_price', 'profit', 'unit_amount', 'demand', 'units_sold'],
         'initial_balance': market.initial_balance
-
     }
 
     if request.method == "GET":
-
         # add context for graphs
-        context = add_graph_context_for_monitor_page(context, market, traders)
-
+        active_traders = traders.filter(removed_from_market=False)
+        context = add_graph_context_for_monitor_page(
+            context, market, traders, active_traders)
         return render(request, 'market/monitor.html', context)
 
     if request.method == "POST":
+        # If the post request is about removing a trader from the market
+
+        if request.POST.get('remove_trader_id'):
+            delete_trader_id = request.POST.get('remove_trader_id')
+            trader = get_object_or_404(Trader, id=delete_trader_id)
+
+            # If market is in the first round (and no trader actions)
+            if market.round == 0:
+                # Do an actual deletion of the trader from the database
+                trader.delete()
+            else:
+               # Keep trader in database, but flag him as removed
+                trader.removed_from_market = True
+                trader.save()
+            return redirect(reverse('market:monitor', args=(market.market_id,)))
+
         # The host has pressed the 'next round' button
         real_trades = filter_trades(market=market, round=market.round)
 
@@ -188,16 +205,18 @@ def monitor(request, market_id):
                 market, trade, avg_price)
 
         for trader in traders:
-            made_a_trade = filter_trades(market=market, round=market.round).filter(
+            has_made_a_trade = filter_trades(market=market, round=market.round).filter(
                 trader=trader).count() == 1
-            # I trader did not make a trade this round
-            if not made_a_trade:
+
+            # If trader did not make a trade this round
+            if not has_made_a_trade:
                 # Create a 'forced trade' for this trader
                 create_forced_trade(
                     trader=trader, round_num=market.round, is_new_trader=False)
 
         all_trades_this_round = filter_trades(
             market=market, round=market.round)
+
         assert(len(all_trades_this_round) == len(traders)
                ), f"Number of trades in this round does not equal num traders ."
 
@@ -228,6 +247,9 @@ def play(request, market_id):
         # if not trader in session return to home:
         return redirect(reverse('market:home'))
     else:
+        if trader.removed_from_market:
+            return HttpResponse(
+                f"<br>You have been permanently removed from the market {market_id} by the market host. <br><br>You can rejoin the market with a new name.<br><br>Please contact the market host if you have any questions.")
         market = trader.market
 
         round_stats = RoundStat.objects.filter(market=market)
@@ -279,10 +301,10 @@ def play(request, market_id):
             # data for units graph
             'data_demand_json': json.dumps([trade.demand for trade in trades]),
             'data_sold_json': json.dumps([trade.units_sold for trade in trades]),
-            'data_produced_json': json.dumps([trade.unit_amount for trade in trades]),
+            'data_produced_json': json.dumps([trade.unit_amount if (trade.unit_amount != None) else None for trade in trades]),
 
             # data for price graph
-            'data_price_json': json.dumps([float(trade.unit_price) if trade.unit_price else None for trade in trades]),
+            'data_price_json': json.dumps([float(trade.unit_price) if (trade.unit_price != None) else None for trade in trades]),
             'data_prod_cost_json': json.dumps(generate_cost_list(trader)),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 

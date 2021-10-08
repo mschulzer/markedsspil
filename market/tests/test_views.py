@@ -451,6 +451,46 @@ def test_monitor_view_created_forced_moves_for_inactive_player(client, logged_in
     assert (market.round == 8)
 
 
+def test_remove_trader_from_market_when_round_number_bigger_than_0(client, logged_in_user):
+    """ Testing the remove trader functionality when round number bigger than 0"""
+    market = MarketFactory(
+        round=7, created_by=logged_in_user)
+    trader = TraderFactory(market=market)
+
+    # Trader is not removed by default
+    assert trader.removed_from_market is False
+
+    url = reverse('market:monitor', args=(market.market_id,))
+    response = client.post(url, {'remove_trader_id': trader.id})
+    trader.refresh_from_db()
+
+    # Trader is now 'removed' from database (not actually deleted)
+    assert trader.removed_from_market is True
+
+    # Redirect after database update
+    assert (response.status_code == 302)
+
+
+def test_remove_trader_from_market_in_round_0(client, logged_in_user):
+    """ Testing the remove trader functionality in round 0"""
+    market = MarketFactory(
+        round=0, created_by=logged_in_user)
+    trader = TraderFactory(market=market)
+
+    num_traders_in_db = Trader.objects.all().count()
+    assert num_traders_in_db == 1
+
+    url = reverse('market:monitor', args=(market.market_id,))
+    response = client.post(url, {'remove_trader_id': trader.id})
+
+    # Trader is now deleted from database
+    num_traders_in_db = Trader.objects.all().count()
+    assert num_traders_in_db == 0
+
+    # Redirect after database update
+    assert (response.status_code == 302)
+
+
 class MonitorViewPostRequestMultipleUserTest(TestCase):
 
     @classmethod

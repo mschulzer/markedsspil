@@ -1,10 +1,10 @@
 {% load i18n %}
 
-    {% if traders|length == 0 %}
-        <i>
-            {% translate 'Waiting for the first trader to join the market...' %}
-        </i>
-    {% else %}
+{% if traders|length == 0 %}
+    <i>
+        {% translate 'Waiting for the first trader to join the market...' %}
+    </i>
+{% else %}
     <p>All traders on the market, ordered by their currrent balance.</p>
     <div class="table-responsive">
         <table class="table table-striped mb-4" id="trader_status_table"> 
@@ -22,23 +22,29 @@
                     {% endif %}
                         <th scope="col">{% translate 'Cost/unit' %}</th>
                     <th scope="col">{% translate 'Balance' %}</th>
+                    {% if not market.game_over %}
+                    <th></th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for trader in traders %}
-                <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ trader.name }}</td>
-                    {% if not market.game_over%}
-                    {% if trader.is_ready %}
-                        <td style="color:green">✓</td>
-                    {% else %}
-                    <td style="color:red">No</td>
-                    {% endif %}
-                    {% endif %}
-                    <td>{{ trader.prod_cost }}</td>
-                    <td>{{ trader.balance }}</td>
-                </tr>
+                    <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ trader.name }}</td>
+                        {% if not market.game_over%}
+                        {% if trader.is_ready %}
+                            <td style="color:green">✓</td>
+                        {% else %}
+                        <td style="color:red">No</td>
+                        {% endif %}
+                        {% endif %}
+                        <td>{{ trader.prod_cost }}</td>
+                        <td>{{ trader.balance }}</td>
+                        {% if not market.game_over %}
+                        <td><a href="#" onclick="prepare_remove_trader({{ trader.id }}, '{{ trader.name }}')">Remove</a></td>
+                        {% endif %}
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -76,17 +82,4 @@
             {% endif %}
         </div>
     {% endif %}
-
-{% endif %}
-
-{% if not market.game_over %}
-    <!-- hidden form and a script to post it -->
-    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
-        {% csrf_token %}
-    </form>
-    <script>
-        function next_round() {
-            document.getElementById("finish_round_form").submit();
-        }
-    </script>
 {% endif %}
