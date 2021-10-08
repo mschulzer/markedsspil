@@ -188,9 +188,11 @@ def monitor(request, market_id):
                 market, trade, avg_price)
 
         for trader in traders:
-            traders_number_of_real_trades_this_round = filter_trades(
-                market=market, round=market.round).filter(trader=trader).count()
-            if traders_number_of_real_trades_this_round == 0:
+            made_a_trade = filter_trades(market=market, round=market.round).filter(
+                trader=trader).count() == 1
+            # I trader did not make a trade this round
+            if not made_a_trade:
+                # Create a 'forced trade' for this trader
                 create_forced_trade(
                     trader=trader, round_num=market.round, is_new_trader=False)
 
