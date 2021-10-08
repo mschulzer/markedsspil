@@ -5,6 +5,8 @@
 {% load custom_tags %}
 
 {% block content %}
+
+
 <!-- Top colored message -->
 {% if market.game_over %}
     <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
@@ -24,6 +26,7 @@
         Market Details
     </a>
 </div>
+
 
 <!-- Join Link Collapse Content-->
 <div class="collapse my-1" id="collapseJoin" >
@@ -91,7 +94,7 @@
     </span>
 </h4> 
 
-<div id="trader_table" class="mb-5">
+<div id="trader_table" class="mb-3">
     {% include 'market/trader-table.html' %}
 </div>
 
@@ -102,7 +105,39 @@
     hx-trigger="every 1s"
     hx-target="#trader_table">
 </div>
+
+    {% if market.round > 0 %}
+    <!-- Autoplay on/off -->
+
+    <div class="d-flex justify-content-center">
+    <button id="toggle_auto_finish_btn" class="btn btn-secondary" onclick="toggle_monitor_auto_pilot()" data-toggle="tooltip" 
+        {% if market.monitor_auto_pilot %}
+            title="Press this button to pause the auto pilot"> 
+            Pause Game
+        {% else %}
+            title="Finish each round automatically when all traders are ready">
+            Start Auto Pilot
+        {% endif %}
+    </button>
+    
+    </div>
+
+    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="toggle_auto_pilot_form">
+        {% csrf_token %}
+        <input type="hidden" name="toggle_auto_pilot" id="toggle_auto_pilot" value="true">
+    </form>
+
+    <script>
+        // Should round be finished automatically when all traders are ready?
+        function toggle_monitor_auto_pilot(){
+            document.getElementById('toggle_auto_pilot_form').submit()
+        }
+    </script>
+
 {% endif %}
+{% endif %}
+
+
 
 <!-- Pop-up confirmation -->
 <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"

@@ -66,8 +66,8 @@
                         {% comment %} {% translate 'Finish Round' %} {% endcomment %}
                         Finish Round {{ market.round|add:1 }}
                     </button>
-                    {% if market.round > 0 %}
-                        <script>
+                    {% if market.round > 0 and market.monitor_auto_pilot%}
+                        <script> 
                             next_round()
                         </script>
                     {% endif %}
