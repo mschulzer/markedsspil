@@ -875,6 +875,21 @@ def test_mymarkets_view_user_has_created_a_market(client, logged_in_user):
     assertContains(response, market.market_id)
 
 
+def test_market_gets_deleted_on_post_request(client, logged_in_user):
+    """ Market with given ID gets 'deleted' on post request """
+    market = MarketFactory(created_by=logged_in_user)
+    assert market.deleted is False
+
+    response = client.post(reverse('market:my_markets'), {
+                           'delete_market_id': market.market_id})
+
+    market.refresh_from_db()
+
+    assert market.deleted is True
+    assert (response.status_code == 302)
+
+
+
 # Test TraderTable
 
 # TODO!
