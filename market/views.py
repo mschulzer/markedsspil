@@ -163,9 +163,11 @@ def monitor(request, market_id):
     traders = Trader.objects.filter(
         market=market).order_by('-balance')
 
+    active_traders = traders.filter(removed_from_market=False)
+
     context = {
         'market': market,
-        'traders': traders.filter(removed_from_market=False),
+        'traders': active_traders,
         'num_ready_traders': filter_trades(market=market, round=market.round).count(),
         'rounds': range(1, market.round + 1),
         'show_stats_fields': ['balance_before', 'unit_price', 'profit', 'unit_amount', 'demand', 'units_sold'],
@@ -194,6 +196,7 @@ def monitor(request, market_id):
                # Keep trader in database, but flag him as removed
                 trader.removed_from_market = True
                 trader.save()
+            return redirect(reverse('market:monitor', args=(market.market_id,)))
 
         # If the post request is about changing the monitor_auto_pilot setting
         if request.POST.get('toggle_auto_pilot'):
@@ -203,17 +206,20 @@ def monitor(request, market_id):
             return redirect(reverse('market:monitor', args=(market.market_id,)))
 
         # The post request is about finishing the current round (e.g. the host has pressed 'next round' button)
-        real_trades = filter_trades(market=market, round=market.round)
+        valid_trades = filter_trades(market=market, round=market.round).filter(
+            trader__removed_from_market="False")
 
-        for trade in real_trades:
+        for trade in valid_trades:
             assert(trade.was_forced is False), "Forced trade in 'real trades'"
-        assert(len(real_trades) >
+            assert(
+                trade.trader.removed_from_market is False), "Trade made by removed trader in 'real trades'"
+        assert(len(valid_trades) >
                0), "No trades in market this round. Can't calculate avg. price."
 
         avg_price = sum(
-            [trade.unit_price for trade in real_trades]) / len(real_trades)
+            [trade.unit_price for trade in valid_trades]) / len(valid_trades)
 
-        for trade in real_trades:
+        for trade in valid_trades:
             process_trade(
                 market, trade, avg_price)
 
@@ -238,10 +244,10 @@ def monitor(request, market_id):
             market=market, round=market.round, avg_price=avg_price)
 
         round_stat.avg_balance_after = sum(
-            [trader.balance for trader in traders])/len(traders)
+            [trader.balance for trader in active_traders])/len(active_traders)
 
         round_stat.avg_amount = sum(
-            [trade.unit_amount for trade in real_trades]) / len(real_trades)
+            [trade.unit_amount for trade in valid_trades]) / len(valid_trades)
 
         round_stat.save()
 

@@ -187,7 +187,7 @@ def add_graph_context_for_monitor_page(context, market, traders, active_traders)
     color_for_averages = 'rgb(173,255,47,0.7)'  # yellow
 
     def generate_price_list(trader):
-        # On the monitor page price graph, we only want to show data for previous rounds. 
+        # On the monitor page price graph, we only want to show data for previous rounds.
         trades = Trade.objects.filter(
             trader=trader, round__lte=market.round - 1)
         return [float(trade.unit_price) if (trade.unit_price != None) else None for trade in trades]
@@ -249,7 +249,7 @@ def add_graph_context_for_monitor_page(context, market, traders, active_traders)
         # the average balance in the current round might change during the round (due to new traders joining the market),
         # so we update this value on each page reload:
         avg_balance_this_round_so_far = sum(
-            [trader.balance for trader in traders])/len(traders)
+            [trader.balance for trader in active_traders])/len(active_traders)
         avg_balances[-1] = float(avg_balance_this_round_so_far)
 
         balanceDataSet.append({
