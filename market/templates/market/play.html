@@ -38,7 +38,7 @@
         <!-- Paragraph with info about what just happened and current status -->
         <p class="pr-2 pl-2 py-3 alert alert-warning"> 
            
-            {% if not market.round == trader.round_joined %}
+            {% if market.round > trader.round_joined or wait %}
                 Hi {{ trader.name }}. 
             {% endif %}
 
@@ -277,36 +277,37 @@ except:
 
 {% endif %} 
 
-        {% if market.game_over %}
-            <!-- ScoreBoard -->
-            <table class="table table-sm" >
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">{% translate 'Name' %}</th>
-                        <th scope="col">{% translate 'Final balance' %}</th>
-                    </tr>
-                </thead>
+    {% if market.game_over %}
+        <!-- ScoreBoard -->
+        <table class="table table-sm" >
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">{% translate 'Name' %}</th>
+                    <th scope="col">{% translate 'Final balance' %}</th>
+                </tr>
+            </thead>
 
-                <div class="mb-5">
-                    {% for trader in traders %}
-                        {% if request.session.username == trader.name %}
-                        <tr style="background-color:rgb(75,192,192,0.1)">
-                            <td scope="row">{{ forloop.counter }}</td>
-                            <td>You</td>
-                            <td>{{ trader.balance }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td scope="row">{{ forloop.counter }}</td>
-                            <td>{{ trader.name }}</td>
-                            <td>{{ trader.balance }}</td>
-                        </tr> 
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </table>
-        {% endif%}
+            <div class="mb-5">
+                {% for trader in market.active_traders %}
+                    {% if request.session.username == trader.name %}
+                    <tr style="background-color:rgb(75,192,192,0.1)">
+                        <td scope="row">{{ forloop.counter }}</td>
+                        <td>You</td>
+                        <td>{{ trader.balance }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td scope="row">{{ forloop.counter }}</td>
+                        <td>{{ trader.name }}</td>
+                        <td>{{ trader.balance }}</td>
+                    </tr> 
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </table>
+    {% endif%}
+
     </div><!-- end of column -->
 
     <!-- Scoreboards and charts -->

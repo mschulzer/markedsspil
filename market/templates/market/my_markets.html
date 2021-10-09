@@ -17,10 +17,10 @@
                 <tr>
                     <th>{% translate 'Market' %}</th>
                     <th>{% translate 'Created at' %}</th>
-                    <th>{% translate 'Participants' %}</th>
+                    <th>{% translate 'Number of traders' %}</th>
                     <th>{% translate 'Progression' %}</th>
                     <th>{% translate 'Settings' %}</th>
-                    <th></th>
+                    <th>{% translate 'Delete market' %}</th>
                 </tr>
             </thead>
             {% for market in markets %}
@@ -29,7 +29,7 @@
                     </td>
                     <td>{{ market.created_at }}</td>
                     <td>
-                        {{ market.trader_set.count }}
+                        {{ market.num_traders }}
                     </td>
                     <td>
                         {% if market.game_over %}
@@ -59,7 +59,7 @@
                     </td>          
                     <td>  
                         <button class="btn btn-warning" onclick="prepare_delete('{{ market.market_id }}')">
-                            Delete market
+                            Delete
                         </button>                       
                     </td>
                 </tr>

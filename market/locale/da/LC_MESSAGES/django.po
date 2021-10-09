@@ -132,7 +132,7 @@ msgstr ""
 
 #: forms.py:124
 msgid ""
-"There is already a trader with this name on the requested market. Please "
+"A trader with this name has already joined this market. Please "
 "select another name"
 msgstr ""
 

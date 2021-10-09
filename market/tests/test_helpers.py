@@ -3,7 +3,7 @@ To run only this test suite:
 docker-compose exec web python manage.py test market.tests.test_helpers
 """
 from django.test import TestCase
-from ..helpers import create_forced_trade, filter_trades, process_trade, generate_balance_list, generate_cost_list
+from ..helpers import create_forced_trade, process_trade, generate_balance_list, generate_cost_list
 from decimal import Decimal
 from decimal import Decimal
 from .factories import MarketFactory, TraderFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
@@ -222,51 +222,6 @@ def test_create_forced_trade_new_trader(db):
     assert forced_trade.unit_amount is None
     assert forced_trade.units_sold is None
     assert forced_trade.demand is None
-
-
-class TestFilterTrades(TestCase):
-
-    def setUp(self):
-
-        self.market1 = MarketFactory()
-        self.trader11 = TraderFactory(market=self.market1)
-        self.trader12 = TraderFactory(market=self.market1)
-        self.trade1 = TradeFactory(trader=self.trader11, round=0)
-        self.trade2 = TradeFactory(trader=self.trader12, round=1)
-
-        self.market2 = MarketFactory()
-        self.trader21 = TraderFactory(market=self.market2)
-        self.trader22 = TraderFactory(market=self.market2)
-        self.trade3 = TradeFactory(trader=self.trader21, round=0)
-        self.trade4 = TradeFactory(trader=self.trader22, round=1)
-
-    def test_filter_trades_of_market_two_trades(self):
-        """ filter_trades function correctly filters the two two trades associated to (resp.) market 1 and market 2. """
-
-        trades1 = filter_trades(market=self.market1)
-
-        assert trades1.count() == 2
-        assert trades1[0] == self.trade1
-        assert trades1[1] == self.trade2
-
-        trades2 = filter_trades(market=self.market2)
-        assert trades2.count() == 2
-        assert trades2[0] == self.trade3
-        assert trades2[1] == self.trade4
-
-    def test_filter_trades_of_market_and_round(self):
-        """ filter_trades function filters correctly when round number is given """
-        trades1 = filter_trades(market=self.market1, round=0)
-        assert trades1.count() == 1
-        assert trades1[0] == self.trade1
-
-        trades1 = filter_trades(market=self.market1, round=1)
-        assert trades1.count() == 1
-        assert trades1[0] == self.trade2
-
-        trades1 = filter_trades(market=self.market1, round=3)
-
-        assert trades1.count() == 0
 
 
 class TestGenerateBalanceList(TestCase):

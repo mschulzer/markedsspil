@@ -100,7 +100,7 @@
 
 {% if not market.game_over %}
     <!-- Next round form and next round pop-up confirmation -->
-    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="finish_round_form">
+    <form action="{% url 'market:finish_round' market.market_id %}" method="POST" id="finish_round_form">
             {% csrf_token %}
     </form>
   
@@ -134,7 +134,7 @@
 
   
     <!-- Remove trader form and pop-up confirmation -->
-    <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="remove_trader_form">
+    <form action="{% url 'market:remove_trader_from_market' %}" method="POST" id="remove_trader_form">
         {% csrf_token %}
         <input type="hidden" id="remove_trader_id" name="remove_trader_id" value="">
     </form>
@@ -186,9 +186,8 @@
             </button>
         </div>
 
-        <form action="{% url 'market:monitor' market.market_id %}" method="POST" id="toggle_auto_pilot_form">
+        <form action="{% url 'market:toggle_monitor_auto_pilot_setting' market.market_id %}" method="POST" id="toggle_auto_pilot_form">
             {% csrf_token %}
-            <input type="hidden" name="toggle_auto_pilot" id="toggle_auto_pilot" value="true">
         </form>
 
         <script>

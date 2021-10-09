@@ -147,7 +147,7 @@ class TraderForm(forms.ModelForm):
 
             elif Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
-                    _('There is already a trader with this name on the requested market. Please select another name'))
+                    _('A trader with this name has already joined this market. Please select another name'))
 
         return cleaned_data
 

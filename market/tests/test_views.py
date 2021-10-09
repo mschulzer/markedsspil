@@ -12,7 +12,6 @@ from django.test import TestCase
 from django.urls import reverse
 from ..models import Market, Trader, Trade, RoundStat, UnusedCosts
 from ..forms import TraderForm
-from ..helpers import filter_trades
 from decimal import Decimal
 from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory, TraderFactory, UserFactory, MarketFactory
 
@@ -20,6 +19,7 @@ import pytest
 from pytest_django.asserts import assertTemplateUsed, assertContains, assertNotContains
 
 # Test Home view GET requests
+
 
 def test_home_view_url_exists_at_proper_location_and_uses_proper_template(client):
     response = client.get('/')
@@ -100,7 +100,7 @@ def test_proper_behaviour_and_nice_feedback_message_when_username_not_available(
     assert (response.status_code == 200)
     assert not ('trader_id' in client.session)
     assertContains(
-        response, 'There is already a trader with this name on the requested market. Please select another name')
+        response, 'A trader with this name has already joined this market. Please select another name')
     assert (Trader.objects.all().count() == 1)
 
 
@@ -316,7 +316,7 @@ def test_monitor_view_user_not_logged_in_has_no_access(client, db, logged_in_use
 
 
 def test_monitor_view_user_has_no_access_to_other_users_market(client, db, logged_in_user):
-    """ client who did not create the market only has access to monitor view when the game is over"""
+    """ client who did not create the market does not have access to monitor view """
     market = MarketFactory(created_by=logged_in_user)
     client.logout()
     other_user = UserFactory(username="olebole")
@@ -326,16 +326,6 @@ def test_monitor_view_user_has_no_access_to_other_users_market(client, db, logge
         reverse('market:monitor', args=(market.market_id,)))
     # redirect as no access
     assert (response.status_code == 302)
-
-    # we set game state to game over
-    market.round = market.max_rounds
-    assert (market.game_over())
-    market.save()
-
-    # visitor should now have access to the monitor page
-    response = client.get(
-        reverse('market:monitor', args=(market.market_id,)))
-    assert (response.status_code == 200)
 
 
 def test_market_is_in_context(client, db, logged_in_user):
@@ -351,271 +341,6 @@ def test_bad_market_id_raises_404(client, db, logged_in_user):
     response = client.get(
         reverse('market:monitor', args=('BAD_MARKET_ID',)))
     assert response.status_code == 404
-
-
-#  MonitorViewPOSTRequests
-
-def test_monitor_view_404_when_market_does_not_exists(client, logged_in_user):
-    url = reverse('market:monitor', args=('BADMARKETID',))
-    response = client.post(url)
-    assert (response.status_code == 404)
-
-
-def test_redirect_to_same_url_when_good_arguments(client, logged_in_user):
-    """ Redirect to monitor view after successful post-request """
-    # At least one trade has to have been made this round before post-request
-    market = MarketFactory(created_by=logged_in_user)
-    trader = TraderFactory(market=market)
-    trade = UnProcessedTradeFactory(round=0, trader=trader)
-    assert trade.round == trade.trader.market.round
-
-    url = reverse('market:monitor', args=(trade.trader.market.market_id,))
-    response = client.post(url)
-    assert (response.status_code == 302)
-    assert (response['Location'] == url)
-
-
-def test_one_trader_has_made_one_trade_this_round(client, logged_in_user):
-
-    # Some trader makes a trade in round 7
-    market = MarketFactory(round=7, created_by=logged_in_user)
-    trader = TraderFactory(market=market)
-    trade = UnProcessedTradeFactory(trader=trader, round=7)
-
-    # At this point, most fields of the trade should be none
-    assert (trade.round == 7)
-    assert (trade.profit is None)
-    assert (trade.demand is None)
-    assert (trade.units_sold is None)
-    assert (trade.balance_after is None)
-
-    # The teacher finishes the round
-    url = reverse('market:monitor', args=(trade.trader.market.market_id,))
-    response = client.post(url)
-    assert (response.status_code == 302)
-    assert (response['Location'] == url)
-
-    # The profit,balance should now be on the trade object
-    trade.refresh_from_db()
-    assert (trade.round == 7)
-    assert isinstance(trade.balance_after, Decimal)
-    assert isinstance(trade.balance_before, Decimal)
-    assert (trade.balance_before == TraderFactory.balance)
-    assert isinstance(trade.profit, Decimal)
-    assert isinstance(trade.units_sold, int)
-    assert isinstance(trade.demand, int)
-
-    # the round of the market should be 7+1=8
-    market.refresh_from_db()
-    assert (market.round == 8)
-
-
-def test_monitor_view_created_forced_moves_for_inactive_player(client, logged_in_user):
-    # There is a market in round 7 & two traders in this market
-    market = MarketFactory(round=7, created_by=logged_in_user)
-
-    trader1 = TraderFactory(market=market)
-    trader2 = TraderFactory(market=market, balance=123456)
-
-    # trader1 makes a trade...
-    trade = TradeFactory(trader=trader1, round=7)
-
-    # this trade is not saved as a forced trade
-    assert not (trade.was_forced)
-
-    # trader2 has not made any trades
-    assert (Trade.objects.filter(trader=trader2).count() == 0)
-
-    # The teacher finishes the round anyway..
-    url = reverse('market:monitor', args=(market.market_id,))
-    response = client.post(url)
-
-    # Reponse codes and redict location looks good
-    assert (response.status_code == 302)
-    assert (response['Location'] == url)
-
-    # A forced trade for trader2 in round 7 has been created
-    trade = Trade.objects.get(trader=trader2)
-    assert (trade.was_forced)
-    assert (trade.round == 7)
-    assert (trade.profit is None)
-    assert (trade.balance_before == 123456)
-    assert (trade.balance_after == 123456)
-
-    # The balance of trader2 should not be affected by the forced trade
-    trader2.refresh_from_db()
-    assert (trader2.balance == 123456)
-
-    # The round num has gone up by round
-    market.refresh_from_db()
-    assert (market.round == 8)
-
-
-def test_remove_trader_from_market_when_round_number_bigger_than_0(client, logged_in_user):
-    """ Testing the remove trader functionality when round number bigger than 0"""
-    market = MarketFactory(
-        round=7, created_by=logged_in_user)
-    trader = TraderFactory(market=market)
-
-    # Trader is not removed by default
-    assert trader.removed_from_market is False
-
-    url = reverse('market:monitor', args=(market.market_id,))
-    response = client.post(url, {'remove_trader_id': trader.id})
-    trader.refresh_from_db()
-
-    # Trader is now 'removed' from database (not actually deleted)
-    assert trader.removed_from_market is True
-
-    # Redirect after database update
-    assert (response.status_code == 302)
-
-
-def test_remove_trader_from_market_in_round_0(client, logged_in_user):
-    """ Testing the remove trader functionality in round 0"""
-    market = MarketFactory(
-        round=0, created_by=logged_in_user)
-    trader = TraderFactory(market=market)
-
-    num_traders_in_db = Trader.objects.all().count()
-    assert num_traders_in_db == 1
-
-    url = reverse('market:monitor', args=(market.market_id,))
-    response = client.post(url, {'remove_trader_id': trader.id})
-
-    # Trader is now deleted from database
-    num_traders_in_db = Trader.objects.all().count()
-    assert num_traders_in_db == 0
-
-    # Redirect after database update
-    assert (response.status_code == 302)
-
-def test_monitor_view_change_start_auto_pilot(client, logged_in_user):
-    """ Post request with toggle_auto_pilot should change the market's auto_pilot setting """
-    market = MarketFactory(
-        round=7, created_by=logged_in_user, monitor_auto_pilot=False)
-    assert market.monitor_auto_pilot is False
-    url = reverse('market:monitor', args=(market.market_id,))
-    response = client.post(url, {'toggle_auto_pilot': True})
-    market.refresh_from_db()
-    assert market.monitor_auto_pilot is True
-    response = client.post(url, {'toggle_auto_pilot': True})
-    market.refresh_from_db()
-    assert market.monitor_auto_pilot is False
-
-
-class MonitorViewPostRequestMultipleUserTest(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        # Set up non-modified objects used by test methods in class
-        cls.user = UserFactory()
-
-    def setUp(self):
-        # log in user before each test
-        self.client.login(username=self.user.username,
-                          password='defaultpassword')
-
-        self.market = MarketFactory(
-            initial_balance=5000,
-            alpha=21.402,
-            beta=44.2,
-            theta=2.0105,
-            round=1,
-            created_by=self.user)
-
-        # 5 players in the market
-        self.christian = TraderFactory(name="christian", market=self.market)
-        self.martin = TraderFactory(name="martin", market=self.market)
-        self.nadja = TraderFactory(name="nadja", market=self.market)
-        self.jens = TraderFactory(name="jens", market=self.market)
-        self.kristian = TraderFactory(name="kristian", market=self.market)
-
-        # round 0 is over, and these trades in round 0 have been created properly
-        c0 = TradeFactory(trader=self.christian, round=0,
-                          unit_price=9, unit_amount=125)
-        m0 = TradeFactory(trader=self.martin, round=0,
-                          unit_price=10, unit_amount=19)
-        n0 = TradeFactory(trader=self.nadja, round=0,
-                          unit_price=10, unit_amount=29)
-        k0 = TradeFactory(trader=self.kristian, round=0,
-                          unit_price=10, unit_amount=29)
-
-        # The 3 traders have chosen amount and price for round 1 (profit and balance_after_not_calculated_yet)
-        self.c1 = UnProcessedTradeFactory(
-            trader=self.christian, round=1, unit_price=11, unit_amount=150)
-        self.m1 = UnProcessedTradeFactory(
-            trader=self.martin, round=1, unit_price=9, unit_amount=200)
-        self.n1 = UnProcessedTradeFactory(
-            trader=self.nadja, round=1, unit_price=11, unit_amount=31)
-        self.k1 = UnProcessedTradeFactory(
-            trader=self.kristian, round=1, unit_price=17, unit_amount=31)
-
-    def test_players_are_ready(self):
-        assert (self.christian.is_ready())
-        assert (self.martin.is_ready())
-        assert (self.nadja.is_ready())
-        assert (self.kristian.is_ready())
-
-        num_ready_traders = filter_trades(
-            market=self.market, round=self.market.round).count()
-        assert (num_ready_traders == 4)
-
-    def test_correct_response_code_and_location_after_post_request(self):
-        url = reverse('market:monitor', args=(self.market.market_id,))
-        response = self.client.post(url)
-        assert (response.status_code == 302)
-        assert (response['Location'] == url)
-
-    def test_balance_and_profit_of_trades_updates(self):
-        assert (self.c1.balance_after is None)
-        assert (self.m1.balance_after is None)
-        assert (self.n1.balance_after is None)
-        assert (self.k1.balance_after is None)
-
-        assert (self.c1.profit is None)
-        assert (self.m1.profit is None)
-        assert (self.n1.profit is None)
-        assert (self.k1.profit is None)
-
-        url = reverse('market:monitor', args=(self.market.market_id,))
-
-        response = self.client.post(url)
-        self.c1.refresh_from_db()
-        self.m1.refresh_from_db()
-        self.n1.refresh_from_db()
-        self.k1.refresh_from_db()
-
-        assert isinstance(self.c1.balance_after, Decimal)
-        assert isinstance(self.m1.balance_after, Decimal)
-        assert isinstance(self.n1.balance_after, Decimal)
-        assert isinstance(self.k1.balance_after, Decimal)
-
-        assert isinstance(self.c1.profit, Decimal)
-        assert isinstance(self.m1.profit, Decimal)
-        assert isinstance(self.n1.profit, Decimal)
-        assert isinstance(self.k1.profit, Decimal)
-
-    def test_market_avg_price_has_been_calculated_and_saved(self):
-        url = reverse('market:monitor', args=(self.market.market_id,))
-        response = self.client.post(url)
-        assert (RoundStat.objects.filter(
-            round=1, market=self.market).exists())
-        r1stat = RoundStat.objects.get(round=1, market=self.market)
-        assert (r1stat.avg_price == (9+11+11+17)/4)
-
-    def test_market_is_in_round_2(self):
-        self.market.refresh_from_db()
-        assert (self.market.round == 1)
-        url = reverse('market:monitor', args=(self.market.market_id,))
-        response = self.client.post(url)
-        assert (response.status_code == 302)
-        self.market.refresh_from_db()
-        assert (self.market.round == 2)
-
-    def test_correct_num_trades_in_db(self):
-        num_trades = Trade.objects.all().count()
-        assert (num_trades == 8)
 
 
 # Test PlayViewGetRequest
@@ -928,7 +653,7 @@ def test_mymarkets_view_user_has_created_a_market(client, logged_in_user):
     assertContains(response, market.market_id)
 
 
-def test_market_gets_deleted_on_post_request(client, logged_in_user):
+def test_mymarket_gets_deleted_on_post_request(client, logged_in_user):
     """ Market with given ID gets 'deleted' on post request """
     market = MarketFactory(created_by=logged_in_user)
     assert market.deleted is False
@@ -942,15 +667,9 @@ def test_market_gets_deleted_on_post_request(client, logged_in_user):
     assert (response.status_code == 302)
 
 
-
-# Test TraderTable
-
-# TODO!
-
 # Test MarketEdit
 
-###################### get requests ############################
-def test_page_exits_and_uses_template(client, logged_in_user):
+def test_market_edit_page_exits_and_uses_template(client, logged_in_user):
     market = MarketFactory(created_by=logged_in_user, alpha=105.55)
     url = reverse('market:market_edit', args=(market.market_id,))
 
@@ -960,7 +679,7 @@ def test_page_exits_and_uses_template(client, logged_in_user):
     assertTemplateUsed(response, 'market/market_edit.html')
 
 
-def test_user_has_no_permission_to_edit_other_market(client, logged_in_user):
+def test_market_edit_user_has_no_permission_to_edit_other_market(client, logged_in_user):
     """
     User only has permission to edit the markets she has created
     """
@@ -974,10 +693,8 @@ def test_user_has_no_permission_to_edit_other_market(client, logged_in_user):
     assert (response.status_code == 302)
     assert (response['Location'] == reverse('market:home'))
 
-###################### post requests ############################
 
-
-def test_valid_post_data_updates_market_and_redirects(client, logged_in_user):
+def test_market_edit_valid_post_data_updates_market_and_redirects(client, logged_in_user):
     market = MarketFactory(created_by=logged_in_user, alpha=105.55)
     data = {'product_name_singular': 'surdejsbolle',
             'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 34, 'theta': 32,
@@ -996,7 +713,7 @@ def test_valid_post_data_updates_market_and_redirects(client, logged_in_user):
         'market:monitor', args=(market.market_id,)))
 
 
-def test_invalid_post_data_does_not_update_market(client, logged_in_user):
+def test_market_edit_invalid_post_data_does_not_update_market(client, logged_in_user):
     """
     alpha is negative, so form is invalid. No values should be updated in this case
     """
@@ -1018,3 +735,388 @@ def test_invalid_post_data_does_not_update_market(client, logged_in_user):
     assert (market.product_name_singular == 'baguette')
     assert (response.status_code == 200)  # return template
     assertTemplateUsed(response, 'market/market_edit.html')
+
+
+def test_toggle_monitor_auto_pilot_setting(client, logged_in_user):
+    """ Post request with toggle_auto_pilot should change the market's auto_pilot setting """
+    market = MarketFactory(
+        round=7, created_by=logged_in_user, monitor_auto_pilot=False)
+
+    # autopilot is false by default
+    assert market.monitor_auto_pilot is False
+
+    # now we toggle the setting
+    url = reverse('market:toggle_monitor_auto_pilot_setting',
+                  args=(market.market_id,))
+    client.post(url)
+    market.refresh_from_db()
+
+    # autopilot is now true
+    assert market.monitor_auto_pilot is True
+
+    # we toggle the setting again
+    response = client.post(url)
+    market.refresh_from_db()
+
+    # auto pilot is now false
+    assert market.monitor_auto_pilot is False
+
+    # redirect to monitor after succesful post-request
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:monitor', args=(market.market_id,)))
+
+
+def test_remove_trader_from_market_when_round_number_bigger_than_0(client, logged_in_user):
+    """ Testing the remove trader functionality when round number bigger than 0"""
+    market = MarketFactory(
+        round=7, created_by=logged_in_user)
+    trader = TraderFactory(market=market)
+
+    # Trader is not removed by default
+    assert trader.removed_from_market is False
+
+    url = reverse('market:remove_trader_from_market')
+    response = client.post(url, {'remove_trader_id': trader.id})
+    trader.refresh_from_db()
+
+    # Trader is now 'removed' from database (not actually deleted)
+    assert trader.removed_from_market is True
+
+    # Redirect to monitor view after database update
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:monitor', args=(market.market_id,)))
+
+
+def test_remove_trader_from_market_in_round_0(client, logged_in_user):
+    """ Testing the remove trader functionality in round 0"""
+    market = MarketFactory(
+        round=0, created_by=logged_in_user)
+    trader = TraderFactory(market=market)
+
+    num_traders_in_db = Trader.objects.all().count()
+    assert num_traders_in_db == 1
+
+    url = reverse('market:remove_trader_from_market')
+    response = client.post(url, {'remove_trader_id': trader.id})
+
+    # Trader is now deleted from database
+    num_traders_in_db = Trader.objects.all().count()
+    assert num_traders_in_db == 0
+
+    # Redirect to monitor view after database update
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:monitor', args=(market.market_id,)))
+
+
+#  Test finish_round view
+
+def test_finish_round_view_404_when_market_does_not_exists(client, logged_in_user):
+    """ If market with given id does not exist, return 404 page """
+    url = reverse('market:finish_round', args=('BADMARKETID',))
+    response = client.post(url)
+    assert (response.status_code == 404)
+
+
+def test_finish_round_view_redirect_to_monitor_url_when_valid_arguments(client, logged_in_user):
+    """ Redirect to monitor view after successful post-request """
+    # At least one trade has to have been made this round before post-request
+    market = MarketFactory(created_by=logged_in_user)
+    trader = TraderFactory(market=market)
+    trade = UnProcessedTradeFactory(round=0, trader=trader)
+    assert trade.round == trade.trader.market.round
+
+    url = reverse('market:finish_round', args=(trade.trader.market.market_id,))
+    response = client.post(url)
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:monitor', args=(trade.trader.market.market_id,)))
+
+
+def test_finish_round_view_one_trader_has_made_one_trade_this_round(client, logged_in_user):
+
+    # Some trader makes a trade in round 7
+    market = MarketFactory(round=7, created_by=logged_in_user)
+    trader = TraderFactory(market=market)
+    trade = UnProcessedTradeFactory(trader=trader, round=7)
+
+    # At this point, most fields of the trade should be none
+    assert (trade.round == 7)
+    assert (trade.profit is None)
+    assert (trade.demand is None)
+    assert (trade.units_sold is None)
+    assert (trade.balance_after is None)
+
+    # The teacher finishes the round
+    response = client.post(
+        reverse('market:finish_round', args=(trade.trader.market.market_id,)))
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:monitor', args=(trade.trader.market.market_id,)))
+
+    # The profit,balance should now be on the trade object
+    trade.refresh_from_db()
+    assert (trade.round == 7)
+    assert isinstance(trade.balance_after, Decimal)
+    assert isinstance(trade.balance_before, Decimal)
+    assert (trade.balance_before == TraderFactory.balance)
+    assert isinstance(trade.profit, Decimal)
+    assert isinstance(trade.units_sold, int)
+    assert isinstance(trade.demand, int)
+
+    # the round of the market should be 7+1=8
+    market.refresh_from_db()
+    assert (market.round == 8)
+
+
+def test_finish_round_view_created_forced_moves_for_inactive_player(client, logged_in_user):
+    # There is a market in round 7 & two traders in this market
+    market = MarketFactory(round=7, created_by=logged_in_user)
+
+    trader1 = TraderFactory(market=market)
+    trader2 = TraderFactory(market=market, balance=123456)
+
+    # trader1 makes a trade...
+    trade = TradeFactory(trader=trader1, round=7)
+
+    # this trade is not saved as a forced trade
+    assert not (trade.was_forced)
+
+    # trader2 has not made any trades
+    assert (Trade.objects.filter(trader=trader2).count() == 0)
+
+    # The teacher finishes the round anyway..
+    response = client.post(
+        reverse('market:finish_round', args=(market.market_id,)))
+
+    # Reponse codes and redict location looks good
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:monitor', args=(market.market_id,)))
+
+    # A forced trade for trader2 in round 7 has been created
+    trade = Trade.objects.get(trader=trader2)
+    assert (trade.was_forced)
+    assert (trade.round == 7)
+    assert (trade.profit is None)
+    assert (trade.balance_before == 123456)
+    assert (trade.balance_after == 123456)
+
+    # The balance of trader2 should not be affected by the forced trade
+    trader2.refresh_from_db()
+    assert (trader2.balance == 123456)
+
+    # The round num has gone up by round
+    market.refresh_from_db()
+    assert (market.round == 8)
+
+
+class FinishRoundViewMultipleUserTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        # Set up non-modified objects used by test methods in class
+        cls.user = UserFactory()
+
+    def setUp(self):
+        # log in user before each test
+        self.client.login(username=self.user.username,
+                          password='defaultpassword')
+
+        self.market = MarketFactory(
+            initial_balance=5000,
+            alpha=21.402,
+            beta=44.2,
+            theta=2.0105,
+            round=1,
+            created_by=self.user)
+
+        # 5 players in the market
+        self.christian = TraderFactory(name="christian", market=self.market)
+        self.martin = TraderFactory(name="martin", market=self.market)
+        self.nadja = TraderFactory(name="nadja", market=self.market)
+        #self.jens = TraderFactory(name="jens", market=self.market)
+        self.kristian = TraderFactory(name="kristian", market=self.market)
+
+        # round 0 is over, and these trades in round 0 have been created properly
+        c0 = TradeFactory(trader=self.christian, round=0,
+                          unit_price=9, unit_amount=125)
+        m0 = TradeFactory(trader=self.martin, round=0,
+                          unit_price=10, unit_amount=19)
+        n0 = TradeFactory(trader=self.nadja, round=0,
+                          unit_price=10, unit_amount=29)
+        k0 = TradeFactory(trader=self.kristian, round=0,
+                          unit_price=10, unit_amount=29)
+
+        # The 4 traders have chosen amount and price for round 1 (profit and balance_after_not_calculated_yet)
+        self.c1 = UnProcessedTradeFactory(
+            trader=self.christian, round=1, unit_price=11, unit_amount=150)
+        self.m1 = UnProcessedTradeFactory(
+            trader=self.martin, round=1, unit_price=9, unit_amount=200)
+        self.n1 = UnProcessedTradeFactory(
+            trader=self.nadja, round=1, unit_price=11, unit_amount=31)
+        self.k1 = UnProcessedTradeFactory(
+            trader=self.kristian, round=1, unit_price=17, unit_amount=31)
+
+    def test_players_are_ready(self):
+        assert (self.christian.is_ready())
+        assert (self.martin.is_ready())
+        assert (self.nadja.is_ready())
+        assert (self.kristian.is_ready())
+
+        num_ready_traders = self.market.num_ready_traders()
+        assert (num_ready_traders == 4)
+
+    def test_correct_response_code_and_location_after_post_request(self):
+        response = self.client.post(
+            reverse('market:finish_round', args=(self.market.market_id,)))
+        assert (response.status_code == 302)
+        assert (response['Location'] == reverse(
+            'market:monitor', args=(self.market.market_id,)))
+
+    def test_balance_and_profit_of_trades_updates(self):
+        assert (self.c1.balance_after is None)
+        assert (self.m1.balance_after is None)
+        assert (self.n1.balance_after is None)
+        assert (self.k1.balance_after is None)
+
+        assert (self.c1.profit is None)
+        assert (self.m1.profit is None)
+        assert (self.n1.profit is None)
+        assert (self.k1.profit is None)
+
+        url = reverse('market:finish_round', args=(self.market.market_id,))
+
+        response = self.client.post(url)
+        self.c1.refresh_from_db()
+        self.m1.refresh_from_db()
+        self.n1.refresh_from_db()
+        self.k1.refresh_from_db()
+
+        assert isinstance(self.c1.balance_after, Decimal)
+        assert isinstance(self.m1.balance_after, Decimal)
+        assert isinstance(self.n1.balance_after, Decimal)
+        assert isinstance(self.k1.balance_after, Decimal)
+
+        assert isinstance(self.c1.profit, Decimal)
+        assert isinstance(self.m1.profit, Decimal)
+        assert isinstance(self.n1.profit, Decimal)
+        assert isinstance(self.k1.profit, Decimal)
+
+    def test_market_avg_price_has_been_calculated_and_saved(self):
+        url = reverse('market:finish_round', args=(self.market.market_id,))
+        response = self.client.post(url)
+        assert (RoundStat.objects.filter(
+            round=1, market=self.market).exists())
+        r1stat = RoundStat.objects.get(round=1, market=self.market)
+        assert (r1stat.avg_price == (9+11+11+17)/4)
+
+    def test_market_is_in_round_2(self):
+        self.market.refresh_from_db()
+        assert (self.market.round == 1)
+        url = reverse('market:finish_round', args=(self.market.market_id,))
+        response = self.client.post(url)
+        assert (response.status_code == 302)
+        self.market.refresh_from_db()
+        assert (self.market.round == 2)
+
+    def test_correct_num_trades_in_db(self):
+        num_trades = Trade.objects.all().count()
+        assert (num_trades == 8)
+
+    def test_removal_of_trader(self):
+        assert(self.market.round == 1)
+        # Nadja has currently two trades in the database
+        assert(Trade.objects.filter(trader=self.nadja).count() == 2)
+
+        # Market host decides to remove Nadja from market
+        url = reverse('market:remove_trader_from_market')
+        response = self.client.post(url, {'remove_trader_id': self.nadja.id})
+        self.nadja.refresh_from_db()
+
+        # Nadja has been flagged as 'removed'
+        assert (self.nadja.removed_from_market == True)
+
+        # Nadja now only has one trade in the database
+        assert(Trade.objects.filter(trader=self.nadja).count() == 1)
+
+        # Total number of trades is down to 7
+        num_trades = Trade.objects.all().count()
+        assert (num_trades == 7)
+
+        # The number of ready traders should now be 3
+        self.market.refresh_from_db()
+        num_ready_traders = self.market.num_ready_traders()
+        assert (num_ready_traders == 3)
+
+        christians_balance_before_finish_round = self.christian.balance
+
+        # The market host finishes the round
+        url = reverse('market:finish_round', args=(self.market.market_id,))
+        response = self.client.post(url)
+
+        # We are now in round 2
+        self.market.refresh_from_db()
+        assert(self.market.round == 2)
+
+        assert (RoundStat.objects.filter(
+            round=1, market=self.market).exists())
+
+        # Nadjas price should not be part of the average for round 1
+        r1stat = RoundStat.objects.get(round=1, market=self.market)
+        expected_avg_price = round((9+11+17)/3, 2)
+        assert float(r1stat.avg_price) == expected_avg_price
+
+        # Nadjas amount should not be part of the average amount round 1
+        r1stat = RoundStat.objects.get(round=1, market=self.market)
+        expected_avg_amount = round((150+200+31)/3, 2)
+        assert float(r1stat.avg_amount) == expected_avg_amount
+
+        # Nadjas balance after round 1 should not be part of the average balance after round 1
+        self.nadja.refresh_from_db()
+        self.kristian.refresh_from_db()
+        self.christian.refresh_from_db()
+        self.martin.refresh_from_db()
+        expected_avg_balance_after = round((
+            self.kristian.balance + self.christian.balance + self.martin.balance) / 3, 2)
+        assert float(r1stat.avg_balance_after) == float(
+            expected_avg_balance_after)
+
+        # Nadjas stored 'forced trade' for round 1 should mostly consist of None-values.
+        nadjas_trade = Trade.objects.filter(trader=self.nadja, round=1).first()
+        assert(nadjas_trade.was_forced == True)
+        assert(nadjas_trade.unit_price == None)
+        assert(nadjas_trade.unit_amount == None)
+        assert(nadjas_trade.balance_after == None)
+        assert(nadjas_trade.profit == None)
+        assert(nadjas_trade.demand == None)
+        assert(nadjas_trade.round == 1)
+
+        # Let's also check that Christians values have been calculated correctly
+        christians_trade = Trade.objects.get(
+            trader=self.christian, round=1)
+        alpha, beta, theta = float(self.market.alpha), float(
+            self.market.beta), float(self.market.theta)
+
+        # Recall, Christian chose these values
+        christians_unit_price = unit_price = 11
+        christians_unit_amount = 150
+
+        christians_expenses = self.christian.prod_cost * christians_unit_amount
+        christians_raw_demand = alpha - beta * \
+            christians_unit_price + theta * expected_avg_price
+        christians_demand = max(0, round(christians_raw_demand))
+        christians_units_sold = min(christians_demand, christians_unit_amount)
+        christians_income = 11 * christians_units_sold
+        christians_trade_profit = christians_income - christians_expenses
+        christians_new_balance = christians_balance_before_finish_round + christians_trade_profit
+
+        assert(christians_trade.was_forced == False)
+        assert(christians_trade.unit_price == 11)
+        assert(christians_trade.unit_amount == 150)
+        assert(christians_trade.profit == christians_trade_profit)
+        assert(christians_trade.demand == christians_demand)
+        assert(christians_trade.round == 1)
+        assert christians_trade.balance_after == christians_new_balance

@@ -82,7 +82,7 @@ def test_round_0_one_forced_move(logged_in_user, client):
     assert not klaus.is_ready()
 
     # Even though Klaus is not ready, the teacher chooses to proceed to the next round:
-    url = reverse('market:monitor', args=(market.market_id,))
+    url = reverse('market:finish_round', args=(market.market_id,))
     client.post(url)
 
     # There should now be 2 trades in the database & Klaus trade should be forced
@@ -125,7 +125,7 @@ def test_round_1_one_forced_move(logged_in_user, client):
     assert not klaus.is_ready()
 
     # Even though Klaus is not ready, the teacher chooses to proceed to the next round:
-    url = reverse('market:monitor', args=(market.market_id,))
+    url = reverse('market:finish_round', args=(market.market_id,))
     client.post(url)
 
     # Klaus' balance has not changed
