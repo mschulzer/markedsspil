@@ -63,16 +63,14 @@ def trader_status_messages(request, trader_id):
     trader = get_object_or_404(Trader, id=trader_id)
 
     # Only the trader in question has access to the status messages
-    #if not request.user == trader:
-    #    return HttpResponseRedirect(reverse('market:home'))
-    context = {
-        'market': trader.market,
-        'trader': trader,
-        'trades': Trade.objects.filter(trader=trader),
-        'wait': trader.should_be_waiting()
-    }
-
-    return render(request, 'market/trader_status_messages.html', context)
+    if not 'trader_id' in request.session:
+        return HttpResponseRedirect(reverse('market:home'))
+    elif not (int(request.session['trader_id']) == int(trader_id)):
+        return HttpResponseRedirect(reverse('market:home'))
+    return render(request, 'market/trader_status_messages.html',
+                  {'market': trader.market,
+                   'wait': trader.should_be_waiting()}
+                  )
 
 
 def add_context_for_join_form(context, request):

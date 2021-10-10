@@ -1,135 +1,25 @@
 {% load i18n %}
 {% load custom_tags %}
 
-<!-- Short blue status message-->  
-<div class="alert alert-info">
-     {% if market.game_over %}
-        {% blocktranslate with balance=trader.balance %}
-            Final balance: <b>{{ balance }}</b> kr.
-        {% endblocktranslate %}   
-        <br>The game has ended after {{ market.max_rounds }} rounds!
+{% if wait %}
+<i> 
+    {% if market.num_active_traders == 1 %}
+        You are currently the only trader on the market. 
     {% else %}
-        {% blocktranslate with balance=trader.balance %}
-            Current balance: <b>{{ balance }}</b> kr.
-        {% endblocktranslate %}   
+        {% if market.num_active_traders == market.num_ready_traders %}
+            All traders have made their decisions, and we are currently                  
+            waiting for the host to finish the round...
+        {% else %}  
+            We are currently waiting for <b>{{ market.num_active_traders|subtract:market.num_ready_traders}}</b> 
+            of the <b>{{ market.num_active_traders }}</b> traders on the market to make their decisions...</i>                  
+        {% endif %}
     {% endif %}
- </div>
-
-<!-- Long yellow status message -->
-<div class="alert alert-warning"> 
-    
-    Hi {{ trader.name }},
-
-    {% if not wait %}
-
-        <br><br>
-        <!-- Info about the current round number -->
-        {% if not market.game_over %}
-            {% if market.round == trader.round_joined %}
-                <!-- a verbose & enthusiastic message welcoming new traders -->
-                {% if market.endless %}
-                You are now ready for round <b>{{ market.round|add:1 }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
-                {% else %}
-                    You are now ready for round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
-                {% endif %}         
-                <br><br>       
-                Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. <br>
-                <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
-                    
-            {% else %}
-                <!-- a less verbose & less enthusiastic message for traders who joined in a previous round -->   
-
-                You are now ready for round <b>{{ market.round|add:1}}</b>
-                {% if market.endless %}
-                    .
-                {% else %}
-                    out of <b>{{ market.max_rounds}}</b>. 
-                {% endif %}        
-                <br><br>    
-            {% endif %}
-        {% endif %}
-
-        <!-- Text with info about last round choices and results.  -->
-        {% if trader.round_joined < market.round %}     
-            {% if trades.last.was_forced %}
-                {% translate "You didn't make a trade last round." %} 
-            {% else %}
-                {% if trades.last.unit_amount < trades.last.demand %}
-                        {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-            
-                        Last round you sold <b>{{ lastRoundSold }}</b> 
-                        of the <b>{{ lastRoundUnits }}</b> {{ unitsPlural }} you produced. 
-                        You cold have sold <b>{{ lastRoundDemand }}</b> {{ unitsPlural }}.
-                        
-                    {% endblocktranslate %}
-
-                {% elif trades.last.unit_amount == trades.last.demand %}
-
-                    {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-            
-                    Last round you sold all the <b>{{ lastRoundSold }}</b> 
-                    {{ unitsPlural }} you produced. 
-                    You coldn't have sold more {{ unitsPlural }}. 
-            
-                    {% endblocktranslate %}
-
-                {% else %} 
-
-                    {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-            
-                    Last round you sold <b>{{ lastRoundSold }}</b> 
-                    of the <b>{{ lastRoundUnits }}</b> {{ unitsPlural }} you produced.
-            
-                    {% endblocktranslate %}
-
-                {% endif %}
-
-                {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural unitsSingular=market.product_name_singular lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
-        
-                    Your price per {{ unitsSingular }} was <b>{{ lastRoundPrice }} </b>kr. 
-                    and the market average price was <b>{{ lastRoundAvgPrice }}</b> kr.
-        
-                {% endblocktranslate %}
-            
-                <br><br>
-                Your profit was
-                {% if trades.last.profit < 0 %}
-                    <b style="color:red">
-                {% else %}
-                    <b style="color:green">
-                {% endif %}
-                {{ trades.last.profit }}</b> kr.
-            {% endif %}                
-        {% endif %}
-        
-    {% else %} <!-- wait is true -->
-
-        <br><br>You made a trade! You decided to produce <b>{{ trades.last.unit_amount }}</b>  
-        {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
-        {% comment %} 
-        Suggested translation:
-        Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
-        {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
-        {% endcomment %}
-        <br><br>
-        You are still in round {{ market.round|add:1 }}.<br><br>
-        <i>
-        {% if market.num_active_traders == 1 %}
-            You are currently the only trader on the market. 
-        {% else %}
-            {% if market.num_active_traders == market.num_ready_traders %}
-                All traders have made their decisions, and we are currently                  
-                waiting for the host to finish the round...
-            {% else %}  
-                We are currently waiting for <b>{{ market.num_active_traders|subtract:market.num_ready_traders}}</b> 
-                of the <b>{{ market.num_active_traders }}</b> traders on the market to make their decisions...</i>                  
-            {% endif %}
-        {% endif %}
-        </i>
-    {% endif %}
-</div>
+</i>
+{% endif %}
 
 <script>
     updated_round_num = parseInt("{{ market.round }}")
+    console.log("updated_round_run", updated_round_num)
+
     check_for_next_round(updated_round_num)
 </script>

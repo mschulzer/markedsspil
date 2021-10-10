@@ -1128,13 +1128,17 @@ def test_trader_status_messages(client, db):
     response = client.get(
         reverse('market:trader_status_messages', args=(trader.id,)))
 
-    assert response.status_code == 200
+    # A random client should not have access to the view, so request should redirected
+    assert response.status_code == 302
 
+    # Now we make a client who should have access
     session = client.session
     session['trader_id'] = trader.id
+    session.save()
 
     response = client.get(
         reverse('market:trader_status_messages', args=(trader.id,)))
-    assert response.status_code == 200
 
+    # The status code is now 200 and the correct template is used
+    assert response.status_code == 200
     assertTemplateUsed(response, 'market/trader_status_messages.html')
