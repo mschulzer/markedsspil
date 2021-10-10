@@ -43,15 +43,17 @@ def test_home_view_name_and_template(client):
 
 def test_home_view_notify_users_who_have_already_joined_a_market(client, db):
     market = MarketFactory()
+    trader = TraderFactory()
+
     session = client.session
-    session['trader_id'] = 3
+    session['trader_id'] = trader.id
     session['market_id'] = market.market_id
     session['username'] = 'Alberte'
     session.save()
 
     response = client.get(reverse('market:home'))
 
-    # user should somehow be informed, that he has already joined the market with this id
+    # user should somehow be informed that he has already joined the market with this id
     assertContains(response, market.market_id)
     assertContains(response, "Alberte")
 
