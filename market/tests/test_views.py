@@ -1123,10 +1123,10 @@ class FinishRoundViewMultipleUserTest(TestCase):
         assert christians_trade.balance_after == christians_new_balance
 
 
-def test_trader_status_messages(client, db):
+def test_trader_status_include(client, db):
     trader = TraderFactory()
     response = client.get(
-        reverse('market:trader_status_messages', args=(trader.id,)))
+        reverse('market:trader_status_include', args=(trader.id,)))
 
     # A random client should not have access to the view, so request should redirected
     assert response.status_code == 302
@@ -1137,8 +1137,8 @@ def test_trader_status_messages(client, db):
     session.save()
 
     response = client.get(
-        reverse('market:trader_status_messages', args=(trader.id,)))
+        reverse('market:trader_status_include', args=(trader.id,)))
 
     # The status code is now 200 and the correct template is used
     assert response.status_code == 200
-    assertTemplateUsed(response, 'market/trader_status_messages.html')
+    assertTemplateUsed(response, 'market/trader_status_include.html')

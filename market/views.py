@@ -59,7 +59,7 @@ def trader_table(request, market_id):
 
 
 @require_GET
-def trader_status_messages(request, trader_id):
+def trader_status_include(request, trader_id):
     trader = get_object_or_404(Trader, id=trader_id)
 
     # Only the trader in question has access to the status messages
@@ -67,7 +67,7 @@ def trader_status_messages(request, trader_id):
         return HttpResponseRedirect(reverse('market:home'))
     elif not (int(request.session['trader_id']) == int(trader_id)):
         return HttpResponseRedirect(reverse('market:home'))
-    return render(request, 'market/trader_status_messages.html',
+    return render(request, 'market/trader_status_include.html',
                   {'market': trader.market,
                    'wait': trader.should_be_waiting()}
                   )

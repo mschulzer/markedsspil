@@ -136,17 +136,15 @@
                
             {% endif %}
             <div id="status_messages">
-                {% include 'market/trader_status_messages.html' %}
+                {% include 'market/trader_status_include.html' %}
             </div>
                 <!-- Update status every second -->   
             <div 
-                hx-get="{% url 'market:trader_status_messages' trader.id %}"
+                hx-get="{% url 'market:trader_status_include' trader.id %}"
                 hx-trigger="every 2s"
                 hx-target="#status_messages">
             </div>
-        </div> 
-        
-     
+        </div>      
 
         {% if not wait and not market.game_over %}
             <!-- Next trade form -->
