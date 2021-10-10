@@ -22,7 +22,9 @@ urlpatterns = [
     path('<market_id>/trader_table/',
          views.trader_table, name='trader_table'),
 
+    path('<trader_id>/trader_status_messages/',
+         views.trader_status_messages, name='trader_status_messages'),
+
     # APIs
     path('<market_id>/current_round/', views.current_round, name='current_round'),
-    #path('<market_id>/download/', views.download, name='download'),
 ]

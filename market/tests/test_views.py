@@ -1119,3 +1119,20 @@ class FinishRoundViewMultipleUserTest(TestCase):
         assert(christians_trade.demand == christians_demand)
         assert(christians_trade.round == 1)
         assert christians_trade.balance_after == christians_new_balance
+
+
+def test_trader_status_messages(client, db):
+    trader = TraderFactory()
+    response = client.get(
+        reverse('market:trader_status_messages', args=(trader.id,)))
+
+    assert response.status_code == 200
+
+    session = client.session
+    session['trader_id'] = trader.id
+
+    response = client.get(
+        reverse('market:trader_status_messages', args=(trader.id,)))
+    assert response.status_code == 200
+
+    assertTemplateUsed(response, 'market/trader_status_messages.html')

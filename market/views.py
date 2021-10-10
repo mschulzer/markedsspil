@@ -58,12 +58,43 @@ def trader_table(request, market_id):
     return render(request, 'market/trader-table.html', {'market': market})
 
 
+@require_GET
+def trader_status_messages(request, trader_id):
+    trader = get_object_or_404(Trader, id=trader_id)
+
+    # Only the trader in question has access to the status messages
+    #if not request.user == trader:
+    #    return HttpResponseRedirect(reverse('market:home'))
+    context = {
+        'market': trader.market,
+        'trader': trader,
+        'trades': Trade.objects.filter(trader=trader),
+        'wait': trader.should_be_waiting()
+    }
+
+    return render(request, 'market/trader_status_messages.html', context)
+
+
 def add_context_for_join_form(context, request):
+    """ Helper function used by view functions below """
+
     # If the client has already joined a market
-    if 'market_id' in request.session:
+    if 'trader_id' in request.session:
+
+        # If trader is in database
+        if Trader.objects.filter(id=request.session['trader_id']).exists():
+            trader = Trader.objects.get(id=request.session['trader_id'])
+            # If trader has been removed from market
+            if trader.removed_from_market:
+                request.session['removed_from_market'] = True
+
+        # If trader has been deleted from database
+        else:
+            request.session['removed_from_market'] = True
+
         # We add this market to the context to notify the client
-        market = Market.objects.get(
-            market_id=request.session['market_id'])
+        market = get_object_or_404(
+            Market, market_id=request.session['market_id'])
         context['market'] = market
     return context
 
@@ -277,8 +308,8 @@ def play(request, market_id):
         if trader.removed_from_market:
             return HttpResponse(
                 f"<br>You have been permanently removed from the market {market_id} by the market host. <br><br>You can rejoin the market with a new name.<br><br>Please contact the market host if you have any questions.")
-        market = trader.market
 
+        market = trader.market
         round_stats = RoundStat.objects.filter(market=market)
         trades = Trade.objects.filter(trader=trader)
 
