@@ -15,7 +15,6 @@ from .market_settings import SCENARIOS
 from django.utils.translation import gettext as _
 
 
-
 @login_required
 def market_edit(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
@@ -58,9 +57,20 @@ def trader_table(request, market_id):
 
     return render(request, 'market/trader-table.html', {'market': market})
 
-@require_POST
+
+def add_context_for_join_form(context, request):
+    # If the client has already joined a market
+    if 'market_id' in request.session:
+        # We add this market to the context to notify the client
+        market = Market.objects.get(
+            market_id=request.session['market_id'])
+        context['market'] = market
+    return context
+
+
 def join_market(request):
     form = TraderForm(request.POST)
+
     if form.is_valid():
         market = Market.objects.get(
             market_id=form.cleaned_data['market_id'])
@@ -84,31 +94,24 @@ def join_market(request):
         # After joining the market, the player is redirected to the play page
         return redirect(reverse('market:play', args=(market.market_id,)))
 
-    return render(request, 'market/home.html', {'form': form})
+    context = add_context_for_join_form({'form': form}, request)
+    return render(request, 'market/home.html', context)
+
 
 @require_GET
 def home(request):
-   
     # If the client is following an invitation link to a market
     if 'market_id' in request.GET:
         # Fill out the market_id field in the form
         form = TraderForm(
             initial={'market_id': request.GET['market_id']})
 
-    # If the client is simply visiting the home-page
+    # If the client is just visiting the home-page base url
     else:
         # The form should be empty
         form = TraderForm()
 
-    context = {'form': form}
-
-    # If the client has already joined a market
-    if 'market_id' in request.session:
-        # We add this market to the context to notify the client 
-        market = Market.objects.get(
-            market_id=request.session['market_id'])
-        context['market'] = market
-
+    context = add_context_for_join_form({'form': form}, request)
     return render(request, 'market/home.html', context)
 
 

@@ -28,7 +28,7 @@
                     <!-- Content if client has not joined a market -->
                     {% comment %} <p>{% translate 'Traders produce and sell goods on a market. They compete with other traders to gain the most money after a given number of rounds.'%}</p> {% endcomment %}
 
-                    <form action="" method="post">{% csrf_token %}
+                    <form action="{% url 'market:join_market' %}" method="post">{% csrf_token %}
                         {{ form|crispy }}
                         <div class="d-flex justify-content-center">
                             <input type="submit" value="{% translate "Join market" %}" class="btn btn-primary my-2">

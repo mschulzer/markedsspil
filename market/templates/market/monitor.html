@@ -34,7 +34,7 @@
         <p class="mb-1">Players can join the market by going to this URL: </p>
         <div class="d-flex">
             <input class="form-control" type="text" 
-                value="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.get_host }}{% url 'market:join_market' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
+                value="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.get_host }}{% url 'market:home' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
             <button class="btn btn-primary btn-sm" onclick="copy_join_link()">{% translate 'Copy' %}</button>
         </div>
     </div>
