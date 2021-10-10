@@ -157,9 +157,11 @@ class Trader(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))],
     )
     # w/ below settings a trader's balance has be numerically <= 9999999999.99
+    # The balance will be null for traders who have been removed from their market
     balance = models.DecimalField(
         max_digits=12,
         decimal_places=2,
+        null=True
     )
     round_joined = models.IntegerField(default=0)
 
@@ -257,7 +259,10 @@ class Trader(models.Model):
             # Do an actual deletion of the trader from the database
             self.delete()
         else:
-            # Keep trader in database, but flag him as removed
+            # Keep trader in database, but set his balance to None and flag him as removed
+            # (setting the balance to None will ensure that the trader's balance will not be
+            # shown on balance graph in all rounds following the removal of the trader)
+            self.balance = None
             self.removed_from_market = True
             self.save()
             # If the trader has made a trade in this round, delete this trade

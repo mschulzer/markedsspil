@@ -18,8 +18,7 @@ from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
 import pytest
 from pytest_django.asserts import assertTemplateUsed, assertContains, assertNotContains
 
-# Test Home view GET requests
-
+# Test home view
 
 def test_home_view_url_exists_at_proper_location_and_uses_proper_template(client):
     response = client.get('/')
@@ -28,7 +27,7 @@ def test_home_view_url_exists_at_proper_location_and_uses_proper_template(client
     assert isinstance(response.context['form'], TraderForm)
 
 
-def test_context_form_when_market_id_is_in_GET(client):
+def test_home_view_context_form_when_market_id_is_in_GET(client):
     response = client.get(
         reverse('market:home') + "?market_id=KXZCVCZL")
     assert response.status_code == 200
@@ -42,7 +41,7 @@ def test_home_view_name_and_template(client):
     assertTemplateUsed(response, 'market/home.html')
 
 
-def test_notify_users_who_have_already_joined_a_market(client, db):
+def test_home_view_notify_users_who_have_already_joined_a_market(client, db):
     market = MarketFactory()
     session = client.session
     session['trader_id'] = 3
@@ -57,13 +56,13 @@ def test_notify_users_who_have_already_joined_a_market(client, db):
     assertContains(response, "Alberte")
 
 
-# HomeViewTestPOSTRequests
+# Test join_market view
 
-def test_proper_behavior_when_no_market_id_in_form(db, client):
+def test_join_market_view_proper_behavior_when_no_market_id_in_form(db, client):
     from django.utils import translation
     translation.activate("en-US")
 
-    response = client.post(reverse('market:home'), {
+    response = client.post(reverse('market:join_market'), {
         'username': 'Helle', 'market_id': ''})
     assert response.status_code == 200
     assert 'trader_id' not in client.session
@@ -71,8 +70,8 @@ def test_proper_behavior_when_no_market_id_in_form(db, client):
     assert Trader.objects.all().count() == 0
 
 
-def test_proper_behavior_when_no_username_in_form(db, client):
-    response = client.post(reverse('market:home'), {
+def test_join_market_view_proper_behavior_when_no_username_in_form(db, client):
+    response = client.post(reverse('market:join_market'), {
         'name': '', 'market_id': 'SOME_MARKET_ID'})
     assert response.status_code == 200
     assert not ('trader_id' in client.session)
@@ -80,9 +79,9 @@ def test_proper_behavior_when_no_username_in_form(db, client):
     assert Trader.objects.all().count() == 0
 
 
-def test_proper_behavior_when_no_market_with_posted_market_id(db, client):
+def test_join_market_view_proper_behavior_when_no_market_with_posted_market_id(db, client):
     market_id_with_no_referent = 'BAD_MARKET_ID'
-    response = client.post(reverse('market:home'), {
+    response = client.post(reverse('market:join_market'), {
         'name': 'Hanne', 'market_id': market_id_with_no_referent})
     assert (response.status_code == 200)
     assert not ('trader_id' in client.session)
@@ -91,11 +90,11 @@ def test_proper_behavior_when_no_market_with_posted_market_id(db, client):
     assert (Trader.objects.all().count() == 0)
 
 
-def test_proper_behaviour_and_nice_feedback_message_when_username_not_available(db, client):
+def test_join_market_view_proper_behaviour_and_nice_feedback_message_when_username_not_available(db, client):
     market = MarketFactory()
     TraderFactory(market=market, name="jonna")
 
-    response = client.post(reverse('market:home'), {
+    response = client.post(reverse('market:join_market'), {
         'name': 'jonna', 'market_id': market.market_id})
     assert (response.status_code == 200)
     assert not ('trader_id' in client.session)
@@ -104,9 +103,9 @@ def test_proper_behaviour_and_nice_feedback_message_when_username_not_available(
     assert (Trader.objects.all().count() == 1)
 
 
-def test_new_trader_created_when_form_is_valid(db, client):
+def test_join_market_view_new_trader_created_when_form_is_valid(db, client):
     market = MarketFactory(min_cost=4, max_cost=4)
-    response = client.post(reverse('market:home'), {
+    response = client.post(reverse('market:join_market'), {
         'name': 'Hanne', 'market_id': market.market_id})
     assert (Trader.objects.all().count() == 1)
     new_trader = Trader.objects.first()
@@ -120,12 +119,12 @@ def test_new_trader_created_when_form_is_valid(db, client):
     assert (new_trader.prod_cost == 4)
 
 
-def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(db, client):
+def test_join_market_view_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_rounds(db, client):
     # a market is in round 3
     market = MarketFactory(round=3)
 
     # a players named Hanne tries to join the market (she is late)
-    response = client.post(reverse('market:home'), {
+    response = client.post(reverse('market:join_market'), {
         'name': 'Hanne', 'market_id': market.market_id})
 
     # the trader hanne was created
@@ -157,24 +156,24 @@ def test_new_trader_who_enters_game_late_created_with_forced_trades_in_previous_
 
 
 # Test Create Market View GET Request
-def test_create_view_url_and_template(client, logged_in_user):
-    response = client.get('/create/')
+def test_create_market_view_url_and_template(client, logged_in_user):
+    response = client.get('/create_market/')
     assert response.status_code == 200
-    assertTemplateUsed(response, 'market/create.html')
+    assertTemplateUsed(response, 'market/create_market.html')
 
 
-def test_create_view_name_and_template(client, logged_in_user):
-    response = client.get(reverse('market:create'))
+def test_create_market_view_name_and_template(client, logged_in_user):
+    response = client.get(reverse('market:create_market'))
     assert response.status_code == 200
-    assertTemplateUsed(response, 'market/create.html'),
+    assertTemplateUsed(response, 'market/create_market.html'),
 
 
-def test_create_view_login_required(client, logged_in_user):
+def test_create_market_view_login_required(client, logged_in_user):
     """ User not logged in will be redirected to login page """
     client.logout()
-    response = client.get(reverse('market:create'))
+    response = client.get(reverse('market:create_market'))
     assert response.status_code == 302
-    assert response['Location'] == '/accounts/login/?next=/create/'
+    assert response['Location'] == '/accounts/login/?next=/create_market/'
 
 # Test Create Market View POST Request
 
@@ -195,13 +194,13 @@ def create_market_data():
     }
 
 
-def test_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
+def test_create_market_is_created_when_data_is_valid(client, logged_in_user, create_market_data):
     """ 
     A market is created when posting valid data & logged in user is set as market's creator 
     Since min_cost < max_cost two new Unused costs are produced
     After successfull creation, client is redirected to monitor page
     """
-    response = client.post(reverse('market:create'), create_market_data)
+    response = client.post(reverse('market:create_market'), create_market_data)
     assert Market.objects.all().count() == 1
     market = Market.objects.first()
     assert (market.created_by == logged_in_user)
@@ -219,7 +218,7 @@ def test_market_is_created_when_data_is_valid(client, logged_in_user, create_mar
     assert (unused_costs.last().cost == 144)
 
 
-def test_when_min_costs_equals_max_cost_no_unused_costs_are_produced(client, logged_in_user, create_market_data):
+def test_create_market_when_min_costs_equals_max_cost_no_unused_costs_are_produced(client, logged_in_user, create_market_data):
     """ 
     A market is created when posting valid data & logged in user is set as market's creator 
     After successfull creation, client is redirected to monitor page. 
@@ -227,7 +226,7 @@ def test_when_min_costs_equals_max_cost_no_unused_costs_are_produced(client, log
     """
     create_market_data['max_cost'] = 11
 
-    response = client.post(reverse('market:create'), create_market_data)
+    response = client.post(reverse('market:create_market'), create_market_data)
     assert (Market.objects.all().count() == 1)
     market = Market.objects.first()
     assert (response.status_code == 302)
@@ -239,62 +238,62 @@ def test_when_min_costs_equals_max_cost_no_unused_costs_are_produced(client, log
     assert (unused_costs.count() == 0)
 
 
-def test_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
+def test_create_market_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
     """ data is invalid """
     create_market_data['min_cost'] = 200
-    response = client.post(reverse('market:create'), create_market_data)
+    response = client.post(reverse('market:create_market'), create_market_data)
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
     assertContains(response, "Max cost must be bigger than min cost")
 
 
-def test_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
+def test_create_market_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
     """ data is invalid """
     create_market_data['alpha'] = ''
-    response = client.post(reverse('market:create'), create_market_data)
+    response = client.post(reverse('market:create_market'), create_market_data)
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
     assertContains(response, "This field is required.")
 
 
-def test_error_mgs_shown_to_user_when_alpha_bigger_than_9999999999(client, logged_in_user, create_market_data):
+def test_create_market_error_mgs_shown_to_user_when_alpha_bigger_than_9999999999(client, logged_in_user, create_market_data):
     """ 
     In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 9999999999.9999
     Choosing alpha = 10000000000 in the create form should should create an understandable message to the user,
     not a database-error. 
     """
     create_market_data['alpha'] = 10000000000
-    response = client.post(reverse('market:create'), create_market_data)
+    response = client.post(reverse('market:create_market'), create_market_data)
     assert response.status_code == 200
     assertContains(
         response, "Ensure that there are no more than 10 digits before the decimal point.")
 
 
-def test_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(client, logged_in_user, create_market_data):
+def test_create_market_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(client, logged_in_user, create_market_data):
     """ 
     In the model, min_cost and max_cost are set as positive integers. 
     If the users chooses beta negative, this should not cast a database error, but a nice feedback message
     """
     create_market_data['min_cost'] = -11
-    response = client.post(reverse('market:create'), create_market_data)
+    response = client.post(reverse('market:create_market'), create_market_data)
     assert response.status_code == 200
     assertContains(
         response, "Ensure this value is greater than or equal to 0.01.")
 
 
-def test_if_user_chooses_negative_max_rounds_he_gets_a_good_error_message(client, logged_in_user, create_market_data):
+def test_create_market_if_user_chooses_negative_max_rounds_he_gets_a_good_error_message(client, logged_in_user, create_market_data):
     """ 
     Max_rounds must be an integer >= 1. 
     """
     create_market_data['max_rounds'] = -4
-    response = client.post(reverse('market:create'), create_market_data)
+    response = client.post(reverse('market:create_market'), create_market_data)
     assert (response.status_code == 200)
     assertContains(response, "There must be at least 1 round")
 
 
-# Test MonitorViewGETRequests
+# Test Monitor View 
 
-def test_view_url_exists_at_proper_name_and_uses_proper_template(client, db, logged_in_user):
+def test_monitor_view_url_exists_at_proper_name_and_uses_proper_template(client, db, logged_in_user):
     market = MarketFactory(created_by=logged_in_user)
     response = client.get(
         reverse('market:monitor', args=(market.market_id,)))
@@ -328,7 +327,7 @@ def test_monitor_view_user_has_no_access_to_other_users_market(client, db, logge
     assert (response.status_code == 302)
 
 
-def test_market_is_in_context(client, db, logged_in_user):
+def test_monitor_view_market_is_in_context(client, db, logged_in_user):
     market = MarketFactory(created_by=logged_in_user)
     response = client.get(
         reverse('market:monitor', args=(market.market_id,)))
@@ -336,7 +335,7 @@ def test_market_is_in_context(client, db, logged_in_user):
     assert response.context['market'].round == 0
 
 
-def test_bad_market_id_raises_404(client, db, logged_in_user):
+def test_monitor_view_bad_market_id_raises_404(client, db, logged_in_user):
     market = MarketFactory()
     response = client.get(
         reverse('market:monitor', args=('BAD_MARKET_ID',)))
@@ -345,7 +344,7 @@ def test_bad_market_id_raises_404(client, db, logged_in_user):
 
 # Test PlayViewGetRequest
 
-def test_no_trader_id_in_session_redirects_to_home(client):
+def test_player_view_get_no_trader_id_in_session_redirects_to_home(client):
     # some client who has not joined tries to access the wait page
     response = client.get(reverse('market:play', args=('SOMEMARKETD',)))
 
@@ -354,7 +353,7 @@ def test_no_trader_id_in_session_redirects_to_home(client):
     assert (response['Location'] == reverse('market:home'))
 
 
-def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(client, db):
+def test_player_view_get_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(client, db):
     # some market is in round 0
     market = MarketFactory(round=0)
 
@@ -387,7 +386,7 @@ def test_if_no_errors_and_time_to_wait_return_play_template_with_wait_content(cl
     assertNotContains(response, 'submit')
 
 
-def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_round(client, db):
+def test_player_view_get_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_round(client, db):
     """
     User has traded in round 4, and in round 3.
     """
@@ -426,7 +425,7 @@ def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_and_last_ro
     assertNotContains(response, f"/{market.market_id}/monitor")
 
 
-def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(client, db):
+def test_player_view_get_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_last_round(client, db):
     """
     User is in round 4. He traded in round 2, but not in round 3, and not yet in round 4. 
     """
@@ -467,7 +466,7 @@ def test_proper_behavior_in_round_4_when_user_has_made_trade_in_this_but_NOT_in_
     assertNotContains(response, f"/{market.market_id}/monitor")
 
 
-def test_form_attributes_are_set_correctly(client, db):
+def test_player_view_get_form_attributes_are_set_correctly(client, db):
     """
     The form fields should have their max values determined by the market and traders
     """
@@ -497,7 +496,7 @@ def test_form_attributes_are_set_correctly(client, db):
     assert ('max="53"' not in str(form))
 
 
-def test_game_over_when_rounds_equal_max_round(client, db):
+def test_player_view_get_game_over_when_rounds_equal_max_round(client, db):
     """
     When game is over, the user should be notified about this
     """
@@ -523,9 +522,9 @@ def test_game_over_when_rounds_equal_max_round(client, db):
     #assertContains(response, f"/{market.market_id}/monitor")
 
 
-# PlayViewPOSTRequest
+# Test Play View POST Requests
 
-def test_post_market_id_not_found_redirects_to_home(client):
+def test_player_view_post_market_id_not_found_redirects_to_home(client):
     # client tryes to go the play page without having joined a market
     response = client.post(
         reverse('market:play', args=('SOMEMARKETID',)))
@@ -534,7 +533,7 @@ def test_post_market_id_not_found_redirects_to_home(client):
     assert (response['Location'] == reverse('market:home'))
 
 
-def test_if_all_data_is_good_then_save_trade_and_redirect_to_play(client, db):
+def test_player_view_post_test_if_all_data_is_good_then_save_trade_and_redirect_to_play(client, db):
     trader = TraderFactory()
 
     session = client.session
@@ -564,7 +563,7 @@ def test_if_all_data_is_good_then_save_trade_and_redirect_to_play(client, db):
     assert (response['Location'] == expected_redirect_url)
 
 
-def test_error_message_to_user_when_invalid_form(client, db):
+def test_player_view_post_error_message_to_user_when_invalid_form(client, db):
     trader = TraderFactory()
 
     session = client.session
@@ -592,7 +591,7 @@ def test_error_message_to_user_when_invalid_form(client, db):
         form)
 
 
-# Test CurrentRoundView
+# Test Current Round View
 
 def test_current_round_view_404_when_market_does_not_exists(client, db):
     url = reverse('market:current_round', args=('BARMARKETID',))
@@ -600,21 +599,21 @@ def test_current_round_view_404_when_market_does_not_exists(client, db):
     assert (response.status_code == 404)
 
 
-def test_response_status_code_200_when_market_exists(client, db):
+def test_current_round_view_response_status_code_200_when_market_exists(client, db):
     market = MarketFactory()
     url = reverse('market:current_round', args=(market.market_id,))
     response = client.get(url)
     assert (response.status_code == 200)
 
 
-def test_returns_correct_non_zero_round(client, db):
+def test_current_round_view_returns_correct_non_zero_round(client, db):
     market = MarketFactory(round=11)
     url = reverse('market:current_round', args=(market.market_id,))
     response = client.get(url)
     assert (response.json() == {"round": 11})
 
 
-# Test MyMarkets
+# Test My Markets
 
 def test_mymarkets_view_login_required(client, logged_in_user):
     """ user not logged in will be redirected to login page """
@@ -681,15 +680,15 @@ def test_market_edit_page_exits_and_uses_template(client, logged_in_user):
 
 def test_market_edit_user_has_no_permission_to_edit_other_market(client, logged_in_user):
     """
-    User only has permission to edit the markets she has created
+    You can't edit a market you did not create
     """
-    market = MarketFactory(created_by=logged_in_user, alpha=105.55)
-    other_market_not_created_by_client = MarketFactory()
+    market = MarketFactory()
 
     url = reverse('market:market_edit', args=(
-        other_market_not_created_by_client.market_id,))
+        market.market_id,))
     response = client.get(url)
 
+    assert market.created_by != client
     assert (response.status_code == 302)
     assert (response['Location'] == reverse('market:home'))
 

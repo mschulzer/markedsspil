@@ -1,4 +1,4 @@
-// Scripts used in create.html and edit-market.html
+// Scripts used in create_market.html and edit-market.html
 
 function submit_form() {
     // If user wants to create an "endless" game 
@@ -11,7 +11,7 @@ function submit_form() {
 }
 
 function adjust_max_round_field() {
-    // This exact function is also defined in create.html
+    // This exact function is also defined in create_market.html
     upper_limit_on_max_rounds = parseInt("{{ upper_limit_on_max_rounds }}")
     max_rounds_field = document.getElementById('div_id_max_rounds')
     if (document.getElementById('id_endless').checked) {

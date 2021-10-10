@@ -54,11 +54,6 @@ def create_forced_trade(trader, round_num, is_new_trader):
         balance_after = trader.balance
         balance_before = trader.balance
 
-    if trader.removed_from_market:
-        # If the trader has been removed from market, we set the balance after to None.
-        # This will remove the trader's balance from the balance graph in all rounds following the deletion of the trader
-        balance_after = None
-
     forced_trade = Trade.objects.create(
         round=round_num,
         trader=trader,
