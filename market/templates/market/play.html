@@ -52,7 +52,8 @@
                             You are now ready for round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
                         {% endif %}         
                         <br><br>       
-                        Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. <br>
+                        Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. Your start balance 
+                        is <b>{{ trader.balance }}</b> kr.<br>
                         <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
                             
                     {% else %}
