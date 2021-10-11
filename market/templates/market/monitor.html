@@ -19,7 +19,7 @@
 <div class="mb-3">
     {% if not market.game_over %}
     <a class="btn btn-primary" data-toggle="collapse" href="#collapseJoin" role="button" aria-expanded="false" aria-controls="collapseJoin">
-        Invite players
+        Invite Players
     </a>
     {% endif %}
     <a class="btn btn-primary ml-3" data-toggle="collapse" href="#collapseDetails" role="button" aria-expanded="false" aria-controls="collapseDetails">
@@ -173,19 +173,37 @@
 
     {% if market.round > 0 %}
         <!-- Autoplay on/off -->
-
+        {% if market.monitor_auto_pilot %}
+        <div>
+        <p class="text-muted text-small text-center"><small>Round will finish automatically when all traders are ready</small></p>
+        </div>
+        {% endif %}
         <div class="d-flex justify-content-center">
-            <button id="toggle_auto_finish_btn" class="btn btn-secondary" onclick="toggle_monitor_auto_pilot()" data-toggle="tooltip" 
+            <button type="button" id="toggle_auto_finish_btn" class="btn btn-outline-secondary" onclick="toggle_monitor_auto_pilot()" 
+            data-toggle="tooltip"
                 {% if market.monitor_auto_pilot %}
-                    title="Press this button to pause the auto pilot"> 
-                    Pause Game
+                    >
                 {% else %}
                     title="Finish each round automatically when all traders are ready">
-                    Start Auto Pilot
                 {% endif %}
+                {% if market.monitor_auto_pilot %}
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pause-btn" viewBox="0 0 16 16">
+  <path d="M6.25 5C5.56 5 5 5.56 5 6.25v3.5a1.25 1.25 0 1 0 2.5 0v-3.5C7.5 5.56 6.94 5 6.25 5zm3.5 0c-.69 0-1.25.56-1.25 1.25v3.5a1.25 1.25 0 1 0 2.5 0v-3.5C11 5.56 10.44 5 9.75 5z"/>
+  <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+</svg> Pause Game
+                {% else %}
+
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play-btn" viewBox="0 0 16 16">
+  <path d="M6.79 5.093A.5.5 0 0 0 6 5.5v5a.5.5 0 0 0 .79.407l3.5-2.5a.5.5 0 0 0 0-.814l-3.5-2.5z"/>
+  <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm15 0a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+</svg>
+                    Start Auto Pilot
+
+                {% endif %}
+
             </button>
         </div>
-
+        <br>
         <form action="{% url 'market:toggle_monitor_auto_pilot_setting' market.market_id %}" method="POST" id="toggle_auto_pilot_form">
             {% csrf_token %}
         </form>

@@ -7,7 +7,7 @@
 {% else %}
     <p>All traders on the market, ordered by their currrent balance.</p>
     <div class="table-responsive">
-        <table class="table table-striped mb-4" id="trader_status_table"> 
+        <table class="table table-striped mb-5" id="trader_status_table"> 
 
             <thead id="trader_status_thead">
                 <!-- Since allow traders to visit the monitor page when game is over & since we assume they use small screen devices
@@ -34,13 +34,13 @@
                         <td>{{ trader.name }}</td>
                         {% if not market.game_over%}
                             {% if trader.is_ready %}
-                                <td style="color:green">✓</td>
+                                <td style="color:green"><big>&#10003;</big></td>
                             {% else %}
-                                <td style="color:red">No</td>
+                                <td style="color:red"><big>&#10007;</big></td>
                             {% endif %}
                         {% endif %}
                         <td>{{ trader.prod_cost }}</td>
-                        <td>{{ trader.balance }}</td>
+                        <td>{{ trader.balance }}</small></td>
                         {% if not market.game_over %}
                             <td><a href="#" onclick="prepare_remove_trader({{ trader.id }}, '{{ trader.name }}')">Remove</a></td>
                         {% endif %}
@@ -54,7 +54,9 @@
         <!-- The Finish Round button -->
         <div class="d-flex justify-content-center">
             {% if market.num_ready_traders == 0 %}
-                <button type="button" class="btn btn-warning" disabled>
+                <button type="button"   data-toggle="tooltip" id="toggle_auto_finish_btn" class="btn btn-warning" disabled
+                 title="You can't finish a round before at least one trader is ready">
+                
                     {% comment %} {% translate 'Finish Round' %} {% endcomment %}
                     Finish Round {{ market.round|add:1 }}
                 </button>
