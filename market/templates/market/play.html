@@ -141,7 +141,7 @@
                 <!-- Update status every second -->   
             <div 
                 hx-get="{% url 'market:trader_status_include' trader.id %}"
-                hx-trigger="every 2s"
+                hx-trigger="every 1s"
                 hx-target="#status_messages">
             </div>
         </div>      
