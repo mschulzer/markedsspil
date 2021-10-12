@@ -54,25 +54,25 @@
         <!-- The Finish Round button -->
         <div class="d-flex justify-content-center">
             {% if market.num_ready_traders == 0 %}
-                <button type="button"   data-toggle="tooltip" id="toggle_auto_finish_btn" class="btn btn-warning" disabled
+                <button type="button" data-toggle="tooltip" id="toggle_auto_finish_btn" class="btn btn-warning" disabled
                  title="You can't finish a round before at least one trader is ready">
                 
                     {% comment %} {% translate 'Finish Round' %} {% endcomment %}
-                    Finish Round {{ market.round|add:1 }}
+                    &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
                 </button>
             {% else %}
                 {% if market.num_ready_traders < market.num_active_traders %}       
                     <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#nextRoundConfirmationPopUp">
                         {% comment %} {% translate 'Finish Round' %} {% endcomment %}
-                        Finish Round {{ market.round|add:1 }}
+                        &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
                     </button>
                 
                 {% else %}
                     <!-- all traders area ready so show a submit button with no confirmation required -->
                     <button type="button" class="btn btn-primary" onclick="next_round()">
                         {% comment %} {% translate 'Finish Round' %} {% endcomment %}
-                        Finish Round {{ market.round|add:1 }}
+                        &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
                     </button>
                     {% if market.monitor_auto_pilot%}
                         <script> 

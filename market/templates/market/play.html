@@ -9,17 +9,6 @@
 
 <div class="row mt-lg-4" >    
     <div class="col-12 col-lg-6">
-        
-        
-        <script>
-            round_num = parseInt("{{ market.round }}");    
-            function check_for_next_round(updated_round_num){
-                if(round_num < updated_round_num){
-                    window.location.href = "{% url 'market:play' market.market_id %}";
-                }
-            }
-        </script>
-
         <!-- Short blue status message-->  
         <div class="alert alert-info">
             {% if market.game_over %}
@@ -45,19 +34,19 @@
                 <!-- Info about the current round number -->
                 {% if not market.game_over %}
                     {% if market.round == trader.round_joined %}
-                        <!-- a verbose & enthusiastic message welcoming new traders -->
+                        <!-- a verbose message welcoming new traders -->
                         {% if market.endless %}
                         You are now ready for round <b>{{ market.round|add:1 }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
                         {% else %}
                             You are now ready for round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
                         {% endif %}         
                         <br><br>       
-                        Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. Your start balance 
+                        Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. You start balance 
                         is <b>{{ trader.balance }}</b> kr.<br>
                         <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
                             
                     {% else %}
-                        <!-- a less verbose & less enthusiastic message for traders who joined in a previous round -->   
+                        <!-- a less verbose message for traders who joined in a previous round -->   
 
                         You are now ready for round <b>{{ market.round|add:1}}</b>
                         {% if market.endless %}
@@ -132,19 +121,41 @@
                 {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
                 {% endcomment %}
                 <br><br>
-                You are still in round {{ market.round|add:1 }}.<br><br>
+                {% if market.endless %}
+                You are still in round {{ market.round|add:1 }}.
+                {% else %}
+                You are still in round {{ market.round|add:1 }} out of {{ market.max_rounds }}.
+                {% endif %}
+                Your goods will be produced and put up for sale when the round finishes.<br><br>
                 <!-- Info about current status -->
                
+                <p id="wait_status"> 
+                </p>
+                <script>
+                    function update_status_message(num_ready_traders, num_active_traders, round_num){
+                        if(num_active_traders == 1){
+                            wait_message = "You are currently the only trader on the market."
+                        } else{
+                            num_not_ready_traders = num_active_traders - num_ready_traders;
+                            if(num_not_ready_traders  == 0){
+                                wait_message = `All traders are ready for next round. You are now waiting for the host to finish round ${ round_num + 1 }.`
+                            } else{
+                                if (num_not_ready_traders == 1){
+                                    wait_message = `You are now waiting for 1 other trader to get ready for next round.`  
+                                } else{
+                                    wait_message = `You are now waiting for ${ num_not_ready_traders } other traders to get ready for next round.`  
+                                }                
+                            }
+                        }
+                        document.getElementById('wait_status').innerHTML = wait_message;
+                    }
+                update_status_message(
+                    parseInt("{{ market.num_ready_traders }}"), 
+                    parseInt("{{ market.num_active_traders }}"), 
+                    parseInt("{{ market.round }}"));
+                </script>                                
             {% endif %}
-            <div id="status_messages">
-                {% include 'market/trader_status_include.html' %}
-            </div>
-                <!-- Update status every second -->   
-            <div 
-                hx-get="{% url 'market:trader_status_include' trader.id %}"
-                hx-trigger="every 1s"
-                hx-target="#status_messages">
-            </div>
+
         </div>      
 
         {% if not wait and not market.game_over %}
@@ -641,7 +652,28 @@ function prettify (num) {
     <script src="{% static "skulpt/skulpt-stdlib.js" %}"></script>
 {% endif %}
 
-
+<!-- Script that updates wait status and checks for next round -->
+<script>
+    round_num = parseInt("{{ market.round }}");
+    market_id = "{{ market.market_id }}";
+    wait = "{{ wait }}";
+    function check_for_next_round() {
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'market:current_round' market.market_id %}",
+            dataType: 'json',
+            success: function (data) {
+                if (data.round > round_num) {
+                    window.location.href = "{% url 'market:play' market.market_id %}"
+                }else if (wait == 'True'){
+                    console.log("wait!!")
+                    update_status_message(data.num_ready_traders, data.num_active_traders, data.round)                     
+                }
+            }
+        });
+    }
+    window.setInterval(check_for_next_round, 1000);
+</script>
 
 <!-- import Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

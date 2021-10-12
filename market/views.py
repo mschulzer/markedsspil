@@ -58,21 +58,6 @@ def trader_table(request, market_id):
     return render(request, 'market/trader-table.html', {'market': market})
 
 
-@require_GET
-def trader_status_include(request, trader_id):
-    trader = get_object_or_404(Trader, id=trader_id)
-
-    # Only the trader in question has access to the status messages
-    if not 'trader_id' in request.session:
-        return HttpResponseRedirect(reverse('market:home'))
-    elif not (int(request.session['trader_id']) == int(trader_id)):
-        return HttpResponseRedirect(reverse('market:home'))
-    return render(request, 'market/trader_status_include.html',
-                  {'market': trader.market,
-                   'wait': trader.should_be_waiting()}
-                  )
-
-
 def add_context_for_join_form(context, request):
     """ Helper function used by view functions below """
 
@@ -377,7 +362,14 @@ def play(request, market_id):
 @require_GET
 def current_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
-    return JsonResponse({'round': market.round, })
+    return JsonResponse(
+        {
+            'round': market.round,
+            'num_active_traders': market.num_active_traders(),
+            'num_ready_traders': market.num_ready_traders(),
+
+        }
+    )
 
 
 # def download(request, market_id):

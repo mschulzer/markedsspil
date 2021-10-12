@@ -20,6 +20,7 @@ from pytest_django.asserts import assertTemplateUsed, assertContains, assertNotC
 
 # Test home view
 
+
 def test_home_view_url_exists_at_proper_location_and_uses_proper_template(client):
     response = client.get('/')
     assert response.status_code == 200
@@ -293,7 +294,7 @@ def test_create_market_if_user_chooses_negative_max_rounds_he_gets_a_good_error_
     assertContains(response, "There must be at least 1 round")
 
 
-# Test Monitor View 
+# Test Monitor View
 
 def test_monitor_view_url_exists_at_proper_name_and_uses_proper_template(client, db, logged_in_user):
     market = MarketFactory(created_by=logged_in_user)
@@ -416,10 +417,6 @@ def test_player_view_get_proper_behavior_in_round_4_when_user_has_made_trade_in_
     # template should contain data from last round
     assertContains(response, "134.98")
 
-    # template should not contain the words wait or Wait
-    assertNotContains(response, "wait")
-    assertNotContains(response, "Wait")
-
     # template should contain a submit button
     assertContains(response, "submit")
 
@@ -453,10 +450,6 @@ def test_player_view_get_proper_behavior_in_round_4_when_user_has_made_trade_in_
     # The user has not traded in this round so he should get back play temlpate
     assert (response.status_code == 200)
     assertTemplateUsed(response, 'market/play.html'),
-
-    # template should not contain the words wait or Wait
-    assertNotContains(response, "wait")
-    assertNotContains(response, "Wait")
 
     # The player should know that he didn't trade last round
     assertContains(response, "You didn't make a trade last round.")
@@ -612,13 +605,19 @@ def test_current_round_view_returns_correct_non_zero_round(client, db):
     market = MarketFactory(round=11)
     url = reverse('market:current_round', args=(market.market_id,))
     response = client.get(url)
-    assert (response.json() == {"round": 11})
+    assert (response.json() == {
+            'round': 11,
+            'num_active_traders': 0,
+            'num_ready_traders': 0,
+
+            })
 
 
 # Test My Markets
 
 def test_mymarkets_view_login_required(client, logged_in_user):
-    """ user not logged in will be redirected to login page """
+    """ user not logged in will be redirected to login p
+    age """
     client.logout()
     response = client.get(reverse('market:my_markets'))
 
@@ -1121,24 +1120,3 @@ class FinishRoundViewMultipleUserTest(TestCase):
         assert(christians_trade.demand == christians_demand)
         assert(christians_trade.round == 1)
         assert christians_trade.balance_after == christians_new_balance
-
-
-def test_trader_status_include(client, db):
-    trader = TraderFactory()
-    response = client.get(
-        reverse('market:trader_status_include', args=(trader.id,)))
-
-    # A random client should not have access to the view, so request should redirected
-    assert response.status_code == 302
-
-    # Now we make a client who should have access
-    session = client.session
-    session['trader_id'] = trader.id
-    session.save()
-
-    response = client.get(
-        reverse('market:trader_status_include', args=(trader.id,)))
-
-    # The status code is now 200 and the correct template is used
-    assert response.status_code == 200
-    assertTemplateUsed(response, 'market/trader_status_include.html')
