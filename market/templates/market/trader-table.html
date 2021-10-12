@@ -28,7 +28,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for trader in market.active_traders %}
+                {% for trader in market.active_or_bankrupt_traders %}
                     <tr>
                         <th scope="row">{{ forloop.counter }}</th>
                         <td>{{ trader.name }}</td>
@@ -36,11 +36,15 @@
                             {% if trader.is_ready %}
                                 <td style="color:green"><big>&#10003;</big></td>
                             {% else %}
+                                {% if trader.bankrupt %}
+                                <td style="color:green"><big>(&#10003;)</big></td>
+                                {% else %}
                                 <td style="color:red"><big>&#10007;</big></td>
+                                {% endif %}
                             {% endif %}
                         {% endif %}
                         <td>{{ trader.prod_cost }}</td>
-                        <td>{{ trader.balance }}</small></td>
+                        <td>{{ trader.balance }} {% if trader.bankrupt %}<small class="pl-2">bankrupt</small>{% endif %}</td>
                         {% if not market.game_over %}
                             <td><a href="#" onclick="prepare_remove_trader({{ trader.id }}, '{{ trader.name }}')">Remove</a></td>
                         {% endif %}
@@ -55,26 +59,25 @@
         <div class="d-flex justify-content-center">
             {% if market.num_ready_traders == 0 %}
                 <button type="button" data-toggle="tooltip" id="toggle_auto_finish_btn" class="btn btn-warning" disabled
-                 title="You can't finish a round before at least one trader is ready">
+                 title="You can't finish a round before at least one (non-bankrupt) trader is ready.">
                 
-                    {% comment %} {% translate 'Finish Round' %} {% endcomment %}
                     &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
                 </button>
             {% else %}
                 {% if market.num_ready_traders < market.num_active_traders %}       
-                    <!-- not all traders are ready, so show a submit button with pop-up confirmation -->   
+                    <!-- not all active traders are ready, so show a submit button with pop-up confirmation -->   
                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#nextRoundConfirmationPopUp">
                         {% comment %} {% translate 'Finish Round' %} {% endcomment %}
                         &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
                     </button>
                 
                 {% else %}
-                    <!-- all traders area ready so show a submit button with no confirmation required -->
+                    <!-- all active traders are ready so show a submit button with no confirmation required -->
                     <button type="button" class="btn btn-primary" onclick="next_round()">
                         {% comment %} {% translate 'Finish Round' %} {% endcomment %}
                         &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
                     </button>
-                    {% if market.monitor_auto_pilot%}
+                    {% if market.monitor_auto_pilot %}
                         <script> 
                             next_round()
                         </script>

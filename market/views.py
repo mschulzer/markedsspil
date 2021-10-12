@@ -243,10 +243,10 @@ def finish_round(request, market_id):
     round_stat = RoundStat.objects.create(
         market=market, round=market.round, avg_price=avg_price)
 
-    active_traders = market.active_traders()
-
+    active_or_bankrupt_traders = market.active_or_bankrupt_traders()
+    print(len(active_or_bankrupt_traders))
     round_stat.avg_balance_after = sum(
-        [trader.balance for trader in active_traders])/len(active_traders)
+        [trader.balance for trader in active_or_bankrupt_traders])/len(active_or_bankrupt_traders)
 
     round_stat.avg_amount = sum(
         [trade.unit_amount for trade in valid_trades]) / len(valid_trades)
@@ -278,6 +278,21 @@ def monitor(request, market_id):
     context = add_graph_context_for_monitor_page(context)
 
     return render(request, 'market/monitor.html', context)
+
+
+@require_POST
+def declare_bankruptcy(request, trader_id):
+    trader = get_object_or_404(Trader, id=trader_id)
+
+    # Only trader himself can declare himself bankrupt
+    if not request.session['trader_id'] == int(trader_id):
+        print("NOT EQUAL")
+        return HttpResponseRedirect(reverse('market:home'))
+
+    trader.bankrupt = True
+    trader.save()
+
+    return redirect(reverse('market:play', args=(trader.market.market_id,)))
 
 
 def play(request, market_id):

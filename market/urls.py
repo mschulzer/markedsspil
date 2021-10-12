@@ -4,7 +4,6 @@ from . import views
 
 app_name = 'market'
 urlpatterns = [
-
     path('', views.home, name='home'),
     path('join_market/', views.join_market, name='join_market'),
     path('remove_trader_from_market',
@@ -17,11 +16,14 @@ urlpatterns = [
     path('<market_id>/finish_round', views.finish_round, name='finish_round'),
     path('<market_id>/toggle_monitor_auto_pilot_setting/',
          views.toggle_monitor_auto_pilot_setting, name='toggle_monitor_auto_pilot_setting'),
+    path('<trader_id>/declare_bankruptcy',
+         views.declare_bankruptcy, name='declare_bankruptcy'),
 
     # htmx inclusion templates
     path('<market_id>/trader_table/',
          views.trader_table, name='trader_table'),
 
-    # APIs
-    path('<market_id>/current_round/', views.current_round, name='current_round'),
+     # APIs
+     path('<market_id>/current_round/',
+          views.current_round, name='current_round'),
 ]

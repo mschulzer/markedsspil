@@ -226,10 +226,10 @@ def add_graph_context_for_monitor_page(context):
         for i, trader in enumerate(all_traders)
     ]
 
-    active_traders = market.active_traders()
+    active_or_bankrupt_traders = market.active_or_bankrupt_traders()
 
-    # If at least one trader has joined the game:
-    if active_traders:
+    # If at least one trader is participating in the market (bankrupt or non-bankrupt):
+    if active_or_bankrupt_traders:
         # We add average data to graph datasets
 
         round_stats = RoundStat.objects.filter(market=market)
@@ -240,7 +240,7 @@ def add_graph_context_for_monitor_page(context):
         # the average balance in the current round might change during the round (due to new traders joining the market),
         # so we update this value on each page reload:
         avg_balance_this_round_so_far = sum(
-            [trader.balance for trader in active_traders])/len(active_traders)
+            [trader.balance for trader in active_or_bankrupt_traders])/len(active_or_bankrupt_traders)
         avg_balances[-1] = float(avg_balance_this_round_so_far)
 
         balanceDataSet.append({

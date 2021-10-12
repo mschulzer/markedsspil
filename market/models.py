@@ -3,7 +3,6 @@ from django.utils.crypto import get_random_string
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from decimal import Decimal
-from random import randint as random_integer
 from random import choice
 
 
@@ -79,6 +78,8 @@ class Market(models.Model):
     def game_over(self):
         if not self.endless and (self.round >= self.max_rounds):
             return True
+        elif self.num_active_traders == self.num_bankrupt_traders:
+            return True
         else:
             return False
 
@@ -104,13 +105,23 @@ class Market(models.Model):
 
     def active_traders(self):
         """
-        Returns a query set of all active (non-removed) traders on the market.
+        Returns a query set of all active traders on the market.
+        A trader is 'active' if he has not declared bankruptcy and has not been removed from the market.
         The set is ordered by -balance. 
         """
         active_traders = Trader.objects.filter(
             market=self,
-            removed_from_market=False).order_by('-balance')
+            removed_from_market=False,
+            bankrupt=False).order_by('-balance')
         return active_traders
+
+    def active_or_bankrupt_traders(self):
+        active_or_bankrupt_traders = Trader.objects.filter(
+            market=self,
+            removed_from_market=False,
+        ).order_by('-balance')
+        return active_or_bankrupt_traders
+
 
     def num_active_traders(self):
         """
@@ -146,6 +157,16 @@ class Market(models.Model):
         """
         return self.valid_trades_this_round().count()
 
+    def num_bankrupt_traders(self):
+        """
+        Returns the number of 'bankrupt' (and non-removed) traders on the market.
+        """
+        num_bankrupt_traders = Trader.objects.filter(
+            market=self,
+            removed_from_market=False,
+            bankrupt=True).count()
+        return num_bankrupt_traders
+
 
 class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -172,6 +193,9 @@ class Trader(models.Model):
 
     # removed_from_market should be True if the host has deleted the trader
     removed_from_market = models.BooleanField(default=False)
+
+    # bankrupt will only be True if the trader has declared himself bankrupt
+    bankrupt = models.BooleanField(default=False)
 
     class Meta:
         # There can only be one trader with a given name in a given market.
