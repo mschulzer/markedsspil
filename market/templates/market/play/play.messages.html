@@ -7,46 +7,44 @@
 <!-- Short blue status message-->  
 <div class="alert alert-info">
     {% if market.game_over %}
-    {% if market.check_game_over %}
-    <!-- The game was played to the final round -->
-    The game has ended after {{ market.max_rounds }} rounds.<br><br>
+        {% if market.check_game_over %}
+            <!-- The game was played to the final round -->
+            The game has ended after {{ market.max_rounds }} rounds.<br><br>
+        {% else %}
+            <!-- The game ended prematurely (all traders are bankrupt) -->
+            The game has ended after {{ market.round }} rounds.<br>
+        {% endif %}
+        {% blocktranslate with balance=trader.balance %}
+            Final balance: <b>{{ balance }}</b> kr.
+        {% endblocktranslate %}   
     {% else %}
-    <!-- The game ended prematurely (all traders are bankrupt) -->
-    The game has ended after {{ market.round }} rounds.<br>
-    {% endif %}
-
-    {% blocktranslate with balance=trader.balance %}
-    Final balance: <b>{{ balance }}</b> kr.
-    {% endblocktranslate %}   
-    {% else %}
-    {% blocktranslate with balance=trader.balance %}
-    Current balance: <b>{{ balance }}</b> kr.
-    {% endblocktranslate %}   
+        {% blocktranslate with balance=trader.balance %}
+            Current balance: <b>{{ balance }}</b> kr.
+        {% endblocktranslate %}   
     {% endif %}
 </div>
 {% if not wait and trader.balance < trader.prod_cost %}
 <div class="alert alert-danger">
     {% if trader.bankrupt %}
-    {% if not market.game_over %}
-    {% if market.endless %}
-    The game is in round <b>{{ market.round|add:1 }}</b>.
+        {% if not market.game_over %}
+            {% if market.endless %}
+                 The game is in round <b>{{ market.round|add:1 }}</b>.
+            {% else %}
+                 The game is in round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b>.
+            {% endif %}
+        <br>
+        {% endif %}
+        You have declared yourself <b>bankrupt</b>.
     {% else %}
-    The game is in round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b>.
-    {% endif %}
-    <br>
-    {% endif %}
-    You have declared yourself <b>bankrupt</b>.
-    {% else %}
-
-    <p>You don't have enough money to produce a single {{ market.product_name_singular }}!</p>
-    <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
-        <div class="d-flex justify-content-center">
-            <button class="btn btn-danger">
-                {% csrf_token %}
-                Declare Bankruptcy
-            </button>
-        </div>
-    </form>
+        <p>You don't have enough money to produce a single {{ market.product_name_singular }}!</p>
+        <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-danger">
+                    {% csrf_token %}
+                    Declare Bankruptcy
+                </button>
+            </div>
+        </form>
     {% endif %}
 </div>
 
@@ -167,6 +165,8 @@
 {% endif %}
 
 {% addtoblock 'js' %}
+
+{% if wait %}
 <script>
  function update_status_message(num_ready_traders, num_active_traders, round_num){
      wait_message = `${ num_ready_traders }/${ num_active_traders } players are ready for next round.`                 
@@ -177,6 +177,7 @@
      parseInt("{{ market.num_active_traders }}"), 
      parseInt("{{ market.round }}"));
 </script>
+{% endif %}
 
 {% if not market.game_over %}
 <!-- Script that updates wait status and checks for next round -->
