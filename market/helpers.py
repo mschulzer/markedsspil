@@ -68,16 +68,6 @@ def create_forced_trade(trader, round_num, is_new_trader):
     return forced_trade
 
 
-def filter_trades(market, round="all_rounds"):
-    trades_by_market = Trade.objects.filter(
-        trader__in=Trader.objects.filter(market=market))
-    if round == "all_rounds":
-        return trades_by_market
-    else:
-        assert(type(round) == int)
-        return trades_by_market.filter(round=round)
-
-
 def generate_balance_list(trader):
     """
     Generates a list of floats consisting of the balances of a single trader.
@@ -101,7 +91,7 @@ def generate_balance_list(trader):
 
     balance_list = [initial_balance] + \
         [float(trade.balance_after)
-         if trade.balance_after else None for trade in trades]
+         if (trade.balance_after != None) else None for trade in trades]
 
     if trader.round_joined > 0:
         balance_list[0] = None
@@ -164,10 +154,11 @@ def generate_cost_list(trader):
     return prod_cost_list
 
 
-def add_graph_context_for_monitor_page(context, market, traders):
+def add_graph_context_for_monitor_page(context):
     """ 
     This function produces all the data for the graphs on the monitor pages
     """
+    market = context['market']
 
     # Labels for x-axes of graphs
     if market.endless:
@@ -182,16 +173,17 @@ def add_graph_context_for_monitor_page(context, market, traders):
     color_for_averages = 'rgb(173,255,47,0.7)'  # yellow
 
     def generate_price_list(trader):
-        # On the monitor page price graph, we only want to show data for previous rounds. 
+        # On the monitor page price graph, we only want to show data for previous rounds.
         trades = Trade.objects.filter(
             trader=trader, round__lte=market.round - 1)
-        return [float(trade.unit_price) if trade.unit_price else None for trade in trades]
+        return [float(trade.unit_price) if (trade.unit_price != None) else None for trade in trades]
 
     def generate_amount_list(trader):
         # On the monitor page amount graph, we only want to show data for previous rounds.
         trades = Trade.objects.filter(
             trader=trader, round__lte=market.round - 1)
-        return [float(trade.unit_amount) if trade.unit_amount else None for trade in trades]
+
+        return [float(trade.unit_amount) if (trade.unit_amount != None) else None for trade in trades]
 
     def trader_color(i):
         """
@@ -204,13 +196,16 @@ def add_graph_context_for_monitor_page(context, market, traders):
         blue = (0 + int((i/2)*100)) % 255
         return f"rgb({red},{green},{blue}, 0.7)"
 
+    # We want graphs to show data for all (including possibly removed) traders
+    all_traders = market.all_traders()
+
     balanceDataSet = [{
         'label': trader.name,
         'backgroundColor': trader_color(i),
         'borderColor': trader_color(i),
         'data': generate_balance_list(trader)
     }
-        for i, trader in enumerate(traders)
+        for i, trader in enumerate(all_traders)
     ]
 
     priceDataSet = [{
@@ -219,7 +214,7 @@ def add_graph_context_for_monitor_page(context, market, traders):
         'borderColor': trader_color(i),
         'data': generate_price_list(trader)
     }
-        for i, trader in enumerate(traders)
+        for i, trader in enumerate(all_traders)
     ]
 
     amountDataSet = [{
@@ -228,11 +223,13 @@ def add_graph_context_for_monitor_page(context, market, traders):
         'borderColor': trader_color(i),
         'data': generate_amount_list(trader)
     }
-        for i, trader in enumerate(traders)
+        for i, trader in enumerate(all_traders)
     ]
 
+    active_traders = market.active_traders()
+
     # If at least one trader has joined the game:
-    if traders:
+    if active_traders:
         # We add average data to graph datasets
 
         round_stats = RoundStat.objects.filter(market=market)
@@ -243,7 +240,7 @@ def add_graph_context_for_monitor_page(context, market, traders):
         # the average balance in the current round might change during the round (due to new traders joining the market),
         # so we update this value on each page reload:
         avg_balance_this_round_so_far = sum(
-            [trader.balance for trader in traders])/len(traders)
+            [trader.balance for trader in active_traders])/len(active_traders)
         avg_balances[-1] = float(avg_balance_this_round_so_far)
 
         balanceDataSet.append({

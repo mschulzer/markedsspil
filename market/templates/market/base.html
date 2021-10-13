@@ -25,7 +25,7 @@
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ml-auto">
                         {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'market:create'%}">{% translate 'Create market' %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'market:create_market'%}">{% translate 'Create market' %}</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'market:my_markets'%}">{% translate 'My markets' %}</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'account_logout' %}">{% translate 'Log Out' %}</a></li>
                          {% endif %}

@@ -9,8 +9,8 @@ class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
 
-        fields = ['allow_robots',  'max_rounds', 'endless', 'initial_balance', 'min_cost', 'max_cost',
-                  'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural']
+        fields = ['initial_balance', 'min_cost', 'max_cost', 'max_rounds', 'endless',
+                  'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural', 'allow_robots']
         help_texts = {
             'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')"),
             'product_name_plural': _("The name of the product being traded in plural form (e.g. 'baguettes')"),
@@ -147,7 +147,7 @@ class TraderForm(forms.ModelForm):
 
             elif Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
-                    _('There is already a trader with this name on the requested market. Please select another name'))
+                    _('A trader with this name has already joined this market. Please select another name'))
 
         return cleaned_data
 

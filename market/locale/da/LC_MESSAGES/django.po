@@ -132,7 +132,7 @@ msgstr ""
 
 #: forms.py:124
 msgid ""
-"There is already a trader with this name on the requested market. Please "
+"A trader with this name has already joined this market. Please "
 "select another name"
 msgstr ""
 
@@ -196,8 +196,8 @@ msgstr "Nuværende"
 msgid "Join market"
 msgstr "Deltag i marked"
 
-#: templates/market/base.html:31 templates/market/create.html:29
-#: templates/market/create.html:42 templates/market/home.html:37
+#: templates/market/base.html:31 templates/market/create_market.html:29
+#: templates/market/create_market.html:42 templates/market/home.html:37
 msgid "Create market"
 msgstr "Opret marked"
 
@@ -211,24 +211,24 @@ msgstr "Log ud"
 msgid "My markets"
 msgstr "Mine markeder"
 
-#: templates/market/create.html:5 templates/market/create.html:9
+#: templates/market/create_market.html:5 templates/market/create_market.html:9
 #: templates/market/home.html:35
 msgid "Create a new market"
 msgstr "Opret nyt marked"
 
-#: templates/market/create.html:10
+#: templates/market/create_market.html:10
 msgid "Choose a predefined scenario, or create a market with custom settings."
 msgstr "Vælg et prædefineret scenarie eller lav et brugerdefineret marked."
 
-#: templates/market/create.html:14
+#: templates/market/create_market.html:14
 msgid "Predefined scenarios"
 msgstr "Markedsscenarier"
 
-#: templates/market/create.html:18
+#: templates/market/create_market.html:18
 msgid "Select scenario (view/edit settings below)"
 msgstr "Vælg scenarie (se/rediger detaljer herunder)"
 
-#: templates/market/create.html:35
+#: templates/market/create_market.html:35
 msgid "Market details"
 msgstr "Markedsoplysninger"
 

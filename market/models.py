@@ -93,6 +93,59 @@ class Market(models.Model):
     def __str__(self):
         return f"{self.market_id}[{self.round}]:{self.alpha},{self.beta},{self.theta}"
 
+    def all_traders(self):
+        """
+        Returns a query set of all (possible removed) traders on the market.
+        The set is ordered by -balance. 
+        """
+        all_traders = Trader.objects.filter(
+            market=self).order_by('-balance')
+        return all_traders
+
+    def active_traders(self):
+        """
+        Returns a query set of all active (non-removed) traders on the market.
+        The set is ordered by -balance. 
+        """
+        active_traders = Trader.objects.filter(
+            market=self,
+            removed_from_market=False).order_by('-balance')
+        return active_traders
+
+    def num_active_traders(self):
+        """
+        Returns the number of active (non-removed) traders on the market.
+        """
+        return self.active_traders().count()
+
+    def all_trades_this_round(self):
+        """ 
+        Returns all (including forced trades and trades made by removed traders) on this market in the current round.
+        """
+        all_trades = Trade.objects.filter(
+            round=self.round,
+            trader__in=Trader.objects.filter(market=self),
+        )
+        return all_trades
+
+    def valid_trades_this_round(self):
+        """ 
+        Returns the number of valid trades on this market in the current round.
+        """
+        all_trades = self.all_trades_this_round()
+        valid_trades = all_trades.filter(
+            trader__removed_from_market=False,
+            was_forced=False
+        )
+        return valid_trades
+
+    def num_ready_traders(self):
+        """
+        Returns the number of 'ready' traders on the market.
+        A trader is ready if he has made a valid trade in the current round.
+        """
+        return self.valid_trades_this_round().count()
+
 
 class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -104,15 +157,21 @@ class Trader(models.Model):
         validators=[MinValueValidator(Decimal('0.01'))],
     )
     # w/ below settings a trader's balance has be numerically <= 9999999999.99
+    # The balance will be null for traders who have been removed from their market
     balance = models.DecimalField(
         max_digits=12,
         decimal_places=2,
+        null=True
     )
     round_joined = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
+    # If auto_play is true, the trade algorithm will play all remaining rounds automatically in a game with robots
     auto_play = models.BooleanField(default=False)
+
+    # removed_from_market should be True if the host has deleted the trader
+    removed_from_market = models.BooleanField(default=False)
 
     class Meta:
         # There can only be one trader with a given name in a given market.
@@ -192,6 +251,32 @@ class Trader(models.Model):
             trader=self, round=self.market.round, was_forced=False).count() == 1
         return has_traded_this_round
 
+    def remove(self):
+        """ Remove trader from market """
+        # If the market is in round 0 we do an actual deletion of the trader from the database
+        # (this will also delete the trade he has possible already made in the first round)
+        if self.market.round == 0:
+            # Do an actual deletion of the trader from the database
+            self.delete()
+        else:
+            # Keep trader in database, but set his balance to None and flag him as removed
+            # (setting the balance to None will ensure that the trader's balance will not be
+            # shown on balance graph in all rounds following the removal of the trader)
+            self.balance = None
+            self.removed_from_market = True
+            self.save()
+            # If the trader has made a trade in this round, delete this trade
+            Trade.objects.filter(
+                trader=self, round=self.market.round).delete()
+
+    def should_be_waiting(self):
+        """ 
+        Return True if trader should be in wait mode, else False
+        A trader should be in wait mode if and only if he has made a trade in the current round. 
+        """
+        should_be_waiting = Trade.objects.filter(
+            trader=self, round=self.market.round).exists()
+        return should_be_waiting
 
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)

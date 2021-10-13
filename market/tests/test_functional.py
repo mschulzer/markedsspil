@@ -7,23 +7,23 @@ from django.urls import reverse
 from .factories import TraderFactory, MarketFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
 
 
-## Two player game
+# Two player game
 def test_round_0_one_forced_move(logged_in_user, client):
 
     # A teacher creates a market
     post_data = {
-        'product_name_singular':'baguette',
+        'product_name_singular': 'baguette',
         'product_name_plural': 'baguettes',
-        'initial_balance':4000,
-        'alpha': 21.402, 
+        'initial_balance': 4000,
+        'alpha': 21.402,
         'beta': 44.2,
-        'theta': 2.0105, 
-        'min_cost': 11, 
+        'theta': 2.0105,
+        'min_cost': 11,
         'max_cost': 144,
         'max_rounds': 15,
         'endless': False}
     client.post(
-        reverse('market:create'), 
+        reverse('market:create_market'),
         post_data
     )
     assert Market.objects.all().count() == 1
@@ -34,7 +34,7 @@ def test_round_0_one_forced_move(logged_in_user, client):
 
     # A player named Marianne joins the market:
     client.post(
-        reverse('market:home'),
+        reverse('market:join_market'),
         {
             'name': 'Marianne',
             'market_id': market.market_id,
@@ -42,14 +42,13 @@ def test_round_0_one_forced_move(logged_in_user, client):
     )
     assert Trader.objects.all().count() == 1
 
-
     marianne = Trader.objects.get(name='Marianne')
 
     # Marianne makes a trade:
     post_data = {
-        'unit_price': '10.9', 
+        'unit_price': '10.9',
         'unit_amount': '45'
-        }
+    }
 
     client.post(reverse('market:play', args=(market.market_id,)), post_data)
 
@@ -61,33 +60,32 @@ def test_round_0_one_forced_move(logged_in_user, client):
 
     # Now a player called Klaus joins the game
     client.post(
-        reverse('market:home'),
+        reverse('market:join_market'),
         {
             'name': 'Klaus',
             'market_id': market.market_id,
-        }    
+        }
     )
 
     klaus = Trader.objects.get(name='Klaus')
 
     # Since market.min_cost = 11 < market.max_cost = 144, we expect
     # one trader to have prod_cost = 11 and the other to have prod_cost = 144
-    actual_set_of_trader_costs = {float(marianne.prod_cost), float(klaus.prod_cost)}
+    actual_set_of_trader_costs = {
+        float(marianne.prod_cost), float(klaus.prod_cost)}
     expected_set_of_trader_costs = {11.00, 144.00}
     assert (actual_set_of_trader_costs == expected_set_of_trader_costs)
 
-
-    
-    # Klaus has not made a trade yet so let's assert that klaus it not ready at this point        
+    # Klaus has not made a trade yet so let's assert that klaus it not ready at this point
     assert not klaus.is_ready()
 
     # Even though Klaus is not ready, the teacher chooses to proceed to the next round:
-    url = reverse('market:monitor', args=(market.market_id,))
+    url = reverse('market:finish_round', args=(market.market_id,))
     client.post(url)
 
     # There should now be 2 trades in the database & Klaus trade should be forced
     assert Trade.objects.all().count() == 2
-    klaus_trade=Trade.objects.get(trader=klaus)
+    klaus_trade = Trade.objects.get(trader=klaus)
     assert klaus_trade.was_forced
 
     # Mariannes profit and balance_after should now be set in her trade
@@ -116,7 +114,7 @@ def test_round_1_one_forced_move(logged_in_user, client):
     k0 = ForcedTradeFactory(trader=klaus, round=0)
 
     # Marianne makes a trade decision in round 1 (it is not processed yet, so most field should be None)
-    m1= UnProcessedTradeFactory(trader=marianne, round=1)
+    m1 = UnProcessedTradeFactory(trader=marianne, round=1)
     assert m1.profit is None
 
     # Mariannes trade was not forced. Marianne is ready, but Klaus is not
@@ -125,7 +123,7 @@ def test_round_1_one_forced_move(logged_in_user, client):
     assert not klaus.is_ready()
 
     # Even though Klaus is not ready, the teacher chooses to proceed to the next round:
-    url = reverse('market:monitor', args=(market.market_id,))
+    url = reverse('market:finish_round', args=(market.market_id,))
     client.post(url)
 
     # Klaus' balance has not changed

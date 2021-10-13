@@ -332,7 +332,8 @@ def test_name_has_to_be_unique_on_market(db):
     form = TraderForm(data=data)
 
     assert not form.is_valid()
-    assert "There is already a trader with this name on the requested market. Please select another name" in str(form)
+    assert "A trader with this name has already joined this market. Please select another name" in str(
+        form)
 
 
 def test_name_used_on_another_market_is_no_problem(db):

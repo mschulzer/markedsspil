@@ -7,59 +7,69 @@
 {% block title %}{% translate 'Play' %}{% endblock %}
 {% block content %}
 
-    <!-- Top status message to player about round number and game progression -->
-    {% if wait %}
-        <div class="alert alert-success">You made a trade!</div>
-    {% else %} 
-        {% if market.game_over %}
-            <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
-        {% else %}
-            {% if market.round == trader.round_joined %}
-                <!-- a verbose & enthusiastic message welcoming new traders -->
-                {% if market.endless %}
-                    <div class="alert alert-success">Hi {{ trader.name }}! You are now ready for round {{ market.round|add:1 }} on the {{ market.product_name_singular }} market {{ market.market_id }}.</div>
-                {% else %}
-                    <div class="alert alert-success">Hi {{ trader.name }}! You are now ready for round {{ market.round|add:1 }} out of {{ market.max_rounds }} on the {{ market.product_name_singular }} market {{ market.market_id }}.</div>
-                {% endif %}                
-            {% else %}
-                <!-- a less verbose and less enthusiastic message for other traders -->
-                {% if market.endless %}
-                    <div class="alert alert-success">Your are now ready for round {{ market.round|add:1 }}.</div>
-                {% else %}
-                    <div class="alert alert-success">Your are now ready for round {{ market.round|add:1 }} out of {{ market.max_rounds }}.</div>
-                {% endif %}
-            {% endif %}
-        {% endif %}
-    {% endif %}   
-
 <div class="row mt-lg-4" >    
     <div class="col-12 col-lg-6">
-
-        <!-- Paragraph with info about what just happened and current status -->
-        <p class="pr-2 pl-2 py-3 alert alert-warning"> 
-           
-            {% if not market.round == trader.round_joined %}
-                Hi {{ trader.name }}. 
+        <!-- Short blue status message-->  
+        <div class="alert alert-info">
+            {% if market.game_over %}
+                {% blocktranslate with balance=trader.balance %}
+                    Final balance: <b>{{ balance }}</b> kr.
+                {% endblocktranslate %}   
+                <br>The game has ended after {{ market.max_rounds }} rounds!
+            {% else %}
+                {% blocktranslate with balance=trader.balance %}
+                    Current balance: <b>{{ balance }}</b> kr.
+                {% endblocktranslate %}   
             {% endif %}
+        </div>
+
+        <!-- Long yellow status message -->
+        <div class="alert alert-warning"> 
+            
+            Hi {{ trader.name }},
 
             {% if not wait %}
-                
-                {% if market.round == trader.round_joined  %}
-                    Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. <br>
-                    <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
-                
-                {% elif not trades.last.was_forced %}
-                    
-                        <!-- Text with info about last round choices and results.  -->
-                     
+
+                <br><br>
+                <!-- Info about the current round number -->
+                {% if not market.game_over %}
+                    {% if market.round == trader.round_joined %}
+                        <!-- a verbose message welcoming new traders -->
+                        {% if market.endless %}
+                        You are now ready for round <b>{{ market.round|add:1 }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
+                        {% else %}
+                            You are now ready for round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
+                        {% endif %}         
+                        <br><br>       
+                        Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. You start balance 
+                        is <b>{{ trader.balance }}</b> kr.<br>
+                        <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
+                            
+                    {% else %}
+                        <!-- a less verbose message for traders who joined in a previous round -->   
+
+                        You are now ready for round <b>{{ market.round|add:1}}</b>
+                        {% if market.endless %}
+                            .
+                        {% else %}
+                            out of <b>{{ market.max_rounds}}</b>. 
+                        {% endif %}        
+                        <br><br>    
+                    {% endif %}
+                {% endif %}
+
+                <!-- Text with info about last round choices and results.  -->
+                {% if trader.round_joined < market.round %}     
+                    {% if trades.last.was_forced %}
+                        {% translate "You didn't make a trade last round." %} 
+                    {% else %}
                         {% if trades.last.unit_amount < trades.last.demand %}
-                            
-                            {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
+                                {% blocktranslate with name=trader.name lastRoundUnits=trades.last.unit_amount lastRoundSold=trades.last.units_sold unitsPlural=market.product_name_plural lastRoundDemand=trades.last.demand lastRoundPrice=trades.last.unit_price lastRoundAvgPrice=round_stats.all.last.avg_price %}
                     
-                            Last round you sold <b>{{ lastRoundSold }}</b> 
-                            of the <b>{{ lastRoundUnits }}</b> {{ unitsPlural }} you produced. 
-                            You cold have sold <b>{{ lastRoundDemand }}</b> {{ unitsPlural }}.
-                            
+                                Last round you sold <b>{{ lastRoundSold }}</b> 
+                                of the <b>{{ lastRoundUnits }}</b> {{ unitsPlural }} you produced. 
+                                You cold have sold <b>{{ lastRoundDemand }}</b> {{ unitsPlural }}.
+                                
                             {% endblocktranslate %}
 
                         {% elif trades.last.unit_amount == trades.last.demand %}
@@ -89,40 +99,64 @@
                             and the market average price was <b>{{ lastRoundAvgPrice }}</b> kr.
                 
                         {% endblocktranslate %}
-                        
                     
+                        <br><br>
                         Your profit was
-                        {% if trades.last.profit < 0 %}<b style="color:red">
-                        {% else %} <b style="color:green">
-                        {% endif %}{{ trades.last.profit }}</b> kr.
-                
+                        {% if trades.last.profit < 0 %}
+                            <b style="color:red">
+                        {% else %}
+                            <b style="color:green">
+                        {% endif %}
+                        {{ trades.last.profit }}</b> kr.
+                    {% endif %}                
                 {% endif %}
                 
-                {% if trades.last.was_forced and trader.round_joined < market.round %}
-                    {% translate "You didn't make a trade last round." %} 
-                {% endif %}
-            
-            {% else %} 
-                <!-- wait is true -->
-                <br><br> You decided to produce <b>{{ trades.last.unit_amount }}</b>  
+            {% else %} <!-- wait is true -->
+
+                <br><br>You made a trade! You decided to produce <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }} and to sell them for <b>{{  trades.last.unit_price }}</b> kr. each</b>. 
                 {% comment %} 
                 Suggested translation:
                 Du valgte at producere <b>{{ trades.last.unit_amount }}</b>  
                 {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
                 {% endcomment %}
-                {% blocktranslate with balance=trader.balance %}
-                    Your current balance is <b style="color:green">{{ balance }}</b> kr.
-                {% endblocktranslate %}                 
-                <br><br><i>Now wait for the host to finish round {{ market.round|add:1 }}.</i>
+                <br><br>
+                {% if market.endless %}
+                You are still in round {{ market.round|add:1 }}.
+                {% else %}
+                You are still in round {{ market.round|add:1 }} out of {{ market.max_rounds }}.
+                {% endif %}
+                Your goods will be produced and put up for sale when the round finishes.<br><br>
+                <!-- Info about current status -->
+               
+                <p id="wait_status"> 
+                </p>
+                <script>
+                    function update_status_message(num_ready_traders, num_active_traders, round_num){
+                        if(num_active_traders == 1){
+                            wait_message = "You are currently the only trader on the market."
+                        } else{
+                            num_not_ready_traders = num_active_traders - num_ready_traders;
+                            if(num_not_ready_traders  == 0){
+                                wait_message = `All traders are ready for next round. You are now waiting for the host to finish round ${ round_num + 1 }.`
+                            } else{
+                                if (num_not_ready_traders == 1){
+                                    wait_message = `You are now waiting for 1 other trader to get ready for next round.`  
+                                } else{
+                                    wait_message = `You are now waiting for ${ num_not_ready_traders } other traders to get ready for next round.`  
+                                }                
+                            }
+                        }
+                        document.getElementById('wait_status').innerHTML = wait_message;
+                    }
+                update_status_message(
+                    parseInt("{{ market.num_ready_traders }}"), 
+                    parseInt("{{ market.num_active_traders }}"), 
+                    parseInt("{{ market.round }}"));
+                </script>                                
             {% endif %}
 
-            {% if not wait %}
-                {% blocktranslate with balance=trader.balance %}
-                    Your current balance is <b style="color:green">{{ balance }}</b> kr.
-                {% endblocktranslate %}             
-            {% endif %}
-        </p>
+        </div>      
 
         {% if not wait and not market.game_over %}
             <!-- Next trade form -->
@@ -214,21 +248,20 @@ max_price = {{ max_price|to_float }}
 
 # current round
 round = {{ market.round|add:1 }}
-
-# market average price last round (will be None in first round)
 {% if market.round > 0 %}
+# market average price last round (will be None in first round)
 avg_price = {{ round_stats.all.last.avg_price|to_float }}
 {% else %}
+# market average price last round (will be None in first round)
 avg_price = None
-{% endif %}
-
+{% endif %}{% if market.round > 0 %}
 # demand for your {{ market.product_name_plural }} last round (will be None in first round)
-{% if market.round > 0 %}
 demand_last_round = {{ trades.last.demand }}
 {% else %}
-demand_last_round = None
-{% endif %}
+# demand for your {{ market.product_name_plural }} last round (will be None in first round)
+demand_last_round = None{% endif %}
 </textarea>
+
 <p class="mt-3">Your code goes here:</p>
 <textarea id="client_code" class="w-100" rows="7">
 import random
@@ -242,12 +275,18 @@ amount_choice = random.randint(0, max_amount)</textarea>
     <button class="btn btn-outline-primary" type="button" onclick="runit()">
     Test output
     </button> 
-    <button class="btn btn-outline-danger" type="button" onclick="runit(submit=true)">
+    <button class="btn btn-outline-danger" type="button" onclick="autoplay()">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
             <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
         </svg>
         Autoplay remaining rounds
     </button> 
+    <script>
+        function autoplay(){
+            localStorage.setItem("client_code", document.getElementById('client_code').value);
+            runit(submit=true)
+        }
+    </script>
 </div>
 <textarea id="code_after" class="bg-light p-0 m-0" cols="40" rows="10" style="visibility:hidden; display:none;" readonly>#
 print("")
@@ -277,36 +316,29 @@ except:
 
 {% endif %} 
 
-        {% if market.game_over %}
-            <!-- ScoreBoard -->
-            <table class="table table-sm" >
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">{% translate 'Name' %}</th>
-                        <th scope="col">{% translate 'Final balance' %}</th>
-                    </tr>
-                </thead>
+    {% if market.game_over %}
+        <!-- ScoreBoard -->
+        <table class="table table-sm" >
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">{% translate 'Name' %}</th>
+                    <th scope="col">{% translate 'Final balance' %}</th>
+                </tr>
+            </thead>
 
-                <div class="mb-5">
-                    {% for trader in traders %}
-                        {% if request.session.username == trader.name %}
-                        <tr style="background-color:rgb(75,192,192,0.1)">
-                            <td scope="row">{{ forloop.counter }}</td>
-                            <td>You</td>
-                            <td>{{ trader.balance }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td scope="row">{{ forloop.counter }}</td>
-                            <td>{{ trader.name }}</td>
-                            <td>{{ trader.balance }}</td>
-                        </tr> 
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </table>
-        {% endif%}
+            <div class="mb-5">
+                {% for trader in market.active_traders %}
+                    <tr {% if request.session.username == trader.name %} style="background-color:rgb(75,192,192,0.1)"{% endif %}>
+                        <td scope="row">{{ forloop.counter }}</td>
+                        <td> {{ trader.name }}</td>
+                        <td>{{ trader.balance }}</td>
+                    </tr>
+                {% endfor %}
+            </div>
+        </table>
+    {% endif%}
+
     </div><!-- end of column -->
 
     <!-- Scoreboards and charts -->
@@ -522,12 +554,17 @@ function prettify (num) {
     // configure the output function
     // call Sk.importMainWithBody()
     function runit(submit=false) { 
+              
         document.getElementById("cleaned_values").innerHTML = ""
-        var code_before = document.getElementById("code_before").value;         
-        var client_code = document.getElementById("client_code").value; 
+        var code_before = document.getElementById("code_before").value;   
+        if (localStorage.client_code && submit) {
+            var client_code = localStorage.client_code;
+        } else{
+            var client_code = document.getElementById("client_code").value;
+        }
         var code_after = document.getElementById("code_after").value;         
         prog = code_before + client_code + code_after
-
+        
         var mypre = document.getElementById("output"); 
         mypre.innerHTML = ''; 
         Sk.pre = "output";
@@ -594,7 +631,7 @@ function prettify (num) {
                 $amount_slider.update({
                     from: amount_choice
                 });
-                if (submit){     
+                if (submit){              
                     document.getElementById("id_auto_play").value = true
                     document.getElementById('trade_form').submit()
                 }
@@ -615,27 +652,28 @@ function prettify (num) {
     <script src="{% static "skulpt/skulpt-stdlib.js" %}"></script>
 {% endif %}
 
+<!-- Script that updates wait status and checks for next round -->
 <script>
     round_num = parseInt("{{ market.round }}");
     market_id = "{{ market.market_id }}";
+    wait = "{{ wait }}";
     function check_for_next_round() {
         $.ajax({
             type: 'GET',
             url: "{% url 'market:current_round' market.market_id %}",
-            data: {
-                    'market_id': market_id
-            },
             dataType: 'json',
             success: function (data) {
                 if (data.round > round_num) {
                     window.location.href = "{% url 'market:play' market.market_id %}"
+                }else if (wait == 'True'){
+                    console.log("wait!!")
+                    update_status_message(data.num_ready_traders, data.num_active_traders, data.round)                     
                 }
             }
         });
     }
     window.setInterval(check_for_next_round, 1000);
 </script>
-
 
 <!-- import Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -845,11 +883,11 @@ function prettify (num) {
                 
 </script>
 
- {% if trader.auto_play and not wait and not market.game_over%}
+{% if trader.auto_play and not wait and not market.game_over%}
     <script>
-        runit(submit=true)
+       runit(submit=true)
     </script>
 {% endif %}
 
-  
+
 {% endblock javascript%}
