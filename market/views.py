@@ -266,12 +266,12 @@ def finish_round(request, market_id):
 
     # Update market round
     market.round += 1
-    market.save()
 
     # Check game over
     if market.check_game_over():
         market.game_over = True
-        market.save()
+
+    market.save()
 
     return redirect(reverse('market:monitor', args=(market.market_id,)))
 

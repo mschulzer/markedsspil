@@ -610,7 +610,7 @@ def test_current_round_view_returns_correct_non_zero_round(client, db):
             'round': 11,
             'num_active_traders': 0,
             'num_ready_traders': 0,
-
+            'game_over': False
             })
 
 

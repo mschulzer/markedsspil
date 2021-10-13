@@ -29,7 +29,7 @@
                     </td>
                     <td>{{ market.created_at }}</td>
                     <td>
-                        {{ market.num_traders }}
+                       {{ market.active_or_bankrupt_traders.count }}
                     </td>
                     <td>
                         {% if market.game_over %}

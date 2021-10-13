@@ -79,9 +79,9 @@ class Market(models.Model):
 
     def check_game_over(self):
         """ 
-        Checks if the game state should be set to game_over. 
+        Checks if the game state is should be set to game_over. 
         """
-        if not self.endless and (self.round >= self.max_rounds):
+        if not self.endless and (self.round == self.max_rounds):
             return True
 
     def save(self, *args, **kwargs):
@@ -115,6 +115,12 @@ class Market(models.Model):
             bankrupt=False)
         return active_traders
 
+    def num_active_traders(self):
+        """
+        Returns the number of active (non-removed) traders on the market.
+        """
+        return self.active_traders().count()
+
     def active_or_bankrupt_traders(self):
         """
         Returns a query set off all traders that are either active or bankrupt, 
@@ -126,12 +132,6 @@ class Market(models.Model):
             removed_from_market=False,
         ).order_by('-balance')
         return active_or_bankrupt_traders
-
-    def num_active_traders(self):
-        """
-        Returns the number of active (non-removed) traders on the market.
-        """
-        return self.active_traders().count()
 
     def all_trades_this_round(self):
         """ 
@@ -178,7 +178,7 @@ class Market(models.Model):
         if self.num_bankrupt_traders() > 0:
             if self.num_active_traders() == 0:
                 return True
-     
+
 
 class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
