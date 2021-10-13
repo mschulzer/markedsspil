@@ -395,6 +395,7 @@ function prettify (num) {
 </script>
 
 {% if not wait and not market.game_over and not trader.bankrupt %}
+
 <script>
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
@@ -423,8 +424,6 @@ function prettify (num) {
             document.getElementById('trade_form').submit()
         }
     }
-
-
 
     // only show calculations when screen width is bigger than this number
     const show_formula_breakpoint = 490;
