@@ -170,7 +170,7 @@ def add_graph_context_for_monitor_page(context):
     # Data for balance and amount graphs
     # If the app gets slow, we should refactor and optimize
 
-    color_for_averages = 'rgb(173,255,47,0.7)'  # yellow
+    color_for_averages = 'black'  # yellow
 
     def generate_price_list(trader):
         # On the monitor page price graph, we only want to show data for previous rounds.
@@ -194,7 +194,7 @@ def add_graph_context_for_monitor_page(context):
         red = (100 + i*100) % 255
         green = (50 + int((i/3)*100)) % 255
         blue = (0 + int((i/2)*100)) % 255
-        return f"rgb({red},{green},{blue}, 0.7)"
+        return f"rgb({red},{green},{blue}, 0.25)"
 
     # We want graphs to show data for all (including possibly removed) traders
     all_traders = market.all_traders()
@@ -247,7 +247,8 @@ def add_graph_context_for_monitor_page(context):
             'label': 'Average',
             'backgroundColor': color_for_averages,
             'borderColor': color_for_averages,
-            'data': avg_balances
+            'data': avg_balances,
+            'borderWidth': 2
         })
 
         # Average prices
@@ -258,7 +259,8 @@ def add_graph_context_for_monitor_page(context):
             'label': 'Average',
             'backgroundColor': color_for_averages,
             'borderColor': color_for_averages,
-            'data': avg_prices
+            'data': avg_prices,
+            'borderWidth': 2
         })
 
         # Average units produced
@@ -269,7 +271,8 @@ def add_graph_context_for_monitor_page(context):
             'label': 'Avg. amount',
             'backgroundColor': color_for_averages,
             'borderColor': color_for_averages,
-            'data': avg_amounts
+            'data': avg_amounts,
+            'borderWidth': 2
         })
 
     context['balanceDataSet'] = json.dumps(balanceDataSet)
