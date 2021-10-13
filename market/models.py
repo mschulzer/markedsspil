@@ -78,8 +78,6 @@ class Market(models.Model):
     def game_over(self):
         if not self.endless and (self.round >= self.max_rounds):
             return True
-        elif self.num_active_traders == self.num_bankrupt_traders:
-            return True
         else:
             return False
 
@@ -116,6 +114,9 @@ class Market(models.Model):
         return active_traders
 
     def active_or_bankrupt_traders(self):
+        """
+        Returns a query set off all traders that are either active or bankrupt, i.e., all traders who have not been removed from market.
+        """
         active_or_bankrupt_traders = Trader.objects.filter(
             market=self,
             removed_from_market=False,
@@ -166,6 +167,7 @@ class Market(models.Model):
             removed_from_market=False,
             bankrupt=True).count()
         return num_bankrupt_traders
+
 
 
 class Trader(models.Model):

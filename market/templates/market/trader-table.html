@@ -1,6 +1,6 @@
 {% load i18n %}
 
-{% if market.active_traders|length == 0 %}
+{% if market.active_or_bankrupt_traders|length == 0 %}
     <i>
         {% translate 'Waiting for the first trader to join the market...' %}
     </i>
