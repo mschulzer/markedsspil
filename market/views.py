@@ -205,6 +205,17 @@ def toggle_monitor_auto_pilot_setting(request, market_id):
 
 @require_POST
 @login_required
+def set_game_over(request, market_id):
+    market = get_object_or_404(Market, market_id=market_id)
+
+    market.game_over = True
+    market.save()
+
+    return redirect(reverse('market:monitor', args=(market.market_id,)))
+
+
+@require_POST
+@login_required
 def finish_round(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
@@ -244,7 +255,7 @@ def finish_round(request, market_id):
         market=market, round=market.round, avg_price=avg_price)
 
     active_or_bankrupt_traders = market.active_or_bankrupt_traders()
-    print(len(active_or_bankrupt_traders))
+
     round_stat.avg_balance_after = sum(
         [trader.balance for trader in active_or_bankrupt_traders])/len(active_or_bankrupt_traders)
 
@@ -256,6 +267,11 @@ def finish_round(request, market_id):
     # Update market round
     market.round += 1
     market.save()
+
+    # Check game over
+    if market.check_game_over():
+        market.game_over = True
+        market.save()
 
     return redirect(reverse('market:monitor', args=(market.market_id,)))
 
@@ -382,7 +398,7 @@ def current_round(request, market_id):
             'round': market.round,
             'num_active_traders': market.num_active_traders(),
             'num_ready_traders': market.num_ready_traders(),
-
+            'game_over': market.game_over
         }
     )
 

@@ -6,10 +6,17 @@
 
 {% block content %}
 
-
 <!-- Top colored message -->
 {% if market.game_over %}
-    <div class="alert alert-info">The game has ended after {{ market.max_rounds }} rounds.</div>
+    <div class="alert alert-info">
+        {% if market.check_game_over %}
+            <!-- The game was played to the final round -->
+            The game has ended after {{ market.max_rounds }} rounds.
+        {% else %}
+            <!-- The game ended prematurely (all traders are bankrupt) -->
+            The game has ended after {{ market.round }} rounds.
+        {% endif %}
+    </div>
 {% endif %}
 
 <!-- Page heading-->
@@ -174,7 +181,7 @@
     {% if market.round > 0 %}
         <!-- Autoplay on/off -->
         {% if market.monitor_auto_pilot %}
-            <p class="text-muted text-small text-center"><small>Round will finish automatically when all traders are ready</small></p>
+            <p class="text-muted text-center"><small>Round will finish automatically when all traders are ready</small></p>
         {% endif %}
 
         <div class="d-flex justify-content-center">

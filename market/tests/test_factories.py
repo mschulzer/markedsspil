@@ -94,24 +94,24 @@ def test_saving_existing_market_does_not_create_new_market_or_new_market_id(db):
     assert expected_num_markets == actual_num_markets
     assert expected_market_id == market.market_id
 
-def test_game_over_method_1(db):
+def test_check_game_over_method_1(db):
     market = MarketFactory(round=5, max_rounds=5, endless=False)
-    assert (market.game_over())
+    assert (market.check_game_over())
 
 
-def test_game_over_method_2(db):
+def test_check_game_over_method_2(db):
     market = MarketFactory(round=5, max_rounds=5, endless=True)
-    assert not (market.game_over())
+    assert not (market.check_game_over())
 
 
-def test_game_over_method_3(db):
+def test_check_game_over_method_3(db):
     market = MarketFactory(round=5, max_rounds=6, endless=False)
-    assert not (market.game_over())
+    assert not (market.check_game_over())
 
 
-def test_game_over_method_4(db):
+def test_check_game_over_method_4(db):
     market = MarketFactory(round=5, max_rounds=6, endless=True)
-    assert not (market.game_over())
+    assert not (market.check_game_over())
     
 
 ### Test TraderFactory ###

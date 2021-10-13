@@ -259,8 +259,8 @@ def test_if_not_endless_max_rounds_can_be_invalid_3(db, market_update_form_data)
 
 def test_editing_a_market_that_is_game_over_is_invalid_1(db, market_update_form_data):
     """ Form should not be valid when game is over """
-    market = MarketFactory(round=19, max_rounds=19, endless=False)
-    assert (market.game_over())
+    market = MarketFactory(round=19, max_rounds=19,
+                           endless=False, game_over=True)
     market_update_form_data['max_rounds'] = 1000
     form = MarketUpdateForm(market_update_form_data, instance=market)
     assert not (form.is_valid())
@@ -268,8 +268,8 @@ def test_editing_a_market_that_is_game_over_is_invalid_1(db, market_update_form_
 
 def test_editing_a_market_that_is_game_over_is_invalid_2(db, market_update_form_data):
     """ Form should not be valid when game is over """
-    market = MarketFactory(round=19, max_rounds=19, endless=False)
-    assert (market.game_over())
+    market = MarketFactory(round=19, max_rounds=19,
+                           endless=False, game_over=True)
     market_update_form_data['product_name_singular'] = 'XXX'
     form = MarketUpdateForm(market_update_form_data, instance=market)
     assert not(form.is_valid())
@@ -349,8 +349,8 @@ def test_name_used_on_another_market_is_no_problem(db):
 
 def test_new_traders_cant_join_market_that_has_ended(db):
     "New traders can't join a market that has ended"
-    market = MarketFactory(endless=False, max_rounds=4, round=5)
-    assert market.game_over()
+    market = MarketFactory(endless=False, max_rounds=4,
+                           round=5, game_over=True)
 
     data = {'name': 'grethen', 'market_id': market.market_id}
     form = TraderForm(data=data)

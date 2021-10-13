@@ -12,10 +12,17 @@
         <!-- Short blue status message-->  
         <div class="alert alert-info">
             {% if market.game_over %}
+                {% if market.check_game_over %}
+                    <!-- The game was played to the final round -->
+                    The game has ended after {{ market.max_rounds }} rounds.<br>
+                {% else %}
+                    <!-- The game ended prematurely (all traders are bankrupt) -->
+                    The game has ended after {{ market.round }} rounds.<br>
+                {% endif %}
+                
                 {% blocktranslate with balance=trader.balance %}
                     Final balance: <b>{{ balance }}</b> kr.
                 {% endblocktranslate %}   
-                <br>The game has ended after {{ market.max_rounds }} rounds!
             {% else %}
                 {% blocktranslate with balance=trader.balance %}
                     Current balance: <b>{{ balance }}</b> kr.
@@ -27,24 +34,24 @@
             {% if trader.bankrupt %}
                 {% if not market.game_over %}
                     {% if market.endless %}
-                        The game is in round <b>{{ market.round }}</b>.
+                        The game is in round <b>{{ market.round|add:1 }}</b>.
                     {% else %}
-                        The game is in round <b>{{ market.round }}</b> out of <b>{{ market.max_rounds }}</b>.
+                        The game is in round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b>.
                     {% endif %}
                 <br>
                 {% endif %}
                 You have declared yourself <b>bankrupt</b>.
             {% else %}
-            <p>
-                You don't have enough money on produce a single {{ market.product_name_singular }}!
-            </p>
-  
-            <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
-            <button class="btn btn-danger">
-                {% csrf_token %}
-                Declare Bankruptcy
-            </button>
-            </form>
+                
+                <p>You don't have enough money to produce a single {{ market.product_name_singular }}!</p>
+                <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-danger">
+                        {% csrf_token %}
+                        Declare Bankruptcy
+                    </button>
+                </div>
+                </form>
             {% endif %}
         </div>
         
@@ -686,6 +693,7 @@ function prettify (num) {
     <script src="{% static "skulpt/skulpt-stdlib.js" %}"></script>
 {% endif %}
 
+{% if not market.game_over %}
 <!-- Script that updates wait status and checks for next round -->
 <script>
     round_num = parseInt("{{ market.round }}");
@@ -697,7 +705,7 @@ function prettify (num) {
             url: "{% url 'market:current_round' market.market_id %}",
             dataType: 'json',
             success: function (data) {
-                if (data.round > round_num) {
+                if (data.round > round_num || data.game_over) {
                     window.location.href = "{% url 'market:play' market.market_id %}"
                 }else if (wait == 'True'){
                     update_status_message(data.num_ready_traders, data.num_active_traders, data.round)                     
@@ -707,6 +715,7 @@ function prettify (num) {
     }
     window.setInterval(check_for_next_round, 1000);
 </script>
+{% endif %}
 
 <!-- import Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

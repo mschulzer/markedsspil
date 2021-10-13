@@ -16,6 +16,8 @@ urlpatterns = [
     path('<market_id>/finish_round', views.finish_round, name='finish_round'),
     path('<market_id>/toggle_monitor_auto_pilot_setting/',
          views.toggle_monitor_auto_pilot_setting, name='toggle_monitor_auto_pilot_setting'),
+    path('<market_id>/set_game_over',
+         views.set_game_over, name='set_game_over'),
     path('<trader_id>/declare_bankruptcy',
          views.declare_bankruptcy, name='declare_bankruptcy'),
 

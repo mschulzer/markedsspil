@@ -75,11 +75,14 @@ class Market(models.Model):
     # When a user 'deletes' one of his markets, we don't actually delete it, but set this value to True:
     deleted = models.BooleanField(default=False)
 
-    def game_over(self):
+    game_over = models.BooleanField(default=False)
+
+    def check_game_over(self):
+        """ 
+        Checks if the game state should be set to game_over. 
+        """
         if not self.endless and (self.round >= self.max_rounds):
             return True
-        else:
-            return False
 
     def save(self, *args, **kwargs):
         """
@@ -105,24 +108,24 @@ class Market(models.Model):
         """
         Returns a query set of all active traders on the market.
         A trader is 'active' if he has not declared bankruptcy and has not been removed from the market.
-        The set is ordered by -balance. 
         """
         active_traders = Trader.objects.filter(
             market=self,
             removed_from_market=False,
-            bankrupt=False).order_by('-balance')
+            bankrupt=False)
         return active_traders
 
     def active_or_bankrupt_traders(self):
         """
-        Returns a query set off all traders that are either active or bankrupt, i.e., all traders who have not been removed from market.
+        Returns a query set off all traders that are either active or bankrupt, 
+        i.e., all traders who have not been removed from market.
+        The set is ordered by balance. 
         """
         active_or_bankrupt_traders = Trader.objects.filter(
             market=self,
             removed_from_market=False,
         ).order_by('-balance')
         return active_or_bankrupt_traders
-
 
     def num_active_traders(self):
         """
@@ -168,7 +171,14 @@ class Market(models.Model):
             bankrupt=True).count()
         return num_bankrupt_traders
 
-
+    def all_are_bankrupt(self):
+        """
+        Returns True if at leat one trader is bankrupt and there are no active traders left in the game. 
+        """
+        if self.num_bankrupt_traders() > 0:
+            if self.num_active_traders() == 0:
+                return True
+     
 
 class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -303,6 +313,7 @@ class Trader(models.Model):
         should_be_waiting = Trade.objects.filter(
             trader=self, round=self.market.round).exists()
         return should_be_waiting
+
 
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
