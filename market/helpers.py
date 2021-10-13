@@ -170,7 +170,7 @@ def add_graph_context_for_monitor_page(context):
     # Data for balance and amount graphs
     # If the app gets slow, we should refactor and optimize
 
-    color_for_averages = 'rgb(173,255,47,0.7)'  # yellow
+    color_for_averages = 'blue'
 
     def generate_price_list(trader):
         # On the monitor page price graph, we only want to show data for previous rounds.
@@ -194,7 +194,7 @@ def add_graph_context_for_monitor_page(context):
         red = (100 + i*100) % 255
         green = (50 + int((i/3)*100)) % 255
         blue = (0 + int((i/2)*100)) % 255
-        return f"rgb({red},{green},{blue}, 0.7)"
+        return f"rgb({red},{green},{blue}, 0.3)"
 
     # We want graphs to show data for all (including possibly removed) traders
     all_traders = market.all_traders()
@@ -226,10 +226,10 @@ def add_graph_context_for_monitor_page(context):
         for i, trader in enumerate(all_traders)
     ]
 
-    active_traders = market.active_traders()
+    active_or_bankrupt_traders = market.active_or_bankrupt_traders()
 
-    # If at least one trader has joined the game:
-    if active_traders:
+    # If at least one trader is participating in the market (bankrupt or non-bankrupt):
+    if active_or_bankrupt_traders:
         # We add average data to graph datasets
 
         round_stats = RoundStat.objects.filter(market=market)
@@ -240,14 +240,15 @@ def add_graph_context_for_monitor_page(context):
         # the average balance in the current round might change during the round (due to new traders joining the market),
         # so we update this value on each page reload:
         avg_balance_this_round_so_far = sum(
-            [trader.balance for trader in active_traders])/len(active_traders)
+            [trader.balance for trader in active_or_bankrupt_traders])/len(active_or_bankrupt_traders)
         avg_balances[-1] = float(avg_balance_this_round_so_far)
 
         balanceDataSet.append({
             'label': 'Average',
             'backgroundColor': color_for_averages,
             'borderColor': color_for_averages,
-            'data': avg_balances
+            'data': avg_balances,
+            'borderWidth': 2
         })
 
         # Average prices
@@ -258,7 +259,8 @@ def add_graph_context_for_monitor_page(context):
             'label': 'Average',
             'backgroundColor': color_for_averages,
             'borderColor': color_for_averages,
-            'data': avg_prices
+            'data': avg_prices,
+            'borderWidth': 2
         })
 
         # Average units produced
@@ -269,7 +271,8 @@ def add_graph_context_for_monitor_page(context):
             'label': 'Avg. amount',
             'backgroundColor': color_for_averages,
             'borderColor': color_for_averages,
-            'data': avg_amounts
+            'data': avg_amounts,
+            'borderWidth': 2
         })
 
     context['balanceDataSet'] = json.dumps(balanceDataSet)

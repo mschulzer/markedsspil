@@ -12,17 +12,52 @@
         <!-- Short blue status message-->  
         <div class="alert alert-info">
             {% if market.game_over %}
+                {% if market.check_game_over %}
+                    <!-- The game was played to the final round -->
+                    The game has ended after {{ market.max_rounds }} rounds.<br><br>
+                {% else %}
+                    <!-- The game ended prematurely (all traders are bankrupt) -->
+                    The game has ended after {{ market.round }} rounds.<br>
+                {% endif %}
+                
                 {% blocktranslate with balance=trader.balance %}
                     Final balance: <b>{{ balance }}</b> kr.
                 {% endblocktranslate %}   
-                <br>The game has ended after {{ market.max_rounds }} rounds!
             {% else %}
                 {% blocktranslate with balance=trader.balance %}
                     Current balance: <b>{{ balance }}</b> kr.
                 {% endblocktranslate %}   
             {% endif %}
         </div>
-
+        {% if not wait and trader.balance < trader.prod_cost %}
+        <div class="alert alert-danger">
+            {% if trader.bankrupt %}
+                {% if not market.game_over %}
+                    {% if market.endless %}
+                        The game is in round <b>{{ market.round|add:1 }}</b>.
+                    {% else %}
+                        The game is in round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b>.
+                    {% endif %}
+                <br>
+                {% endif %}
+                You have declared yourself <b>bankrupt</b>.
+            {% else %}
+                
+                <p>You don't have enough money to produce a single {{ market.product_name_singular }}!</p>
+                <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-danger">
+                        {% csrf_token %}
+                        Declare Bankruptcy
+                    </button>
+                </div>
+                </form>
+            {% endif %}
+        </div>
+        
+        {% endif %}
+        
+        {% if not trader.bankrupt %}
         <!-- Long yellow status message -->
         <div class="alert alert-warning"> 
             
@@ -121,32 +156,19 @@
                 {{ market.product_name_plural }}, som du vil sælge for <b>{{  trades.last.unit_price }}</b> kr. pr. styk.</b>.  
                 {% endcomment %}
                 <br><br>
-                {% if market.endless %}
+                {% comment %} {% if market.endless %}
                 You are still in round {{ market.round|add:1 }}.
                 {% else %}
                 You are still in round {{ market.round|add:1 }} out of {{ market.max_rounds }}.
                 {% endif %}
-                Your goods will be produced and put up for sale when the round finishes.<br><br>
-                <!-- Info about current status -->
+                Your goods will be produced and put up for sale when the host finished the round round finishes.<br><br>{% endcomment %}
+                <!-- Info about current status --> 
                
                 <p id="wait_status"> 
                 </p>
                 <script>
                     function update_status_message(num_ready_traders, num_active_traders, round_num){
-                        if(num_active_traders == 1){
-                            wait_message = "You are currently the only trader on the market."
-                        } else{
-                            num_not_ready_traders = num_active_traders - num_ready_traders;
-                            if(num_not_ready_traders  == 0){
-                                wait_message = `All traders are ready for next round. You are now waiting for the host to finish round ${ round_num + 1 }.`
-                            } else{
-                                if (num_not_ready_traders == 1){
-                                    wait_message = `You are now waiting for 1 other trader to get ready for next round.`  
-                                } else{
-                                    wait_message = `You are now waiting for ${ num_not_ready_traders } other traders to get ready for next round.`  
-                                }                
-                            }
-                        }
+                        wait_message = `${ num_ready_traders }/${ num_active_traders } players are ready for next round.`                 
                         document.getElementById('wait_status').innerHTML = wait_message;
                     }
                 update_status_message(
@@ -157,8 +179,9 @@
             {% endif %}
 
         </div>      
+        {% endif %}
 
-        {% if not wait and not market.game_over %}
+        {% if not wait and not market.game_over and not trader.bankrupt  %}
             <!-- Next trade form -->
             <div class="card mb-3">
                 <div class="card-header">
@@ -222,6 +245,7 @@
                 </div>
 
             </div>
+
 
 {% if market.allow_robots %}
     </div> <!-- end column-->
@@ -316,19 +340,23 @@ except:
 
 {% endif %} 
 
-    {% if market.game_over %}
+    {% if market.game_over or trader.bankrupt %}
         <!-- ScoreBoard -->
         <table class="table table-sm" >
             <thead>
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">{% translate 'Name' %}</th>
-                    <th scope="col">{% translate 'Final balance' %}</th>
+                    {% if market.game_over %}
+                        <th scope="col">{% translate 'Final balance' %}</th>
+                    {% else %}
+                        <th scope="col">{% translate 'Balance' %}</th>
+                    {% endif %}
                 </tr>
             </thead>
 
             <div class="mb-5">
-                {% for trader in market.active_traders %}
+                {% for trader in market.active_or_bankrupt_traders %}
                     <tr {% if request.session.username == trader.name %} style="background-color:rgb(75,192,192,0.1)"{% endif %}>
                         <td scope="row">{{ forloop.counter }}</td>
                         <td> {{ trader.name }}</td>
@@ -366,7 +394,8 @@ function prettify (num) {
 }
 </script>
 
-{% if not wait and not market.game_over%}
+{% if not wait and not market.game_over and not trader.bankrupt %}
+
 <script>
     var labels = document.getElementsByTagName('label');    
     var price_label = labels[0]
@@ -395,8 +424,6 @@ function prettify (num) {
             document.getElementById('trade_form').submit()
         }
     }
-
-
 
     // only show calculations when screen width is bigger than this number
     const show_formula_breakpoint = 490;
@@ -652,6 +679,7 @@ function prettify (num) {
     <script src="{% static "skulpt/skulpt-stdlib.js" %}"></script>
 {% endif %}
 
+{% if not market.game_over %}
 <!-- Script that updates wait status and checks for next round -->
 <script>
     round_num = parseInt("{{ market.round }}");
@@ -663,10 +691,9 @@ function prettify (num) {
             url: "{% url 'market:current_round' market.market_id %}",
             dataType: 'json',
             success: function (data) {
-                if (data.round > round_num) {
+                if (data.round > round_num || data.game_over) {
                     window.location.href = "{% url 'market:play' market.market_id %}"
                 }else if (wait == 'True'){
-                    console.log("wait!!")
                     update_status_message(data.num_ready_traders, data.num_active_traders, data.round)                     
                 }
             }
@@ -674,6 +701,7 @@ function prettify (num) {
     }
     window.setInterval(check_for_next_round, 1000);
 </script>
+{% endif %}
 
 <!-- import Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

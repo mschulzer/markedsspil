@@ -96,7 +96,7 @@ class MarketUpdateForm(MarketForm):
         cleaned_data = super().clean()
         endless = cleaned_data.get("endless")
         max_rounds = cleaned_data.get("max_rounds")
-        if self.instance.game_over():
+        if self.instance.game_over:
             raise ValidationError(
                 "You can't edit a market that has ended (game is over)")
         if not endless:
@@ -141,7 +141,7 @@ class TraderForm(forms.ModelForm):
         cleaned_market_id = cleaned_data.get('market_id')
         if cleaned_name and cleaned_market_id:
             market = Market.objects.get(market_id=cleaned_market_id)
-            if market.game_over():
+            if market.game_over:
                 raise forms.ValidationError(
                     _('This market has has ended. No new traders can join.'))
 

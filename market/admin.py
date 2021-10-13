@@ -17,7 +17,11 @@ class MarketAdmin(admin.ModelAdmin):
         'endless',
         'allow_robots',
         'created_by',
-        'created_at')
+        'created_at',
+        'game_over',
+        'deleted',
+        'monitor_auto_pilot',
+    )
 
     readonly_fields = ['market_id']
 
@@ -30,7 +34,9 @@ class TraderAdmin(admin.ModelAdmin):
         'created_at',
         'balance',
         'round_joined',
-        'auto_play'
+        'auto_play',
+        'removed_from_market',
+        'bankrupt'
     )
 
 class TradeAdmin(admin.ModelAdmin):

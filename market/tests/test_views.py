@@ -495,7 +495,8 @@ def test_player_view_get_game_over_when_rounds_equal_max_round(client, db):
     """
     When game is over, the user should be notified about this
     """
-    market = MarketFactory(round=4, max_rounds=4, endless=False)
+    market = MarketFactory(round=4, max_rounds=4,
+                           endless=False, game_over=True)
 
     # a user has joined properly
     trader = TraderFactory(market=market, balance=101, prod_cost=2)
@@ -609,7 +610,7 @@ def test_current_round_view_returns_correct_non_zero_round(client, db):
             'round': 11,
             'num_active_traders': 0,
             'num_ready_traders': 0,
-
+            'game_over': False
             })
 
 
