@@ -1,0 +1,31 @@
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load static%}
+{% load i18n %}
+{% load sekizai_tags %}
+
+    <!-- ScoreBoard -->
+    <table class="table table-sm" >
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">{% translate 'Name' %}</th>
+                {% if market.game_over %}
+                <th scope="col">{% translate 'Final balance' %}</th>
+                {% else %}
+                <th scope="col">{% translate 'Balance' %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+
+        <div class="mb-5">
+            {% for trader in market.active_or_bankrupt_traders %}
+            <tr {% if request.session.username == trader.name %} style="background-color:rgb(75,192,192,0.1)"{% endif %}>
+                <td scope="row">{{ forloop.counter }}</td>
+                <td> {{ trader.name }}</td>
+                <td>{{ trader.balance }}</td>
+            </tr>
+            {% endfor %}
+        </div>
+    </table>
+

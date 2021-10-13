@@ -387,7 +387,7 @@ def play(request, market_id):
 
         context['wait'] = trader.should_be_waiting()
 
-        return render(request, 'market/play.html', context)
+        return render(request, 'market/play/play.html', context)
 
 
 @require_GET

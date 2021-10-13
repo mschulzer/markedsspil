@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load sekizai_tags %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -61,7 +62,13 @@
         
         <!-- Core theme JS-->
         <!-- <script src="js/scripts.js"></script> -->
-
+        <script>
+          // Display currency amount with 2 decimals
+          function prettify (num) {
+              return num.toFixed(2);
+          }
+        </script>
+        
         <!-- HTMX -->
         <script src="https://unpkg.com/htmx.org@1.4.1"></script>
         <script>
@@ -72,5 +79,7 @@
 
         {% block javascript %}
         {% endblock javascript %}
+
+        {% render_block 'js' %}
     </body>
 </html>
