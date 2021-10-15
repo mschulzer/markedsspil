@@ -82,6 +82,7 @@ def add_context_for_join_form(context, request):
     return context
 
 
+@require_POST
 def join_market(request):
     form = TraderForm(request.POST)
 
