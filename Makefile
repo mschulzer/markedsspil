@@ -14,6 +14,9 @@ build:  ## Build or rebuild development docker image
 develop:  ## Run development server
 	docker-compose -f docker-compose.dev.yml up --remove-orphans
 
+shell:  ## Open shell in running docker development container
+	docker-compose -f docker-compose.dev.yml exec web /bin/bash
+
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
 	docker-compose -f docker-compose.dev.yml run --rm web django-admin compilemessages
@@ -43,6 +46,5 @@ production_djangologs: ## Show django logs
 production_accesslogs: ## Show nginx access logs
 	docker logs markedsspilletdk_nginx_1
 
-# Open shell within running docker development container
-production_shell:
-	docker-compose -f docker-compose.dev.yml exec markedsspilletdk_web_1 /bin/bash
+production_shell: # Open shell in running docker production container
+	docker-compose -f docker-compose.prod.yml exec markedsspilletdk_web_1 /bin/bash
