@@ -1,9 +1,9 @@
 version: "3.3"
-   
+
 services:
   web:
     build: .
-    command: /bin/sh -c /code/entrypoint.sh
+    command: /bin/sh -c /code/entrypoint.dev.sh
     volumes:
       - database_volume:/db/
       - .:/code
