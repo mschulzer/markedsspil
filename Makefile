@@ -16,7 +16,7 @@ develop:  ## Run development server
 
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
-	docker-compose run --rm web django-admin compilemessages
+	docker-compose -f docker-compose.dev.yml run --rm web django-admin compilemessages
 	DJANGO_SETTINGS_MODULE=config.settings docker-compose run --rm web pytest 
 
 
@@ -44,5 +44,5 @@ production_accesslogs: ## Show nginx access logs
 	docker logs markedsspilletdk_nginx_1
 
 # Open shell within running docker development container
-shell:
-	docker-compose exec web /bin/bash
+production_shell:
+	docker-compose -f docker-compose.dev.yml exec markedsspilletdk_web_1 /bin/bash
