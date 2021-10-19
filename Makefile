@@ -28,3 +28,15 @@ build:
 # Open shell within running docker development container
 shell:
 	docker-compose exec web /bin/bash
+
+production_stop:
+	docker-compose -f docker-compose.prod.yml down --remove-orphans
+
+production_start:
+	docker-compose -f docker-compose.prod.yml up --build --remove-orphans -d
+
+production_djangologs:
+	docker logs markedsspilletdk_web_1
+
+production_accesslogs:
+	docker logs markedsspilletdk_nginx_1
