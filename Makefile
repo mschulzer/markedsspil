@@ -48,3 +48,9 @@ production_accesslogs: ## Show nginx access logs
 
 production_shell: # Open shell in running docker production container
 	docker-compose -f docker-compose.prod.yml exec markedsspilletdk_web_1 /bin/bash
+
+production_create_backup: ## Start production server as daemon
+	docker-compose -f docker-compose.prod.yml run --rm markedsspilletdk_web_1 python manage.py dbbackup --clean
+
+production_restore_backup: ## Start production server as daemon
+	docker-compose -f docker-compose.prod.yml run --rm markedsspilletdk_web_1 python manage.py dbrestore

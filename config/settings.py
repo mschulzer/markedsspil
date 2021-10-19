@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'django_extensions',
+    'dbbackup',
 
     # Local
     'market.apps.MarketConfig',
@@ -186,3 +187,10 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Markedsspillet.dk]"
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location' : '/backups'}
+DBBACKUP_CLEANUP_KEEP = 30
+DBBACKUP_DATE_FORMAT = '%Y-%m-%d_%H-%M-%S'
+DBBACKUP_FILENAME_TEMPLATE = 'backup_{databasename}_{datetime}.{extension}'
+DBBACKUP_ADMINS = [("Martin Dybdal", "dybber@di.ku.dk")]
