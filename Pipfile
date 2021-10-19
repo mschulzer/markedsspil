@@ -9,6 +9,7 @@ gunicorn = "*"
 django = "~=3.2"
 factory-boy = "*"
 django-allauth = ">=0.42.0"
+django-dbbackup = "*"
 
 [dev-packages]
 black = "*"

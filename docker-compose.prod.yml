@@ -8,6 +8,7 @@ services:
     volumes:
       - database_volume:/db/
       - static_volume:/code/static
+      - ./backups:/backups
     expose:
       - 8000
     env_file:

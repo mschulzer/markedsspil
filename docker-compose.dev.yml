@@ -7,6 +7,7 @@ services:
     volumes:
       - database_volume:/db/
       - .:/code
+      - ./backups:/backups
     ports:
       - "8000:8000"
     env_file:
