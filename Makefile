@@ -20,7 +20,7 @@ shell:  ## Open shell in running docker development container
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
 	docker-compose -f docker-compose.dev.yml run --rm web django-admin compilemessages
-	DJANGO_SETTINGS_MODULE=config.settings docker-compose run --rm web pytest 
+	DJANGO_SETTINGS_MODULE=config.settings docker-compose -f docker-compose.dev.yml run --rm web pytest
 
 
 flake8: ## PEP8 codestyle check
