@@ -12,4 +12,6 @@ echo "${0}: generating .mo files for translations"
 django-admin compilemessages
 
 echo "${0}: running production server."
-pipenv run gunicorn config.wsgi:application --bind 0.0.0.0:8000
+mkdir -p /var/log/gunicorn
+pipenv run gunicorn config.wsgi:application --bind 0.0.0.0:8000 --access-logfile /var/log/gunicorn/access.log --error-log /var/log/gunicorn/error.log --capture-output
+
