@@ -375,7 +375,7 @@ def test_player_view_get_if_no_errors_and_time_to_wait_return_play_template_with
     # user goes to play url and should get play-template shown with wait equal true in context
     response = client.get(reverse('market:play', args=(market.market_id,)))
     assert (response.status_code == 200)
-    assertTemplateUsed(response, 'market/play.html'),
+    assertTemplateUsed(response, 'market/play/play.html'),
     assert (response.context.get('wait'))
 
     # there should now be a message saying that the user is waiting
@@ -411,7 +411,7 @@ def test_player_view_get_proper_behavior_in_round_4_when_user_has_made_trade_in_
 
     # The user has not traded in this round so he should get back play template with wait=false in context
     assert (response.status_code == 200)
-    assertTemplateUsed(response, 'market/play.html'),
+    assertTemplateUsed(response, 'market/play/play.html'),
     assert not (response.context.get('wait'))
 
     # template should contain data from last round
@@ -449,7 +449,7 @@ def test_player_view_get_proper_behavior_in_round_4_when_user_has_made_trade_in_
 
     # The user has not traded in this round so he should get back play temlpate
     assert (response.status_code == 200)
-    assertTemplateUsed(response, 'market/play.html'),
+    assertTemplateUsed(response, 'market/play/play.html'),
 
     # The player should know that he didn't trade last round
     assertContains(response, "You didn't make a trade last round.")

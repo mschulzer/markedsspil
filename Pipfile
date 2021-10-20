@@ -10,6 +10,7 @@ django = "~=3.2"
 factory-boy = "*"
 django-allauth = ">=0.42.0"
 django-dbbackup = "*"
+django-sekizai = "*"
 
 [dev-packages]
 black = "*"
