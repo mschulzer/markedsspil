@@ -53,4 +53,4 @@ production_create_backup: ## Create a database backup
 	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbbackup --clean --compress
 
 production_restore_latest_backup: ## Restore latest database backup
-	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbrestore
+	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbrestore --uncompress
