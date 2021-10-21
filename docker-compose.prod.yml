@@ -14,7 +14,7 @@ services:
     env_file:
       - ./.env.prod
     networks:
-      - nginx_nginx-proxynet
+      - reverseproxy_proxynet
 
   nginx:
     restart: always
@@ -36,7 +36,7 @@ services:
       - LETSENCRYPT_EMAIL=dybber@di.ku.dk
       - url=https://markedsspillet.dk
     networks:
-      - nginx_nginx-proxynet
+      - reverseproxy_proxynet
 
 
 volumes:
@@ -44,5 +44,5 @@ volumes:
   static_volume: {}
 
 networks:
-  nginx_nginx-proxynet:
+  reverseproxy_proxynet:
     external: true
