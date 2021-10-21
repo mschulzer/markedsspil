@@ -24,30 +24,34 @@
     {% endif %}
 </div>
 {% if not wait and trader.balance < trader.prod_cost %}
-<div class="alert alert-danger">
     {% if trader.bankrupt %}
-        {% if not market.game_over %}
-            {% if market.endless %}
-                 The game is in round <b>{{ market.round|add:1 }}</b>.
-            {% else %}
-                 The game is in round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b>.
+        <div class="alert alert-warning">
+            Hi {{ trader.name }},
+            <br><br>
+            {% if not market.game_over %}
+                {% if market.endless %}
+                    The game is in round <b>{{ market.round|add:1 }}</b>.
+                {% else %}
+                    The game is in round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b>.
+                {% endif %}
+            <br><br>
             {% endif %}
-        <br>
-        {% endif %}
-        You have declared yourself <b>bankrupt</b>.
-    {% else %}
-        <p>You don't have enough money to produce a single {{ market.product_name_singular }}!</p>
-        <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
-            <div class="d-flex justify-content-center">
-                <button class="btn btn-danger">
-                    {% csrf_token %}
-                    Declare Bankruptcy
-                </button>
-            </div>
-        </form>
-    {% endif %}
-</div>
+            You have declared yourself bankrupt.
+        </div>
 
+    {% else %}
+        <div class="alert alert-danger">
+            <p>You don't have enough money to produce a single {{ market.product_name_singular }}!</p>
+            <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-danger">
+                        {% csrf_token %}
+                        Declare Bankruptcy
+                    </button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
 {% endif %}
 
 {% if not trader.bankrupt %}

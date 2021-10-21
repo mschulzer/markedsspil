@@ -6,7 +6,7 @@ To run all tests in this file:
 $ docker-compose run web pytest market/tests/test_views.py
 
 To run only one or some tests:
-$ docker-compose run web pytest -k <substring of test function names to run>
+docker-compose -f docker-compose.dev.yml run web pytest -k <substring of test function names to run>
 """
 from django.test import TestCase
 from django.urls import reverse
@@ -738,13 +738,33 @@ def test_market_edit_invalid_post_data_does_not_update_market(client, logged_in_
     assertTemplateUsed(response, 'market/market_edit.html')
 
 
+def test_set_game_over_view(client, logged_in_user):
+    market = MarketFactory(
+        round=7, created_by=logged_in_user, monitor_auto_pilot=False)
+    assert not market.game_over
+
+    # the client tries to set the game state to game over
+    url = reverse('market:set_game_over',
+                  args=(market.market_id,))
+    response = client.post(url)
+    market.refresh_from_db()
+
+    # market is now game_over
+    assert market.game_over
+
+    # redirect to monitor after succesful post-request
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:monitor', args=(market.market_id,)))
+
+
 def test_toggle_monitor_auto_pilot_setting(client, logged_in_user):
     """ Post request with toggle_auto_pilot should change the market's auto_pilot setting """
     market = MarketFactory(
         round=7, created_by=logged_in_user, monitor_auto_pilot=False)
 
     # autopilot is false by default
-    assert market.monitor_auto_pilot is False
+    assert not market.monitor_auto_pilot
 
     # now we toggle the setting
     url = reverse('market:toggle_monitor_auto_pilot_setting',
@@ -753,7 +773,7 @@ def test_toggle_monitor_auto_pilot_setting(client, logged_in_user):
     market.refresh_from_db()
 
     # autopilot is now true
-    assert market.monitor_auto_pilot is True
+    assert market.monitor_auto_pilot
 
     # we toggle the setting again
     response = client.post(url)
@@ -810,6 +830,28 @@ def test_remove_trader_from_market_in_round_0(client, logged_in_user):
     assert (response.status_code == 302)
     assert (response['Location'] == reverse(
         'market:monitor', args=(market.market_id,)))
+
+
+def test_declare_bankruptcy(client, db):
+    """ Testing declare bankruptcy functionality """
+    trader = TraderFactory()
+    session = client.session
+    session['trader_id'] = trader.id
+    session.save()
+
+    assert not trader.bankrupt
+
+    url = reverse('market:declare_bankruptcy', args=(trader.id,))
+    response = client.post(url)
+    trader.refresh_from_db()
+
+    assert trader.bankrupt
+
+    # Redirect to monitor view after database update
+    assert (response.status_code == 302)
+    assert (response['Location'] == reverse(
+        'market:play', args=(trader.market.market_id,)))
+
 
 
 #  Test finish_round view
