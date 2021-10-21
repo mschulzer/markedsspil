@@ -40,7 +40,7 @@
         </div>
 
     {% else %}
-        <div class="alert alert-warning">
+        <div class="alert alert-danger">
             <p>You don't have enough money to produce a single {{ market.product_name_singular }}!</p>
             <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
                 <div class="d-flex justify-content-center">
