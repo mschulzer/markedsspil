@@ -209,6 +209,10 @@ def toggle_monitor_auto_pilot_setting(request, market_id):
 def set_game_over(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
 
+    # If user is not the creator of the market, redirect to home page
+    if not request.user == market.created_by:
+        return HttpResponseRedirect(reverse('market:home'))
+
     market.game_over = True
     market.save()
 
@@ -303,7 +307,6 @@ def declare_bankruptcy(request, trader_id):
 
     # Only trader himself can declare himself bankrupt
     if not request.session['trader_id'] == int(trader_id):
-        print("NOT EQUAL")
         return HttpResponseRedirect(reverse('market:home'))
 
     trader.bankrupt = True
