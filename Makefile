@@ -49,8 +49,8 @@ production_accesslogs: ## Show nginx access logs
 production_shell: # Open shell in running docker production container
 	docker-compose -f docker-compose.prod.yml exec web /bin/bash
 
-production_create_backup: ## Start production server as daemon
-	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbbackup --clean
+production_create_backup: ## Create a database backup
+	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbbackup --clean --compress
 
-production_restore_backup: ## Start production server as daemon
+production_restore_latest_backup: ## Restore latest database backup
 	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbrestore
