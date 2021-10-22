@@ -7,7 +7,6 @@ services:
     command: /bin/sh -c /code/entrypoint.prod.sh
     volumes:
       - static_volume:/code/static
-      - ./backups:/backups
     expose:
       - 8000
     env_file:
