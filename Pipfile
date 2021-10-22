@@ -11,6 +11,7 @@ factory-boy = "*"
 django-allauth = ">=0.42.0"
 django-dbbackup = "*"
 django-sekizai = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 black = "*"
