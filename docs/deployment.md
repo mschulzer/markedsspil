@@ -54,6 +54,14 @@ maintenance work on the server), using the following command:
 make production_create_backup
 ```
 
+NOTE: The backup-directory `backups` has it's ownership set to user-id
+999 and group-id 999 OUTSIDE the docker container (`chown -R 999:999
+./backups`). The same ownership rights are mapped to the mounted
+directory INSIDE the docker-container, where 999:999 maps to the
+`postgres` user. This is necessary for the backup-script to be able to
+write to the directory. See also documentation for
+`prodrigestivill/postgres-backup-local`
+
 Restoring a backup
 ------------------
 
