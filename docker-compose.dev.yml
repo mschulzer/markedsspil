@@ -10,7 +10,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./.env.dev
+      - .env.dev
     depends_on:
      - db
 
@@ -20,6 +20,9 @@ services:
      - database_volume:/var/lib/postgresql/data/
     environment:
      - "POSTGRES_HOST_AUTH_METHOD=trust"
+    env_file:
+      - .env.dev
+    user: postgres
 
 volumes:
   database_volume: {}
