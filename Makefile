@@ -17,6 +17,9 @@ develop:  ## Run development server
 shell:  ## Open shell in running docker development container
 	docker-compose -f docker-compose.dev.yml exec web /bin/bash
 
+develop_create_backup:	## Create backup of development database
+	docker-compose -f docker-compose.dev.yml run --rm pgbackups /backup.sh
+
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
 	docker-compose -f docker-compose.dev.yml run --rm web django-admin compilemessages
@@ -49,8 +52,5 @@ production_accesslogs: ## Show nginx access logs
 production_shell: # Open shell in running docker production container
 	docker-compose -f docker-compose.prod.yml exec web /bin/bash
 
-production_create_backup: ## Create a database backup
-	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbbackup --clean --compress
-
-production_restore_latest_backup: ## Restore latest database backup
-	docker-compose -f docker-compose.prod.yml run --rm web python manage.py dbrestore --uncompress
+production_create_backup: ## Create a database backup manually
+	docker-compose -f docker-compose.prod.yml run --rm pgbackups /backup.sh
