@@ -22,7 +22,27 @@ services:
      - "POSTGRES_HOST_AUTH_METHOD=trust"
     env_file:
       - .env.dev
-    user: postgres
+    user: postgres:postgres
+
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local:14
+    # restart: always
+    user: postgres:postgres
+    volumes:
+      - ./backups:/backups:rw
+    links:
+      - db
+    depends_on:
+      - db
+    env_file:
+      - .env.dev
+    environment:
+      - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs --clean
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=8080
 
 volumes:
   database_volume: {}

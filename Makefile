@@ -17,6 +17,9 @@ develop:  ## Run development server
 shell:  ## Open shell in running docker development container
 	docker-compose -f docker-compose.dev.yml exec web /bin/bash
 
+develop_create_backup:	## Create backup of development database
+	docker-compose -f docker-compose.dev.yml run --rm pgbackups /backup.sh
+
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
 	docker-compose -f docker-compose.dev.yml run --rm web django-admin compilemessages
