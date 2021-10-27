@@ -51,6 +51,14 @@ class Market(models.Model):
     max_cost = models.DecimalField(max_digits=14, decimal_places=2,
                                    validators=[MinValueValidator(Decimal('0.01'))])
 
+    # Optional constant to add to each traders production cost each round
+    cost_slope = models.DecimalField(
+        max_digits=14, decimal_places=2, default=Decimal('0.00'))
+
+    # Total amount added to the production costs so far
+    total_prod_cost_change = models.DecimalField(
+        max_digits=14, decimal_places=2, default=Decimal('0.00'))
+
     round = models.IntegerField(default=0)
 
     # If endless is false, the game will stop after the number of rounds specified in max_rounds.
@@ -179,6 +187,18 @@ class Market(models.Model):
             if self.num_active_traders() == 0:
                 return True
 
+    def max_allowed_price(self):
+        """
+        Returns the highest price allowed in current round
+        """
+        curr_max_cost = 0
+        for trader in self.all_traders():
+            if trader.prod_cost > curr_max_cost:
+                curr_max_cost = trader.prod_cost
+
+        return 4*max(self.max_cost, curr_max_cost)
+
+
 
 class Trader(models.Model):
     market = models.ForeignKey(Market, on_delete=models.CASCADE)
@@ -236,6 +256,10 @@ class Trader(models.Model):
                 else:
                     # use production cost algorithm to set production cost of trader
                     self.prod_cost_algorithm()
+
+            # The trader might be joining the game i a round>0, so we add to his production cost
+            # what has been added to all other traders' production cost.
+            self.prod_cost += self.market.total_prod_cost_change
 
         super(Trader, self).save(*args, **kwargs)
 
@@ -307,7 +331,7 @@ class Trader(models.Model):
 
     def should_be_waiting(self):
         """ 
-        Return True if trader should be in wait mode, else False
+        Returns True if trader should be in wait mode, else False
         A trader should be in wait mode if and only if he has made a trade in the current round. 
         """
         should_be_waiting = Trade.objects.filter(
@@ -317,6 +341,12 @@ class Trader(models.Model):
 
 class Trade(models.Model):
     trader = models.ForeignKey(Trader, on_delete=models.CASCADE)
+
+    prod_cost = models.DecimalField(
+        null=True,
+        max_digits=12,
+        decimal_places=2,
+    )
 
     # w/ below settings, the unit_price can't set bigger than 9999999999.99
     # unit price can be null because 'forced trades' have no unit_price

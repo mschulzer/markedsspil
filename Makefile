@@ -46,7 +46,7 @@ test_helpers: ## run test suite in test_helpers.py
 	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_helpers.py
 
 test_models: ## run test suite in test_helpers.py
-	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_helpers.py
+	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_models.py
 
 test_factories: ## run test suite in test_helpers.py
 	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_factories.py

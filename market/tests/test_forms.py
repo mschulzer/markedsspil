@@ -29,6 +29,7 @@ def form_data():
         'theta': 3.4,
         'min_cost': 3,
         'max_cost': 6,
+        'cost_slope': 4.50,
         'max_rounds': 15,
         'endless': False
     }
@@ -198,7 +199,8 @@ def market_update_form_data():
             'endless': False,
             'initial_balance': 4500,
             'min_cost': 30,
-            'max_cost': 45
+            'max_cost': 45,
+            'cost_slope': 10.0
         }
 
 def test_valid_data(db, market_update_form_data):

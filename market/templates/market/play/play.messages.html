@@ -73,7 +73,7 @@
                     You are now ready for round <b>{{ market.round|add:1 }}</b> out of <b>{{ market.max_rounds }}</b> on the {{ market.product_name_singular }} market {{ market.market_id }}.
                 {% endif %}
                 <br><br>
-                Your fixed production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. You start balance
+                Your production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. You start balance
                 is <b>{{ trader.balance }}</b> kr.<br>
                 <!-- Oversæt til: "Dine faste produktionsomkostninger er xx kr. -->
 
@@ -85,7 +85,9 @@
                 {% else %}
                     out of <b>{{ market.max_rounds}}</b>.
                 {% endif %}
-                <br><br>
+                Your production cost per {{ market.product_name_singular }} is <b>{{ trader.prod_cost }}</b> kr. 
+                 <br><br>
+
             {% endif %}
         {% endif %}
 
@@ -99,7 +101,7 @@
 
                 Last round you sold <b>{{ lastRoundSold }}</b>
                 of the <b>{{ lastRoundUnits }}</b> {{ unitsPlural }} you produced.
-                You cold have sold <b>{{ lastRoundDemand }}</b> {{ unitsPlural }}.
+                You could have sold <b>{{ lastRoundDemand }}</b> {{ unitsPlural }}.
 
                 {% endblocktranslate %}
 
@@ -131,7 +133,6 @@
 
                 {% endblocktranslate %}
 
-                <br><br>
                 Your profit was
                 {% if trades.last.profit < 0 %}
                     <b style="color:red">

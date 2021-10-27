@@ -21,6 +21,20 @@ from .factories import MarketFactory, TradeFactory, TraderFactory
 ### Test TraderModel ###
 # Most relevant properties are currently being tested in the test_factories test suite
 
+
+def test_max_allowed_price(db):
+    market = MarketFactory(max_cost=100)
+    trader1 = TraderFactory(market=market, prod_cost=16)
+    trader2 = TraderFactory(market=market, prod_cost=26)
+    assert market.max_allowed_price() == 400
+
+
+def test_max_allowed_price(db):
+    market = MarketFactory(max_cost=12)
+    trader1 = TraderFactory(market=market, prod_cost=16)
+    assert market.max_allowed_price() == 64
+
+
 def test_prod_cost_algorithm(db):
     # We start out with a market and unused costs.
     market = MarketFactory()

@@ -9,7 +9,7 @@ class MarketForm(forms.ModelForm):
     class Meta:
         model = Market
 
-        fields = ['initial_balance', 'min_cost', 'max_cost', 'max_rounds', 'endless',
+        fields = ['initial_balance', 'min_cost', 'max_cost', 'cost_slope', 'max_rounds', 'endless',
                   'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural', 'allow_robots']
         help_texts = {
             'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')"),
@@ -20,6 +20,7 @@ class MarketForm(forms.ModelForm):
             'theta': _("How much should the demand of a single trader's product increase, when the market's average price goes up by one?"),
             'min_cost': _("What is the lowest production cost for one unit of the product?"),
             'max_cost': _("What is the highest production cost for one unit of the product?"),
+            'cost_slope': _("The amount you choose here will be added to each traders production cost each round (untill you change the value)"),
             'max_rounds': _(f"How many rounds should be played before the game ends? Choose number between 1 and {Market.UPPER_LIMIT_ON_MAX_ROUNDS}"),
             'endless': _("The game should go on for an indefinite number of rounds"),
             'allow_robots': _("Allow players to use trade algorithms")
@@ -33,6 +34,7 @@ class MarketForm(forms.ModelForm):
             'theta': _('Theta'),
             'min_cost': _('Min. prod. cost'),
             'max_cost': _('Max. prod. cost'),
+            'cost_slope': _('Change of production cost'),
             'endless': _('Endless'),
             'max_rounds': _('Max rounds'),
             'allow_robots': _('Allow robots')
@@ -170,10 +172,10 @@ class TradeForm(forms.ModelForm):
         if trader:
             # traders can set the price of a product up to 4 times market's maximal prod cost
             self.fields['unit_price'].widget.attrs['min'] = 0
-            self.fields['unit_price'].widget.attrs['max'] = 4 * \
-                trader.market.max_cost
+            self.fields['unit_price'].widget.attrs['max'] = trader.market.max_allowed_price(
+            )
 
-            # make sure, trader can't choose to produce an amount of units, he can't afford
+            # make sure, that the trader can't choose to produce an amount of units, he can't afford
             if trader.prod_cost > 0:
                 max_unit_amount = floor((trader.balance/trader.prod_cost))
             else:  # if prod_cost is 0 (this is currently not allowed to happen)

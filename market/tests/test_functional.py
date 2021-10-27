@@ -27,6 +27,7 @@ def test_round_0_one_forced_move(logged_in_user, client):
         'theta': 2.0,
         'min_cost': 11,
         'max_cost': 144,
+        'cost_slope': 1.0,
         'max_rounds': 15,
         'endless': False}
     client.post(
