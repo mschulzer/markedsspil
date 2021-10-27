@@ -23,7 +23,7 @@ class MarketFactory(factory.django.DjangoModelFactory):
     product_name_plural = 'baguettes'
     initial_balance = Decimal('5000.00')
     alpha = Decimal('105.0')
-    beta = Decimal('17.50')
+    beta = Decimal('17.5')
     theta = Decimal('14.5')
     min_cost = Decimal('8.00')
     max_cost = Decimal('8.00')
