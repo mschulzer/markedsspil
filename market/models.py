@@ -20,8 +20,8 @@ def new_unique_market_id():
 
 class Market(models.Model):
     market_id = models.CharField(max_length=16, primary_key=True)
-    product_name_singular = models.CharField(max_length=16)
-    product_name_plural = models.CharField(max_length=16)
+    product_name_singular = models.CharField(max_length=30)
+    product_name_plural = models.CharField(max_length=30)
 
     # set the upper bound for max_rounds on finite games
     UPPER_LIMIT_ON_MAX_ROUNDS = 100

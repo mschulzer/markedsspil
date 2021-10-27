@@ -6,6 +6,7 @@
 
 help:   # Show this help.
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
+	
 
 # ---------- Development ---------- #
 build:  ## Build or rebuild development docker image
@@ -25,6 +26,7 @@ migrations: # make migrations
 
 migrate: # make migrations
 	docker-compose -f docker-compose.dev.yml exec web python manage.py migrate
+
 
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
