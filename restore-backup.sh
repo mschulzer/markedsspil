@@ -1,5 +1,5 @@
 #!/bin/bash
-CONTAINER=markedsspillet_db_1
+CONTAINER=markedsspilletdk_db_1
 
 help() {
     echo "This command restores a backup of the Postgres database."
@@ -9,7 +9,7 @@ help() {
 }
 
 do_restore() {
-    source .env.dev
+    source .env.prod
     gzip -dc $FILENAME | docker exec --interactive $CONTAINER psql --username=$POSTGRES_USER --dbname=$POSTGRES_DB -W
 }
 
