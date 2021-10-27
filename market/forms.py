@@ -20,7 +20,7 @@ class MarketForm(forms.ModelForm):
             'theta': _("How much should the demand of a single trader's product increase, when the market's average price goes up by one?"),
             'min_cost': _("What is the lowest production cost for one unit of the product?"),
             'max_cost': _("What is the highest production cost for one unit of the product?"),
-            'cost_slope': _("The amount you choose here will be added to each traders production cost each round (untill you change the value)"),
+            'cost_slope': _("The amount you choose here will be added to each trader's production cost at the end of each round (untill you change the value)"),
             'max_rounds': _(f"How many rounds should be played before the game ends? Choose number between 1 and {Market.UPPER_LIMIT_ON_MAX_ROUNDS}"),
             'endless': _("The game should go on for an indefinite number of rounds"),
             'allow_robots': _("Allow players to use trade algorithms")

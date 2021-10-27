@@ -848,8 +848,8 @@ def test_finish_round_view_production_cost_positive_slope(client, db, logged_in_
     1) At the end of a round, each trader's production cost is changed by the market's production cost slope 
     2) The slope should be added to the markets total change counter
     """
-    market = MarketFactory(created_by=logged_in_user, cost_slope=10.0)
-    trader = TraderFactory(market=market, prod_cost=5.00)
+    market = MarketFactory(created_by=logged_in_user, cost_slope=Decimal('10.00'))
+    trader = TraderFactory(market=market, prod_cost=Decimal('5.00'))
     trade = UnProcessedTradeFactory(round=0, trader=trader)
 
     url = reverse('market:finish_round', args=(market.market_id,))
@@ -873,8 +873,9 @@ def test_finish_round_view_production_cost_negative_slope(client, db, logged_in_
     """
     Negative cost slope reducees prod cost
     """
-    market = MarketFactory(created_by=logged_in_user, cost_slope=-10.0)
-    trader = TraderFactory(market=market, prod_cost=50.00)
+    market = MarketFactory(created_by=logged_in_user,
+                           cost_slope=Decimal('-10.0'))
+    trader = TraderFactory(market=market, prod_cost=Decimal('50.00'))
     trade = UnProcessedTradeFactory(round=0, trader=trader)
 
     url = reverse('market:finish_round', args=(market.market_id,))
@@ -890,8 +891,9 @@ def test_finish_round_view_production_cost_cannot_get_negative(client, db, logge
     """
     Negative cost slope reducees prod cost
     """
-    market = MarketFactory(created_by=logged_in_user, cost_slope=-10.0)
-    trader = TraderFactory(market=market, prod_cost=5.00)
+    market = MarketFactory(created_by=logged_in_user,
+                           cost_slope=Decimal('-10.00'))
+    trader = TraderFactory(market=market, prod_cost=Decimal('5.00'))
     trade = UnProcessedTradeFactory(round=0, trader=trader)
 
     url = reverse('market:finish_round', args=(market.market_id,))
