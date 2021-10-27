@@ -26,18 +26,18 @@ class Market(models.Model):
     # set the upper bound for max_rounds on finite games
     UPPER_LIMIT_ON_MAX_ROUNDS = 100
 
-    # w/ below settings, alpha, beta and theta has to be positive numbers <= 9999999999.9999
+    # w/ below settings, alpha, beta and theta has to be positive numbers <= 9999999999999.9
     # When specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
     alpha = models.DecimalField(
         max_digits=14,
-        decimal_places=4,
-        validators=[MinValueValidator(Decimal('0.0000'))])
+        decimal_places=1,
+        validators=[MinValueValidator(Decimal('0.0'))])
 
-    beta = models.DecimalField(max_digits=14, decimal_places=4,
-                               validators=[MinValueValidator(Decimal('0.0000'))])
+    beta = models.DecimalField(max_digits=14, decimal_places=1,
+                               validators=[MinValueValidator(Decimal('0.0'))])
 
-    theta = models.DecimalField(max_digits=14, decimal_places=4,
-                                validators=[MinValueValidator(Decimal('0.0000'))])
+    theta = models.DecimalField(max_digits=14, decimal_places=1,
+                                validators=[MinValueValidator(Decimal('0.0'))])
 
     # w/ below settings, initial balance, min_cost and max_cost has to be <= 9999999999.99
     # min_cost and max_cost has to be positive

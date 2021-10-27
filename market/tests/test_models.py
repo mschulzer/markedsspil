@@ -1,3 +1,15 @@
+"""
+To run all tests:
+$ make test
+
+To run all tests in this file:
+$ make test_models
+
+To run only one or some tests:
+docker-compose -f docker-compose.dev.yml run web pytest -k <substring of test function names to run>
+"""
+
+
 from ..models import Trade, RoundStat, UnusedCosts, UsedCosts
 from decimal import Decimal
 from .factories import MarketFactory, TradeFactory, TraderFactory

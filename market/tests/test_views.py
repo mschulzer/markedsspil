@@ -3,7 +3,7 @@ To run all tests:
 $ make test
 
 To run all tests in this file:
-$ docker-compose run web pytest market/tests/test_views.py
+$ make test_views
 
 To run only one or some tests:
 docker-compose -f docker-compose.dev.yml run web pytest -k <substring of test function names to run>
@@ -187,9 +187,9 @@ def create_market_data():
         'product_name_singular': 'baguettes',
         'product_name_plural': 'baguettes',
         'initial_balance': 5000,
-        'alpha': 21.4024,
-        'beta': 44.2123,
-        'theta': 2.0105,
+        'alpha': 21.4,
+        'beta': 44.2,
+        'theta': 2.0,
         'min_cost': 11,
         'max_cost': 144,
         'max_rounds': 15,
@@ -257,19 +257,6 @@ def test_create_market_no_market_is_created_when_alpha_not_defined_and_error_mgs
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
     assertContains(response, "This field is required.")
-
-
-def test_create_market_error_mgs_shown_to_user_when_alpha_bigger_than_9999999999(client, logged_in_user, create_market_data):
-    """ 
-    In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 9999999999.9999
-    Choosing alpha = 10000000000 in the create form should should create an understandable message to the user,
-    not a database-error. 
-    """
-    create_market_data['alpha'] = 10000000000
-    response = client.post(reverse('market:create_market'), create_market_data)
-    assert response.status_code == 200
-    assertContains(
-        response, "Ensure that there are no more than 10 digits before the decimal point.")
 
 
 def test_create_market_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(client, logged_in_user, create_market_data):
@@ -718,7 +705,7 @@ def test_market_edit_invalid_post_data_does_not_update_market(client, logged_in_
     """
     alpha is negative, so form is invalid. No values should be updated in this case
     """
-    market = MarketFactory(created_by=logged_in_user, alpha=105.55)
+    market = MarketFactory(created_by=logged_in_user, alpha=105.5)
     client.login(username='somename', password='testpass123')
 
     data = {'product_name_singular': 'surdejsbolle',
@@ -731,7 +718,7 @@ def test_market_edit_invalid_post_data_does_not_update_market(client, logged_in_
 
     market.refresh_from_db()
     # alpha has not changed
-    assert (float(market.alpha) == 105.55)
+    assert (float(market.alpha) == 105.5)
     # product name has not changed
     assert (market.product_name_singular == 'baguette')
     assert (response.status_code == 200)  # return template
@@ -851,7 +838,6 @@ def test_declare_bankruptcy(client, db):
     assert (response.status_code == 302)
     assert (response['Location'] == reverse(
         'market:play', args=(trader.market.market_id,)))
-
 
 
 #  Test finish_round view

@@ -1,7 +1,14 @@
 """
-To only run the tests in this file:
-$ docker-compose run web pytest market/tests/test_forms.py
+To run all tests:
+$ make test
+
+To run all tests in this file:
+$ make test_forms
+
+To run only one or some tests:
+docker-compose -f docker-compose.dev.yml run web pytest -k <substring of test function names to run>
 """
+
 # Create your tests here.
 from django.test import TestCase
 from ..models import Market, Trader, Trade
@@ -14,18 +21,18 @@ import pytest
 @pytest.fixture
 def form_data():
     return {
-            'product_name_singular':'baguette',
-            'product_name_plural':'baguettes',
-            'initial_balance':3000, 
-            'alpha': 12.1234, 
-            'beta': 5.0334,
-            'theta': 3.4432, 
-            'min_cost': 3, 
-            'max_cost': 6,
-            'max_rounds': 15,
-            'endless': False
-        }
-    
+        'product_name_singular': 'baguette',
+        'product_name_plural': 'baguettes',
+        'initial_balance': 3000,
+        'alpha': 12.1,
+        'beta': 5.0,
+        'theta': 3.4,
+        'min_cost': 3,
+        'max_cost': 6,
+        'max_rounds': 15,
+        'endless': False
+    }
+
 
 def test_market_created(db, form_data):
     """ Submitting the market form creates a market."""
@@ -34,30 +41,24 @@ def test_market_created(db, form_data):
     form.save()
     assert Market.objects.filter(min_cost=3).count() == 1
 
-def test_alpha_with_5_decimalplaces_is_invalid(form_data):
-    """ alpha, beta and theta can have at most 4 decimalplaces """
-    form_data['alpha']= 12.12345
+
+
+def test_alpha_with_2_decimalplaces_is_invalid(form_data):
+    """ alpha, beta and theta can have at most 1 decimalplaces """
+    form_data['alpha'] = 12.12
     form = MarketForm(data=form_data)
 
     assert not form.is_valid()
     assert 'alpha' in form.errors
-    assert 'Ensure that there are no more than 4 decimal places' in str(form.errors)
+    assert 'Ensure that there are no more than 1 decimal place' in str(
+        form.errors)
     assert not ('beta' in form.errors)
 
-def test_alpha_with_bigger_than_9999999999_is_invalid(form_data):
-    """ alpha, beta and theta can't be bigger than 9999999999.9999 """
-    form_data['alpha'] = 108880000000000
-    form = MarketForm(data = form_data)
-
-    assert not form.is_valid()
-    assert 'alpha' in form.errors
-    assert not ('beta' in form.errors)
-    assert 'Ensure that there are no more than 14 digits in total.' in str(form.errors)
 
 def test_min_cost_and_max_cost_cant_be_negative(form_data):
     """ minimal and maximal production cost can't be negative """
     form_data['min_cost'] = -3
-    form_data['max_cost'] = -2.34
+    form_data['max_cost'] = -2.3
     form = MarketForm(data=form_data)
 
     assert not form.is_valid()
@@ -93,7 +94,7 @@ def test_min_cost_bigger_than_max_cost_is_invalid(form_data):
 
 def test_theta_bigger_than_beta_is_invalid(form_data):
     """ form is invalid id theta >= beta """
-    form_data['theta'] = 7  # beta = 5.033
+    form_data['theta'] = 7  # beta = 5.0
     form = MarketForm(data=form_data)
     assert not form.is_valid()
     assert "Beta must be bigger than theta" in str(
@@ -123,7 +124,7 @@ def test_blank_field_is_invalid():
 
 def test_alpha_negative_is_invalid(form_data):
     """ alpha can't be negative """
-    form_data['alpha'] = -5.4332
+    form_data['alpha'] = -5.4
     form = MarketForm(data=form_data)
 
     assert not form.is_valid()
@@ -132,7 +133,7 @@ def test_alpha_negative_is_invalid(form_data):
 
 def test_beta_negative_is_invalid(form_data):
     """ beta can't be negative """
-    form_data['beta'] = -3.03244
+    form_data['beta'] = -3.0
     form = MarketForm(data=form_data)
 
     assert not form.is_valid()
@@ -190,9 +191,9 @@ def market_update_form_data():
     return {
             'product_name_singular': 'ost',
             'product_name_plural': 'baguettes',
-            'alpha': 12.1234,
-            'beta': 5.0334,
-            'theta': 3.4432,
+            'alpha': 12.1,
+            'beta': 5.0,
+            'theta': 3.4,
             'max_rounds': 15,
             'endless': False,
             'initial_balance': 4500,
