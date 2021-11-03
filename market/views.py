@@ -277,7 +277,7 @@ def finish_round(request, market_id):
             trader.save()
 
     # Update total production cost change
-    market.total_prod_cost_change += market.cost_slope
+    market.accum_cost_change += market.cost_slope
 
     # Update market round
     market.round += 1

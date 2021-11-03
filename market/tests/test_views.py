@@ -860,13 +860,13 @@ def test_finish_round_view_production_cost_positive_slope(client, db, logged_in_
     trade = UnProcessedTradeFactory(round=1, trader=trader)
 
     assert (trader.prod_cost == 15.00)
-    assert market.total_prod_cost_change == 10.00
+    assert market.accum_cost_change == 10.00
 
     response = client.post(url)
     trader.refresh_from_db()
     market.refresh_from_db()
     assert (trader.prod_cost == 25.00)
-    assert market.total_prod_cost_change == 20.00
+    assert market.accum_cost_change == 20.00
 
 
 def test_finish_round_view_production_cost_negative_slope(client, db, logged_in_user):
@@ -884,7 +884,7 @@ def test_finish_round_view_production_cost_negative_slope(client, db, logged_in_
     market.refresh_from_db()
 
     assert (trader.prod_cost == 40.00)
-    assert market.total_prod_cost_change == -10.00
+    assert market.accum_cost_change == -10.00
 
 
 def test_finish_round_view_production_cost_cannot_get_negative(client, db, logged_in_user):

@@ -55,8 +55,8 @@ class Market(models.Model):
     cost_slope = models.DecimalField(
         max_digits=14, decimal_places=2, default=Decimal('0.00'))
 
-    # Total amount added to the production costs so far
-    total_prod_cost_change = models.DecimalField(
+    # Accumulated amount added to the production costs so far
+    accum_cost_change = models.DecimalField(
         max_digits=14, decimal_places=2, default=Decimal('0.00'))
 
     round = models.IntegerField(default=0)
@@ -191,12 +191,7 @@ class Market(models.Model):
         """
         Returns the highest price allowed in current round
         """
-        curr_max_cost = 0
-        for trader in self.all_traders():
-            if trader.prod_cost > curr_max_cost:
-                curr_max_cost = trader.prod_cost
-
-        return 4*max(self.max_cost, curr_max_cost)
+        return 4 * (self.max_cost + self.accum_cost_change)
 
 
 
@@ -259,7 +254,7 @@ class Trader(models.Model):
 
             # The trader might be joining the game i a round>0, so we add to his production cost
             # what has been added to all other traders' production cost.
-            self.prod_cost += self.market.total_prod_cost_change
+            self.prod_cost += self.market.accum_cost_change
 
         super(Trader, self).save(*args, **kwargs)
 

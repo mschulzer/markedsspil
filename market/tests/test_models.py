@@ -30,9 +30,9 @@ def test_max_allowed_price(db):
 
 
 def test_max_allowed_price(db):
-    market = MarketFactory(max_cost=12)
-    trader1 = TraderFactory(market=market, prod_cost=16)
-    assert market.max_allowed_price() == 64
+    market = MarketFactory(max_cost=12, accum_cost_change=50)
+
+    assert market.max_allowed_price() == (12 + 50)*4
 
 
 def test_prod_cost_algorithm(db):
