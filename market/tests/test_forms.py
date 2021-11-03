@@ -46,12 +46,12 @@ def test_market_created(db, form_data):
 
 def test_alpha_with_2_decimalplaces_is_invalid(form_data):
     """ alpha, beta and theta can have at most 1 decimalplaces """
-    form_data['alpha'] = 12.12
+    form_data['alpha'] = 12.123
     form = MarketForm(data=form_data)
 
     assert not form.is_valid()
     assert 'alpha' in form.errors
-    assert 'Ensure that there are no more than 1 decimal place' in str(
+    assert 'Ensure that there are no more than 2 decimal place' in str(
         form.errors)
     assert not ('beta' in form.errors)
 

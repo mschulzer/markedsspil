@@ -30,14 +30,14 @@ class Market(models.Model):
     # When specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
     alpha = models.DecimalField(
         max_digits=14,
-        decimal_places=1,
-        validators=[MinValueValidator(Decimal('0.0'))])
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))])
 
-    beta = models.DecimalField(max_digits=14, decimal_places=1,
-                               validators=[MinValueValidator(Decimal('0.0'))])
+    beta = models.DecimalField(max_digits=14, decimal_places=2,
+                               validators=[MinValueValidator(Decimal('0.00'))])
 
-    theta = models.DecimalField(max_digits=14, decimal_places=1,
-                                validators=[MinValueValidator(Decimal('0.0'))])
+    theta = models.DecimalField(max_digits=14, decimal_places=2,
+                                validators=[MinValueValidator(Decimal('0.00'))])
 
     # w/ below settings, initial balance, min_cost and max_cost has to be <= 9999999999.99
     # min_cost and max_cost has to be positive
