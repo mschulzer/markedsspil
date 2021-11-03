@@ -27,6 +27,9 @@ migrations: # make migrations
 migrate: # make migrations
 	docker-compose -f docker-compose.dev.yml exec web python manage.py migrate
 
+dev_superuser: # make development superuser 
+	docker-compose -f docker-compose.dev.yml exec web python manage.py createsuperuser
+
 
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
