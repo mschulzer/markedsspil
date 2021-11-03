@@ -1,23 +1,21 @@
 {% extends "market/base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
-{% load i18n %}
-
-{% block title %}{% translate 'Create a new market' %}{% endblock %}
+{% block title %}Opret nyt marked{% endblock %}
 
 {% block content %}
 
-<h3 class="mt-5">{% translate 'Create a new market' %}</h3>
-<h6 class="mb-3">{% translate 'Choose a predefined scenario, or create a market with custom settings.' %}</h6>
+<h3 class="mt-5">Opret et nyt marked</h3>
+<h6 class="mb-3">Vælg et prædefineret markedsscenarie eller opret et marked med dine egne indstillinger.</h6>
 
 <div class="card mb-3">
 	<div class="card-header">
-		{% translate 'Predefined scenarios'%}
+		Markedsscenarier
 	</div>
 	
 	<div class="card-body">
 		<form id='market_radio_form'>
-			<h5 class="card-title">{% translate 'Select scenario' %}<span class="text-muted text" style="font-size:18px"> (view/edit settings below)</span></h5>
+			<h5 class="card-title">Vælg markedsscenarie<span class="text-muted text" style="font-size:18px"> (se/rediger indstillingerne nedenfor)</span></h5>
 			<div class="pl-3 mb-2">
 				{% for scenario in scenarios %}
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
@@ -34,7 +32,7 @@
     <div class="card-header" id="headingOne">
       <h5 class="mb-0">
         <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-        	Market Details
+        	Markedsdetaljer
         </button>
       </h5>
     </div>
@@ -49,7 +47,7 @@
 </div>
 
 <div class="d-flex justify-content-center">
-	<input onclick="submit_form()" value="{% translate "Create" %}" class="btn btn-primary mt-3 mb-4" form="create-market-form">
+	<input onclick="submit_form()" value="Opret" class="btn btn-primary mt-3 mb-4" form="create-market-form">
 </div>
 
 

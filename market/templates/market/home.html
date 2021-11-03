@@ -1,29 +1,25 @@
 {% extends "market/base.html" %}
 {% load crispy_forms_tags %}
-{% load i18n %}
 
-{% block title %}{% translate 'Home' %}{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 
-<h4 class="mb-4">{% translate 'Welcome to the Market Simulator' %}</h4>
+<h4 class="mb-4">Velkommen til Markedsspillet!</h4>
 
 <div class="row">
     <!-- Col with options for "traders" -->
     <div class="col col-12 col-lg-6">
         <div class="card">
-            <div class="card-header">
-                {% translate 'Join a market' %}
-            </div>
+            <div class="card-header">Deltag i et marked</div>
             
             <div class="card-body container">
             
                 {% if request.session.market_id and not request.session.removed_from_market %}
                     <!-- Warn users who have already joined a market -->
                     <div class="alert alert-warning">
-                        Hi {{ request.session.username }}! You've already joined the {{ market.product_name_plural}} market {{ market.market_id }}.
-                        If you submit the form below, you will permanenly lose access to this market. 
-                        <a href="{% url 'market:play' market.market_id %}">Return to your market </a>
+                        Hej {{ request.session.username }}! Du deltager allerede i {{ market.product_name_singular}}-markedet  <a href="{% url 'market:play' market.market_id %}">{{ market.market_id }}</a>.
+                        Hvis du indsender formularen nedenfor, mister du permanent adgang til dette marked.                      
                     </div>
                 {% endif %} 
                     <!-- Content if client has not joined a market -->
@@ -32,7 +28,7 @@
                     <form action="{% url 'market:join_market' %}" method="post">{% csrf_token %}
                         {{ form|crispy }}
                         <div class="d-flex justify-content-center">
-                            <input type="submit" value="{% translate "Join market" %}" class="btn btn-primary my-2">
+                            <input type="submit" value="Deltag i marked" class="btn btn-primary my-2">
                         </div>
                     </form>
             </div>
@@ -43,45 +39,46 @@
     <div class="col col-12 col-lg-6 mt-5 mb-3 my-lg-0">
         <div class="card mb-4">
             <div class="card-header">
-                {% translate 'Host a market' %}
+                Opret et nyt marked
             </div>
             <div class="card-body container">
                 {% if user.is_authenticated %}     
 
-                <p>Hosts are game masters who create and control markets. Do you want to host a new market?</p>
+                <p>Når du opretter et nyt marked, får du automatisk rollen som 'game master'. Ønsker du at skabe et nyt marked?</p>
                 <div class="d-flex justify-content-center p">
                     <a class="pr-2" href="{% url 'market:create_market' %}">
                         <button class="btn btn-primary">
-                            {% translate 'Create a new market' %}      
+                            Opret nyt marked
                         </button>
                     </a>
                 </div>
-                <p class="mt-3">Perhaps you have created some markets earlier? You have the option to revisit those markets too:</p>
+                <p class="mt-3">Her kan du genbesøge markeder, du har oprettet tidligere:</p>
                 <div class="d-flex justify-content-center p">
                     <a class="pl-2 mb-3" href="{% url 'market:my_markets' %}">
                         <button class="btn btn-primary">
-                            {% translate 'My markets' %}      
+                            Mine markeder
                         </button>
                     </a>
                 </div>
 
                 {% else %}
-                <p class="mt-2">Hosts are game masters who create and control markets. Do you want to host a new market? Or revisit a market you created earlier?</p>                            
+                <p class="mt-2">Når du opretter et nyt marked, får du automatisk rollen som 'game master'. Ønsker du at oprette et nyt marked?
+                Eller genbesøge et marked, du oprettede tidligere?</p>                            
                 <div class="d-flex justify-content-center p">
                     <a class="mr-2" href="{% url 'account_login' %}">
                         <button class="btn btn-primary">
-                                {% translate 'Log in' %}      
+                                Log på      
                         </button>
                     </a>
                 </div>
     
-                <p class="mt-4">If you do not yet have an account, you can create one here:</p>                            
+                <p class="mt-4">Hvis du ikke har en konto, kan du oprette en her: </p>                            
 
                 <div class="d-flex mb-2 justify-content-center">
             
                     <a class="ml-2" href="{% url 'account_signup' %}">
                         <button class="btn btn-primary">
-                            {% translate 'Create account' %}      
+                            Opret ny konto      
                         </button>
                     </a>
                 </div>

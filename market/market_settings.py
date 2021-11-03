@@ -1,15 +1,13 @@
-from django.utils.translation import gettext as _
-
 # List of predefined market scenarios.
 # Scenarios added to the list will get automatically shown as options in the create market interface.
 # The first scenario in the list will be selected by default.
 
 SCENARIOS = [
     {
-        "title": _("Scenario 1: All traders have equal costs"),
-        "description": _("In this scenario, all traders have the same unit production costs, so the traders compete on equal terms. This is a good place to start."),
+        "title": "Scenario 1: Konkurrence på lige vilkår",
+        "description": "I dette scenarie har alle forhandlere samme produktionsomkostninger pr. enhed. Alle konkurrerer derfor på lige vilkår. Dette er et godt scenarie at begynde med.",
         "product_name_singular": "baguette",
-        "product_name_plural": "baguettes",
+        "product_name_plural": "baguetter",
         "initial_balance": 5000,
         "alpha": 105,
         "beta": 17.5,
@@ -21,10 +19,10 @@ SCENARIOS = [
         "allow_robots": False
     },
     {
-        "title": _("Scenario 2: Some traders have an advantage"),
-        "description": _("In this scenario, the traders are assigned different production costs at random, giving some traders an advantage over others."),
+        "title": "Scenario 2: Nogle forhandlere har en fordel",
+        "description": "I dette scenarie tildeles forhandlerne forskellige produktionsomkostninger pr. enhed ved spillets start, hvilket giver nogle en konkurrencefordel.",
         "product_name_singular": "baguette",
-        "product_name_plural": "baguettes",
+        "product_name_plural": "baguetter",
         "initial_balance": 5000,
         "alpha": 105,
         "beta": 17.5,
@@ -37,8 +35,8 @@ SCENARIOS = [
 
     },
     {
-        "title": _("Custom scenario"),
-        "description": _("Create a market with parameters of your own choice."),
+        "title": "Brugerdefineret scenarie",
+        "description": "Skab et marked med parametre, du vælger helt selv.",
         "product_name_singular": "",
         "product_name_plural": "",
         "initial_balance": "",

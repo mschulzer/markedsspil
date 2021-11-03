@@ -1,7 +1,5 @@
 {% extends "market/base.html" %}
-{% load i18n %}
-
-{% block title %}{% translate 'Monitor' %}{% endblock %}
+{% block title %}Oversigt{% endblock %}
 {% load custom_tags %}
 
 {% block content %}
@@ -27,11 +25,11 @@
 <div class="mb-3">
     {% if not market.game_over %}
     <a class="btn btn-primary" data-toggle="collapse" href="#collapseJoin" role="button" aria-expanded="false" aria-controls="collapseJoin">
-        Invite Players
+        Inviter spillere
     </a>
     {% endif %}
     <a class="btn btn-primary ml-3" data-toggle="collapse" href="#collapseDetails" role="button" aria-expanded="false" aria-controls="collapseDetails">
-        Market Details
+        Markedets indstillinger
     </a>
 </div>
 
@@ -43,7 +41,7 @@
         <div class="d-flex">
             <input class="form-control" type="text" 
                 value="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.get_host }}{% url 'market:home' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
-            <button class="btn btn-primary btn-sm" onclick="copy_join_link()">{% translate 'Copy' %}</button>
+            <button class="btn btn-primary btn-sm" onclick="copy_join_link()">Kopier</button>
         </div>
     </div>
 </div>
@@ -52,35 +50,38 @@
 <div class="collapse my-1" id="collapseDetails">
     <div class="card card-body">
         <p>
-            In this <b>{{ market.product_name_singular}}</b> market, all traders start out with an initial balance of <b>{{ market.initial_balance }}</b> kr. 
+            I dette <b>{{ market.product_name_singular}}</b>-market har alle spillere en startsaldo på <b>{{ market.initial_balance }}</b> kr. 
             {% if market.min_cost < market.max_cost %}
-                When joining the market, the traders are assigned different unit production costs at random, giving some traders an advantage over others. 
-                The trader's production costs varies between a minimum of <b>{{ market.min_cost }}</b> kr. and maximum of <b>{{ market.max_cost }}</b> kr. pr unit. 
+                Når spillerne tilslutter sig markedet, tildeles de tilfældigt forskellige produktionsomkostninger pr. enhed, hvilket skaber ulige konkurrencevillår, der giver nogle spillere en fordel. 
+                Spillernes produktionsomkostninger ligger mellem <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. enhed. 
             {% else %}
-                All traders have the same production costs: <b>{{ market.min_cost}}</b> kr. per {{ market.product_name_singular }}, so no traders have a prior advantage over others.
+                Alle spillere har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, så alle konkurrerer på lige vilkår. 
             {% endif %}
             {% if market.endless %}
-                The game is <b>endless</b>, so it can go on for an indefinite number of rounds.
+                Spillet er indstillet til at være <b>uendeligt</b>, so det kan ikke fortsætte i så mange runder, I har lyst til. 
             {% else %}
-                The game will end after <b>{{ market.max_rounds }}</b> rounds.
+                Spillet er indstillet til at stoppe efter <b>{{ market.max_rounds }}</b> runder.
             {% endif %} 
             <br><br>
-            Should all traders decide to give away their {{ market.product_name_plural}} for free, each trader will experience a demand for 
-            <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. 
-            When a trader raises her unit price by 1 kr, the demand for her {{ market.product_name_plural }} will 
-            decrease by <b>{{ market.beta }}</b> {{ market.product_name_plural }}, if the market average price remains unchanged. 
-            When the market average goes up by 1 kr, the demand for a trader's product will 
-            increase by <b>{{ market.theta }}</b> {{ market.product_name_plural }}, if his unit price remains unchanged.             
+            Den grundlæggende efterspørgsmål på markedet er sat til <b>{{ market.alpha }}</b>. Dette betyder, at hvis alle spillere sætter prisen til 0 kr., så vil de hver især opleve en efterspørgsmål på 
+            <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. <br><br>
+
+            Prisfølsomheden er sat til <b>{{ market.beta }}</b>. Dette betyder, at en spiller vil opleve et fald i efterspørgsel på <b>{{ market.beta }}</b> {{ market.product_name_plural }}, hvis spilleren 
+            hæver prisen med 1 kr. pr. {{ market.product_name_singular }} i en situation, hvor markedets gennemsnitspris forbliver uændret. Omvendt vil en spiller opleve en stigning i efterspørgsel på <b>{{ market.beta }}</b> 
+            {{ market.product_name_plural }}, hvis spilleren 
+            sænker prisen med 1 kr. pr. {{ market.product_name_singular }} i en situation, hvor markedets gennemsnitspris forbliver uændret.
             
+            
+            <br><br>
+            Konkurrenceforholdet er sat til <b>{{ market.theta }}</b>. Dette betyder, at en spiller vil opleve en stigning på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis 
+            spillerens pris forbliver uændret i en situation, hvor markedets gennemsnitspris stiger med 1 kr pr. {{ market.product_name_singular }}. Omvendt vil en spiller opleve et fald på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis spillerens
+            pris forbliver uændret i en situation, hvor markedets gennemsnitspris falder med 1 kr {{ market.product_name_singular }}.
         </p>
         {% if request.user == market.created_by %}
-            <a href="{% url 'market:market_edit' market.market_id %}">{% translate 'Edit details' %}</a> 
+            <a href="{% url 'market:market_edit' market.market_id %}">Rediger detaljer</a> 
         {% endif %}
     </div>
 </div>
-
-{% comment %} <a class="btn btn-primary mb-5" href="{% url 'market:market_edit' market.market_id %}">{% translate 'Edit market' %}</a> {% endcomment %}
-{% comment %} <h3>{% blocktranslate with round=market.round %}Trader Status Round #{{ round }}{% endblocktranslate %}</h3> {% endcomment %}
 
 <!-- Trader Status -->
 <h4 class="mt-5">
@@ -117,24 +118,20 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">{% translate 'Confirm next round' %}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Bekræft næste runde</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    {% blocktranslate %}
-                    Not all traders in your market are ready for next round.
-                    <br><br>
-                    If you choose to proceed now, these players will enter next round without having traded and with unchanged balance.
-                    <br><br>
-                    Proceed to next round?
-                    {% endblocktranslate %}
+                    Det er ikke alle spillere, som er klar til næste runde. Hvis du vælger at fortætte nu, så vil disse spillere 
+                    gå til næste runde uden at have handlet og med uændret saldo. 
+                    Ønsker du at fortsætte til næste runde?
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fortryd</button>
                     <button type="button" class="btn btn-danger" data-dismiss="modal"
-                        onclick="next_round()">{% translate 'Proceed' %}</button>
+                        onclick="next_round()">Fortsæt</button>
                 </div>
             </div>
         </div>
@@ -152,7 +149,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="removeTraderModalLabel">{% translate 'Remove trader' %}</h5>
+                    <h5 class="modal-title" id="removeTraderModalLabel">Fjern spiller</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -160,10 +157,10 @@
                 <div class="modal-body" id="remove-trader-modal-body">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fortryd</button>
                     <button type="button" class="btn btn-danger" data-dismiss="modal"
                         onclick="document.getElementById('remove_trader_form').submit()">
-                        {% translate 'Proceed' %}
+                        Fortsæt
                     </button>
                 </div>
             </div>
@@ -430,7 +427,7 @@
             scales: {
                 y: {
                     title:{ 
-                        text: 'Balance (kr.)',
+                        text: 'Saldo (kr.)',
                         display: reponsive_display_y_axis_title()
                     },
                     ticks: {
@@ -440,7 +437,7 @@
                 },
                 x: {
                     title:{ 
-                        text: 'Round',
+                        text: 'Runde',
                         display: true
                     }
                 },            
@@ -448,7 +445,7 @@
             plugins: {
                 title: {
                     display: false,
-                    text: "{% translate 'Balance' %}",
+                    text: "Saldo",
                 }
             }
         }     
@@ -466,7 +463,7 @@
             scales: {
                 y: {
                     title:{ 
-                        text: 'Unit price (kr.)',
+                        text: 'Pris pr. enhed (kr.)',
                         display: reponsive_display_y_axis_title()
                     },
                     ticks: {
@@ -484,7 +481,7 @@
             plugins: {
                 title: {
                     display: false,
-                    text: "{% translate 'Unit price' %}",
+                    text: "Enhedspris",
                 }
             }
         }     
@@ -503,7 +500,7 @@
             scales: {
                 y: {
                     title:{ 
-                        text: 'Number of units',
+                        text: 'Antal enheder',
                         display: reponsive_display_y_axis_title()
                     },
                     suggestedMax: 100,
@@ -511,7 +508,7 @@
                 },
                 x: {
                     title:{ 
-                        text: 'Round',
+                        text: 'Runde',
                         display: true
                     }
                 },         
@@ -519,7 +516,7 @@
             plugins: {
                 title: {
                     display: false,
-                    text: "{% translate 'Units produced' %}",
+                    text: "Antal enheder produceret",
                 }
             }
         }

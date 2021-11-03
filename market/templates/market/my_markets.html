@@ -1,11 +1,11 @@
 {% extends "market/base.html" %}
 {% load i18n %}
 
-{% block title %}{% translate 'My markets' %}{% endblock %}
+{% block title %}Mine markeder{% endblock %}
 {% block content %}
 
 <h3 class="mt-5 mb-3">
-    {% translate 'Your markets' %}
+    Dine markeder
 </h3>
 
 {% if markets %}
@@ -15,12 +15,12 @@
 
             <thead>
                 <tr>
-                    <th>{% translate 'Market' %}</th>
-                    <th>{% translate 'Created at' %}</th>
-                    <th>{% translate 'Number of traders' %}</th>
-                    <th>{% translate 'Progression' %}</th>
-                    <th>{% translate 'Settings' %}</th>
-                    <th>{% translate 'Delete market' %}</th>
+                    <th>Marked</th>
+                    <th>Oprettet</th>
+                    <th>Antal spillere</th>
+                    <th>Status</th>
+                    <th>Instillinger</th>
+                    <th>Slet marked</th>
                 </tr>
             </thead>
             {% for market in markets %}
@@ -43,20 +43,13 @@
                         {% endif %}
                     </td>
                     <td>
-                        Product: {{ market.product_name_plural }}<br>
-                        {% translate 'Initial balance' %}: {{ market.initial_balance }}<br>
-                        Alpha: {{ market.alpha }}<br>
+                        Produkt: {{ market.product_name_plural }}<br>
+                        Startsaldo: {{ market.initial_balance }}<br>
+                        Alfa: {{ market.alpha }}<br>
                         Beta: {{ market.beta }}<br>
                         Theta: {{ market.theta }}<br>
-                        Min cost: {{ market.min_cost }}<br>
-                        Max cost: {{ market.max_cost }}<br>
-                        Cost slope: {{ market.cost_slope }}<br>
-                        Robots:   
-                            {% if market.allow_robots %}
-                                Yes
-                            {% else %}
-                                No
-                            {% endif %}
+                        Min. cost: {{ market.min_cost }}<br>
+                        Maks. cost: {{ market.max_cost }}<br>
                     </td>          
                     <td>  
                         <button class="btn btn-warning" onclick="prepare_delete('{{ market.market_id }}')">

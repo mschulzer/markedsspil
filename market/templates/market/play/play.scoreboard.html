@@ -1,7 +1,6 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load static%}
-{% load i18n %}
 {% load sekizai_tags %}
 
     <!-- ScoreBoard -->
@@ -9,11 +8,11 @@
         <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">{% translate 'Name' %}</th>
+                <th scope="col">Navn</th>
                 {% if market.game_over %}
-                <th scope="col">{% translate 'Final balance' %}</th>
+                <th scope="col">Endelig saldo</th>
                 {% else %}
-                <th scope="col">{% translate 'Balance' %}</th>
+                <th scope="col">Saldo</th>
                 {% endif %}
             </tr>
         </thead>
