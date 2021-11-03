@@ -4,7 +4,6 @@ __pycache__/
 .vscode
 .DS_Store
 .env.prod
-easy
 /static/
 *.mo
 /backups/
