@@ -50,18 +50,14 @@
 <div class="collapse my-1" id="collapseDetails">
     <div class="card card-body">
         <p>
-            I dette <b>{{ market.product_name_singular}}</b>-market har alle spillere en startsaldo på <b>{{ market.initial_balance }}</b> kr. 
+            I dette <b>{{ market.product_name_singular}}</b>-market har alle producenter en startsaldo på <b>{{ market.initial_balance }}</b> kr. 
             {% if market.min_cost < market.max_cost %}
-                Når spillerne tilslutter sig markedet, tildeles de tilfældigt forskellige produktionsomkostninger pr. enhed, hvilket skaber ulige konkurrencevillår, der giver nogle spillere en fordel. 
-                Spillernes produktionsomkostninger ligger mellem <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. enhed. 
+                 tilslutter sig markedet, tildeles de tilfældigt forskellige produktionsomkostninger pr. enhed, hvilket skaber ulige konkurrencevillår, der giver nogle spillere en fordel. 
+                PRoducenternes produktionsomkostninger ligger mellem <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. enhed. 
             {% else %}
-                Alle spillere har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, så alle konkurrerer på lige vilkår. 
+                Alle producenter har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, så alle konkurrerer på lige vilkår. 
             {% endif %}
-            {% if market.endless %}
-                Spillet er indstillet til at være <b>uendeligt</b>, so det kan ikke fortsætte i så mange runder, I har lyst til. 
-            {% else %}
-                Spillet er indstillet til at stoppe efter <b>{{ market.max_rounds }}</b> runder.
-            {% endif %} 
+           
             <br><br>
             Den grundlæggende efterspørgsmål på markedet er sat til <b>{{ market.alpha }}</b>. Dette betyder, at hvis alle spillere sætter prisen til 0 kr., så vil de hver især opleve en efterspørgsmål på 
             <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. <br><br>
@@ -76,6 +72,14 @@
             Konkurrenceforholdet er sat til <b>{{ market.theta }}</b>. Dette betyder, at en spiller vil opleve en stigning på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis 
             spillerens pris forbliver uændret i en situation, hvor markedets gennemsnitspris stiger med 1 kr pr. {{ market.product_name_singular }}. Omvendt vil en spiller opleve et fald på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis spillerens
             pris forbliver uændret i en situation, hvor markedets gennemsnitspris falder med 1 kr {{ market.product_name_singular }}.
+            
+            <br><br>
+            {% if market.endless %}
+                Spillet er indstillet til at være <b>uendeligt</b>, so det kan ikke fortsætte i så mange runder, I har lyst til. 
+            {% else %}
+                Spillet er indstillet til at stoppe efter <b>{{ market.max_rounds }}</b> runder.
+            {% endif %} 
+        
         </p>
         {% if request.user == market.created_by %}
             <a href="{% url 'market:market_edit' market.market_id %}">Rediger detaljer</a> 

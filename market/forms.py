@@ -10,28 +10,32 @@ class MarketForm(forms.ModelForm):
         model = Market
 
         fields = ['initial_balance', 'min_cost', 'max_cost', 'cost_slope', 'max_rounds', 'endless',
-                  'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural', 'allow_robots']
+                  'alpha', 'theta', 'gamma', 'product_name_singular', 'product_name_plural', 'allow_robots']
         help_texts = {
             'product_name_singular': "Navnet på produktet i ental (f.eks. 'baguette')",
             'product_name_plural': "Navnet på produktet i flertal (f.eks. 'baguetter')",
             'initial_balance': "Hvor mange penge skal deltagerne starte med?",
-            'alpha': "Hvor stor skal efterspørgslen på produktet være, hvis alle forhandlere sætter prisen til 0 kr?",
-            'beta': "Hvor meget skal efterspørgslen på en forhandlers produkt mindskes, hvis forhandleren øger enhedsprisen med 1 kr?",
-            'theta': "Hvor meget skal efterspørgslen på en forhandlers produkt øges, hvis den gennemsnitlige markedspris stiger med 1 kr?",
-            'min_cost': "Hvad er den laveste produktionsomkostning pr. enhed en forhandler kan tildeles?",
-            'max_cost': "Hvad er den højeste produktionsomkostning pr. enhed en forhandler kan tildeles?",
-            'cost_slope': "Beløbet, du vælger her, vil blive lagt til hver forhandlers produktionsomkostning pr. enhed ved afslutningen af hver runde (indtil du ændrer værdien)",
+            # alpha = grundlæggende efterspørgsel
+            'alpha': "Hvor stor er efterspørgslen på producentens vare, hvis både producentens egen salgspris og gennemsnitsprisen på markedet er 0 kr.?",
+            # theta = konkurrenceforhold
+            'theta': "Hvor meget øges efterspørgslen på producentens vare, hvis gennemsnitsprisen stiger med 1 kr., mens producentens egen salgspris forbliver uændret?",
+            # gamma = prisfølsomhed
+            'gamma': "Hvor meget falder efterspørgslen på producentens vare, hvis både producentens egen salgspris og gennemsnitsprisen på markedet stiger med 1 kr.?",
+            'min_cost': "Hvad er den laveste produktionsomkostning pr. enhed en producent kan tildeles?",
+            'max_cost': "Hvad er den højeste produktionsomkostning pr. enhed en producent kan tildeles?",
+            'cost_slope': "Beløbet, du vælger her, vil blive lagt til producentens omkostning pr. enhed ved afslutningen af hver runde (indtil du ændrer værdien)",
             'max_rounds': f"Hvor mange runder skal der spilles? Vælg et tal mellem 1 og {Market.UPPER_LIMIT_ON_MAX_ROUNDS}",
             'endless': "Der skal ikke være et loft over antal runder (spillet skal bare fortætte, så længe du ønsker det)",
-            'allow_robots': "Spillerne skal kunne handle via algoritmer skrevet i Python"
+            'allow_robots': "Producenterne skal kunne agere via algoritmer skrevet i Python"
         }
         labels = {
             'product_name_singular': 'Produktnavn (ental)',
             'product_name_plural': 'Produktnavn (flertal)',
             'initial_balance': 'Startsaldo',
-            'alpha': 'Alfa',
+            'alpha': 'Grundlæggende efterspørgsel',
             'beta': 'Beta',
-            'theta': 'Theta',
+            'theta': 'Konkurrenceforhold',
+            'gamma': 'Prisfølsomhed',
             'min_cost': 'Minimal omkostning pr. enhed',
             'max_cost': 'Maksimal omkostning pr. enhed',
             'cost_slope': 'Ændring i produktionsomkostning pr. runde',

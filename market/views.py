@@ -416,37 +416,3 @@ def current_round(request, market_id):
             'game_over': market.game_over
         }
     )
-
-
-# def download(request, market_id):
-#     # not properly tested yet
-#     # known issues:
-#     # if trader_stats does not exist for all traders in all rounds script will crash.
-#     market = get_object_or_404(Market, market_id=market_id)
-#     market_traders = Trader.objects.filter(market=market)
-#     total_rounds = market.round
-#     data = "Round,Average price,Average amount,Average profit,"
-#     for trader in market_traders:
-#         data += trader.name + " balance,"
-#     data += "<br>"
-#     for r in range(total_rounds):
-#         data += str(r) + ","
-#         round_stats = Stats.objects.filter(round=r, market=market)
-#         avg_price = sum(
-#             [trader.price for trader in round_stats]) / len(round_stats)
-#         data += str(avg_price) + ","
-#         avg_amount = sum(
-#             [trader.amount for trader in round_stats]) / len(round_stats)
-#         data += str(avg_amount) + ","
-#         avg_profit = sum(
-#             [trader.profit for trader in round_stats]) / len(round_stats)
-#         data += str(avg_profit) + ","
-#         for trader in market_traders:
-#             trader_stats = Stats.objects.get(
-#                 round=r, market=market, trader=trader)
-#             data += str(trader_stats.balance) + ","
-#         data += "<br>"
-#     output = open(market.market_id + "_stats.csv", "w")
-#     output.write(data)
-#     output.close()
-#     return HttpResponse(data)

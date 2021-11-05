@@ -57,7 +57,6 @@ def test_instances_of_default_factory_market(market):
     assert isinstance(market, Market)
     assert isinstance(market.created_by, get_user_model())
     assert isinstance(market.alpha, Decimal)
-    assert isinstance(market.beta, Decimal)
     assert isinstance(market.theta, Decimal)
     assert isinstance(market.initial_balance, Decimal)
     assert isinstance(market.max_cost, Decimal)

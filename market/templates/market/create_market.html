@@ -69,8 +69,8 @@
 		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
 		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
 		document.getElementById('id_alpha').value=scenario.alpha
-		document.getElementById('id_beta').value=scenario.beta
 		document.getElementById('id_theta').value=scenario.theta	
+		document.getElementById('id_gamma').value=scenario.gamma
 		document.getElementById('id_max_rounds').value=scenario.max_rounds
 		document.getElementById('id_endless').checked=scenario.endless
 		if (scenario.initial_balance == ""){
@@ -97,7 +97,7 @@
 			fill_form(scenario);
 		if(scenario_number == 2) {
 			// Radio button value changed to 'Custom Scenario'
-			// This should make market details section expanded
+			// This should make market details section expand
 			document.getElementById('collapseOne').classList.add('show')
 		}
 		else {

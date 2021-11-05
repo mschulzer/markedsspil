@@ -26,7 +26,7 @@ class Market(models.Model):
     # set the upper bound for max_rounds on finite games
     UPPER_LIMIT_ON_MAX_ROUNDS = 100
 
-    # w/ below settings, alpha, beta and theta has to be positive numbers <= 9999999999999.9
+    # w/ below settings, alpha, beta and theta has to be positive numbers (less than a certain size)
     # When specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
     alpha = models.DecimalField(
         max_digits=14,
@@ -97,10 +97,13 @@ class Market(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Set unique custom id for market before creating a new market object (not when updating an existing market)
+        Do the following before creating a new market object:
+            1) Set unique custom id for market
+            2) Set beta = gamma + theta
         """
-        if not self.market_id:
+        if not self.market_id:  # <== we are in fact creating a new market (not updating an existing market)
             self.market_id = new_unique_market_id()
+            self.beta = self.gamma + self.theta
         super(Market, self).save(*args, **kwargs)
 
     def __str__(self):
