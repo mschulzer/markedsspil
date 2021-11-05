@@ -69,8 +69,8 @@ def test_instances_of_default_factory_market(market):
 def test_factory_with_provided_values(db):
     market = MarketFactory(
         alpha=Decimal('102.2'),
-        beta=Decimal('304.5'),
         theta=Decimal('14.1'),
+        gamma=Decimal('2.3'),
         product_name_singular='cake',
         product_name_plural='cakes',
         min_cost=Decimal('4.00'),
@@ -81,8 +81,8 @@ def test_factory_with_provided_values(db):
         endless=True,
     )
     assert market.alpha == Decimal('102.2')
-    assert market.beta == Decimal('304.5')
     assert market.theta == Decimal('14.1')
+    assert market.gamma == Decimal('2.3')
     assert market.product_name_singular == 'cake'
     assert market.product_name_plural == 'cakes'
     assert market.initial_balance == Decimal('4000.00')

@@ -59,21 +59,25 @@
             {% endif %}
            
             <br><br>
-            Den grundlæggende efterspørgsmål på markedet er sat til <b>{{ market.alpha }}</b>. Dette betyder, at hvis alle spillere sætter prisen til 0 kr., så vil de hver især opleve en efterspørgsmål på 
-            <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. <br><br>
+            
+            Den grundlæggende efterspørgsmål på markedet er sat til <b>{{ market.alpha }}</b>. 
+            Hvis både producentens egen slagspris og gennemsnitsprisen på markedet er 0 kr., så vil producenten derfor opleve en efterspørgsel på 
+            <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. 
+            
+            <br><br>
 
-            Prisfølsomheden er sat til <b>{{ market.beta }}</b>. Dette betyder, at en spiller vil opleve et fald i efterspørgsel på <b>{{ market.beta }}</b> {{ market.product_name_plural }}, hvis spilleren 
-            hæver prisen med 1 kr. pr. {{ market.product_name_singular }} i en situation, hvor markedets gennemsnitspris forbliver uændret. Omvendt vil en spiller opleve en stigning i efterspørgsel på <b>{{ market.beta }}</b> 
-            {{ market.product_name_plural }}, hvis spilleren 
-            sænker prisen med 1 kr. pr. {{ market.product_name_singular }} i en situation, hvor markedets gennemsnitspris forbliver uændret.
-            
-            
+            Konkurrenceforholdet er sat til <b>{{ market.theta }}</b>. 
+            Producenten vil derfor opleve en øget efterspørgsel på <b>{{ market.theta }}</b> {{ market.product_name_plural }},
+            hvis gennemsnitsprisen på markedet stiger med 1 kr. i en situation, hvor hans egen salgspris forbliver uændret.
+             
             <br><br>
-            Konkurrenceforholdet er sat til <b>{{ market.theta }}</b>. Dette betyder, at en spiller vil opleve en stigning på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis 
-            spillerens pris forbliver uændret i en situation, hvor markedets gennemsnitspris stiger med 1 kr pr. {{ market.product_name_singular }}. Omvendt vil en spiller opleve et fald på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis spillerens
-            pris forbliver uændret i en situation, hvor markedets gennemsnitspris falder med 1 kr {{ market.product_name_singular }}.
+
             
+            Prisfølsomheden er sat til <b>{{ market.gamma }}</b>. Producenten vil derfor opleve et fald i efterspørgsel på 
+            <b>{{ market.gamma }}</b> {{ market.product_name_plural }}, hvis både gennemsnitsprisen på market og producentens egen salgspris stiger med 1 kr. 
+          
             <br><br>
+
             {% if market.endless %}
                 Spillet er indstillet til at være <b>uendeligt</b>, so det kan ikke fortsætte i så mange runder, I har lyst til. 
             {% else %}

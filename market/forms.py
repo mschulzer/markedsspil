@@ -33,7 +33,6 @@ class MarketForm(forms.ModelForm):
             'product_name_plural': 'Produktnavn (flertal)',
             'initial_balance': 'Startsaldo',
             'alpha': 'Grundlæggende efterspørgsel',
-            'beta': 'Beta',
             'theta': 'Konkurrenceforhold',
             'gamma': 'Prisfølsomhed',
             'min_cost': 'Minimal omkostning pr. enhed',
@@ -63,13 +62,6 @@ class MarketForm(forms.ModelForm):
                 raise ValidationError(
                     "Max cost must be bigger than min cost")
 
-        # theta < beta
-        beta = cleaned_data.get("beta")
-        theta = cleaned_data.get("theta")
-        if beta and theta:
-            if theta >= beta:
-                raise ValidationError("Beta must be bigger than theta")
-
         return cleaned_data
 
     def clean_max_rounds(self):
@@ -84,8 +76,6 @@ class MarketForm(forms.ModelForm):
 class MarketUpdateForm(MarketForm):
 
     class Meta(MarketForm.Meta):
-        # fields = ['product_name_singular',
-        #           'product_name_plural', 'alpha', 'beta', 'theta']
 
         widgets = {
             'initial_balance': forms.NumberInput(attrs={'readonly': True}),

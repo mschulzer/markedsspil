@@ -26,15 +26,12 @@ class Market(models.Model):
     # set the upper bound for max_rounds on finite games
     UPPER_LIMIT_ON_MAX_ROUNDS = 100
 
-    # w/ below settings, alpha, beta and theta has to be positive numbers (less than a certain size)
+    # w/ below settings, alpha, theta and gamma has to be positive numbers (less than a certain size)
     # When specifying the validators here, forms will automatically not validate with user input exceeding the chosen limits
     alpha = models.DecimalField(
         max_digits=14,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.00'))])
-
-    beta = models.DecimalField(max_digits=14, decimal_places=2,
-                               validators=[MinValueValidator(Decimal('0.00'))])
 
     theta = models.DecimalField(max_digits=14, decimal_places=2,
                                 validators=[MinValueValidator(Decimal('0.00'))])
@@ -98,16 +95,14 @@ class Market(models.Model):
     def save(self, *args, **kwargs):
         """
         Do the following before creating a new market object:
-            1) Set unique custom id for market
-            2) Set beta = gamma + theta
+            *) Set unique custom id for market
         """
         if not self.market_id:  # <== we are in fact creating a new market (not updating an existing market)
             self.market_id = new_unique_market_id()
-            self.beta = self.gamma + self.theta
         super(Market, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.market_id}[{self.round}]:{self.alpha},{self.beta},{self.theta}"
+        return f"{self.market_id}[{self.round}]:{self.alpha},{self.theta},{self.gamma},"
 
     def all_traders(self):
         """
@@ -198,7 +193,6 @@ class Market(models.Model):
         Returns the highest price allowed in current round
         """
         return 4 * (self.max_cost + self.accum_cost_change)
-
 
 
 class Trader(models.Model):

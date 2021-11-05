@@ -19,7 +19,6 @@ develop:  ## Run development server
 stop: ## Stop production server
 	docker-compose -f docker-compose.dev.yml down --remove-orphans
 
-
 shell:  ## Open shell in running docker development container
 	docker-compose -f docker-compose.dev.yml exec web /bin/bash
 
@@ -38,7 +37,6 @@ dev_superuser: # make development superuser
 
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
-	docker-compose -f docker-compose.dev.yml run --rm web django-admin compilemessages
 	DJANGO_SETTINGS_MODULE=config.settings docker-compose -f docker-compose.dev.yml run --rm web pytest
 
 test_functional: ## run test suite in test_functional.py

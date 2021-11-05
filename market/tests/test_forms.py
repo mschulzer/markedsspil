@@ -25,8 +25,8 @@ def form_data():
         'product_name_plural': 'baguettes',
         'initial_balance': 3000,
         'alpha': 12.1,
-        'beta': 5.0,
         'theta': 3.4,
+        'gamma': 5.0,
         'min_cost': 3,
         'max_cost': 6,
         'cost_slope': 4.50,
@@ -45,7 +45,7 @@ def test_market_created(db, form_data):
 
 
 def test_alpha_with_2_decimalplaces_is_invalid(form_data):
-    """ alpha, beta and theta can have at most 1 decimalplaces """
+    """ alpha, theta, gamma can have at most 1 decimalplaces """
     form_data['alpha'] = 12.123
     form = MarketForm(data=form_data)
 
@@ -53,7 +53,7 @@ def test_alpha_with_2_decimalplaces_is_invalid(form_data):
     assert 'alpha' in form.errors
     assert 'Ensure that there are no more than 2 decimal place' in str(
         form.errors)
-    assert not ('beta' in form.errors)
+    assert not ('gamma' in form.errors)
 
 
 def test_min_cost_and_max_cost_cant_be_negative(form_data):
@@ -92,22 +92,6 @@ def test_min_cost_bigger_than_max_cost_is_invalid(form_data):
     with pytest.raises(ValueError):
         form.save()
 
-
-def test_theta_bigger_than_beta_is_invalid(form_data):
-    """ form is invalid id theta >= beta """
-    form_data['theta'] = 7  # beta = 5.0
-    form = MarketForm(data=form_data)
-    assert not form.is_valid()
-    assert "Beta must be bigger than theta" in str(
-        form)
-    with pytest.raises(ValidationError):
-        form.clean()
-    with pytest.raises(ValueError):
-        form.save()
-
-
-
-
 def test_blank_field_is_invalid():
     """ host has too fill in all values when creating a market """
     form = MarketForm(data={})
@@ -117,7 +101,7 @@ def test_blank_field_is_invalid():
     assert 'product_name_singular' in form.errors
     assert 'product_name_plural' in form.errors
     assert 'alpha' in form.errors
-    assert 'beta' in form.errors
+    assert 'gamma' in form.errors
     assert 'theta' in form.errors
     assert 'min_cost' in form.errors
     assert 'max_cost' in form.errors
@@ -130,15 +114,15 @@ def test_alpha_negative_is_invalid(form_data):
 
     assert not form.is_valid()
     assert 'alpha' in form.errors
-    assert 'beta' not in form.errors
+    assert 'gamma' not in form.errors
 
-def test_beta_negative_is_invalid(form_data):
-    """ beta can't be negative """
-    form_data['beta'] = -3.0
+def test_gamma_negative_is_invalid(form_data):
+    """ gamma can't be negative """
+    form_data['gamma'] = -3.0
     form = MarketForm(data=form_data)
 
     assert not form.is_valid()
-    assert 'beta' in form.errors
+    assert 'gamma' in form.errors
 
 
 def test_theta_negative_is_invalid(form_data):
@@ -193,7 +177,7 @@ def market_update_form_data():
             'product_name_singular': 'ost',
             'product_name_plural': 'baguettes',
             'alpha': 12.1,
-            'beta': 5.0,
+            'gamma': 1.2,
             'theta': 3.4,
             'max_rounds': 15,
             'endless': False,

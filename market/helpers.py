@@ -11,11 +11,11 @@ def process_trade(market, trade, avg_price):
     Calculates key values for a single trade and updates trade and trader accordingly.
     Used by monitor-view on post-requests, when host finishes a round
     """
-    alpha, beta, theta = market.alpha, market.beta, market.theta
+    alpha, theta, gamma = market.alpha, market.theta, market.gamma
 
     # calculate values
     expenses = trade.trader.prod_cost * trade.unit_amount
-    raw_demand = alpha - beta * trade.unit_price + theta * avg_price
+    raw_demand = alpha - (gamma + theta) * trade.unit_price + theta * avg_price
     demand = max(0, round(raw_demand))
     units_sold = min(demand, trade.unit_amount)
     income = trade.unit_price * units_sold

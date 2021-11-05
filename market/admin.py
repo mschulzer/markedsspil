@@ -8,7 +8,6 @@ class MarketAdmin(admin.ModelAdmin):
         'market_id',
         'round',
         'alpha',
-        'beta',
         'theta',
         'gamma',
         'min_cost',

@@ -20,10 +20,11 @@ class TestProcessTrade(TestCase):
 
     def test_trade_fields_calculated_and_saved_properly(self):
         market = MarketFactory(
-            alpha=Decimal('100.3000'),
-            beta=Decimal('3.4000'),
-            theta=Decimal('4.5000')
+            alpha=Decimal('100.3'),
+            theta=Decimal('4.5'),
+            gamma=Decimal('-1.1')
         )
+
         trader = TraderFactory(
             market=market,
             balance=Decimal('20.00'),
@@ -63,9 +64,9 @@ class TestProcessTrade(TestCase):
         """
         market = MarketFactory(
             initial_balance=Decimal('40.00'),
-            alpha=Decimal('0.000'),
-            beta=Decimal('23233.4000'),
-            theta=Decimal('999.0000'),
+            alpha=Decimal('0.00'),
+            theta=Decimal('999.00'),
+            gamma=Decimal('22234.4'),
             min_cost=Decimal('2.00'),
             max_cost=Decimal('10.00')
         )
@@ -99,90 +100,6 @@ class TestProcessTrade(TestCase):
         self.assertEqual(trader.balance, Decimal('-230.00'))
         self.assertEqual(trade.profit, Decimal('-110.00'))
         self.assertEqual(trade.balance_after, Decimal('-230.00'))
-
-
-def test_trade_fields_calculated_and_saved_properly(db):
-    market = MarketFactory(
-        alpha=Decimal('100.3000'),
-        beta=Decimal('3.4000'),
-        theta=Decimal('4.5000')
-    )
-    trader = TraderFactory(
-        market=market,
-        balance=Decimal('20.00'),
-        prod_cost=Decimal('70.00')
-    )
-    avg_price = Decimal('14.50')
-    trade = TradeFactory(
-        trader=trader,
-        unit_price=Decimal('12.00'),
-        unit_amount=100
-    )
-    expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
-        market, trade, avg_price)
-
-    # test calculations
-    expected_expenses = Decimal('7000.00')
-    expected_raw_demand = 124.75
-    expected_demand = 125
-    expected_units_sold = 100.00
-    expected_income = Decimal('1200.00')
-    expected_profit = Decimal('-5800.00')
-    assert expenses == expected_expenses
-    assert expected_raw_demand == raw_demand
-    assert demand == expected_demand
-    assert units_sold == expected_units_sold
-    assert income == expected_income
-    assert trade_profit == expected_profit
-
-    # test objects updated correctly
-    assert trader.balance == Decimal('-5780.00')
-    assert trade.profit == Decimal('-5800.00')
-    assert trade.balance_after == Decimal('-5780.00')
-
-
-def test_trade_fields_calculated_and_saved_properly_weird_values(db):
-    """
-    trade values are being calculated correctly in a case where the raw demand is negative
-    """
-    market = MarketFactory(
-        initial_balance=Decimal('40.00'),
-        alpha=Decimal('0.000'),
-        beta=Decimal('23233.4000'),
-        theta=Decimal('999.0000'),
-        min_cost=Decimal('2.00'),
-        max_cost=Decimal('10.00')
-    )
-    trader = TraderFactory(
-        market=market,
-        balance=Decimal('-120.00'),
-        prod_cost=Decimal('5.00')
-    )
-    avg_price = Decimal('143234.22')
-    trade = TradeFactory(trader=trader, unit_price=Decimal(
-        '12234.00'), unit_amount=22)
-
-    expenses, raw_demand, demand, units_sold, income, trade_profit = process_trade(
-        market, trade, avg_price)
-
-    # test calculations
-    expected_expenses = Decimal('110.00')
-    expected_raw_demand = Decimal('-141146429.820000')
-    expected_demand = 0
-    expected_units_sold = 0
-    expected_income = Decimal('0.00')
-    expected_profit = Decimal('-110.00')
-    assert expenses == expected_expenses
-    assert expected_raw_demand == raw_demand
-    assert demand == expected_demand
-    assert units_sold == expected_units_sold
-    assert income == expected_income
-    assert trade_profit == expected_profit
-
-    # test objects updated correctly
-    assert trader.balance == Decimal('-230.00')
-    assert trade.profit == Decimal('-110.00')
-    assert trade.balance_after == Decimal('-230.00')
 
 
 def test_create_forced_trade_when_trader_not_new(db):

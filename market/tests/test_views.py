@@ -188,8 +188,8 @@ def create_market_data():
         'product_name_plural': 'baguettes',
         'initial_balance': 5000,
         'alpha': 21.4,
-        'beta': 44.2,
         'theta': 2.0,
+        'gamma': 1.2,
         'min_cost': 11,
         'max_cost': 144,
         'cost_slope': 0,
@@ -263,7 +263,7 @@ def test_create_market_no_market_is_created_when_alpha_not_defined_and_error_mgs
 def test_create_market_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(client, logged_in_user, create_market_data):
     """ 
     In the model, min_cost and max_cost are set as positive integers. 
-    If the users chooses beta negative, this should not cast a database error, but a nice feedback message
+    If the users chooses negative value, this should not cast a database error, but a nice feedback message
     """
     create_market_data['min_cost'] = -11
     response = client.post(reverse('market:create_market'), create_market_data)
@@ -686,7 +686,7 @@ def test_market_edit_user_has_no_permission_to_edit_other_market(client, logged_
 def test_market_edit_valid_post_data_updates_market_and_redirects(client, logged_in_user):
     market = MarketFactory(created_by=logged_in_user, alpha=105.55)
     data = {'product_name_singular': 'surdejsbolle',
-            'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 34, 'theta': 32,
+            'product_name_plural': 'surdejsboller', 'alpha': 14, 'gamma': 3.4, 'theta': 32,
             'endless': True, 'initial_balance': 53, 'max_rounds': 12,
             'min_cost': 35, 'max_cost': 3565, 'cost_slope': 0}
 
@@ -710,7 +710,7 @@ def test_market_edit_invalid_post_data_does_not_update_market(client, logged_in_
     client.login(username='somename', password='testpass123')
 
     data = {'product_name_singular': 'surdejsbolle',
-            'product_name_plural': 'surdejsboller', 'alpha': -14, 'beta': 34, 'theta': 32,
+            'product_name_plural': 'surdejsboller', 'alpha': -14, 'gamma': 3.34, 'theta': 32,
             'endless': True, 'initial_balance': 53, 'max_rounds': 12,
             'min_cost': 35, 'max_cost': 3565}
 
@@ -1020,8 +1020,8 @@ class FinishRoundViewMultipleUserTest(TestCase):
         self.market = MarketFactory(
             initial_balance=5000,
             alpha=21.402,
-            beta=44.2,
             theta=2.0105,
+            gamma=42.1895,
             round=1,
             created_by=self.user)
 
@@ -1189,15 +1189,15 @@ class FinishRoundViewMultipleUserTest(TestCase):
         # Let's also check that Christians values have been calculated correctly
         christians_trade = Trade.objects.get(
             trader=self.christian, round=1)
-        alpha, beta, theta = float(self.market.alpha), float(
-            self.market.beta), float(self.market.theta)
+        alpha, gamma, theta = float(self.market.alpha), float(
+            self.market.gamma), float(self.market.theta)
 
         # Recall, Christian chose these values
         christians_unit_price = unit_price = 11
         christians_unit_amount = 150
 
         christians_expenses = self.christian.prod_cost * christians_unit_amount
-        christians_raw_demand = alpha - beta * \
+        christians_raw_demand = alpha - (gamma + theta) * \
             christians_unit_price + theta * expected_avg_price
         christians_demand = max(0, round(christians_raw_demand))
         christians_units_sold = min(christians_demand, christians_unit_amount)
