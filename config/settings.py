@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
-
     # Third-party
     'crispy_forms',
     'allauth',
@@ -100,11 +99,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME' : os.environ.get("POSTGRES_DB"),
-        'USER' : os.environ.get("POSTGRES_USER"),
-        'PASSWORD' : os.environ.get("POSTGRES_PASSWORD"),
-        'HOST' : os.environ.get("POSTGRES_HOST"),
-        'PORT' : 5432,
+        'NAME': os.environ.get("POSTGRES_DB"),
+        'USER': os.environ.get("POSTGRES_USER"),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
+        'HOST': os.environ.get("POSTGRES_HOST"),
+        'PORT': 5432,
     }
 }
 
@@ -137,7 +136,7 @@ TIME_ZONE = 'Europe/Copenhagen'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = True
 
@@ -195,7 +194,7 @@ ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Markedsspillet.dk]"
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
-DBBACKUP_STORAGE_OPTIONS = {'location' : '/backups'}
+DBBACKUP_STORAGE_OPTIONS = {'location': '/backups'}
 DBBACKUP_CLEANUP_KEEP = 30
 DBBACKUP_DATE_FORMAT = '%Y-%m-%d_%H-%M-%S'
 DBBACKUP_FILENAME_TEMPLATE = 'backup_{databasename}_{datetime}.{extension}'

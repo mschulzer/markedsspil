@@ -52,7 +52,7 @@
         <p>
             I dette <b>{{ market.product_name_singular}}</b>-market har alle producenter en startsaldo på <b>{{ market.initial_balance }}</b> kr. 
             {% if market.min_cost < market.max_cost %}
-                 tilslutter sig markedet, tildeles de tilfældigt forskellige produktionsomkostninger pr. enhed, hvilket skaber ulige konkurrencevillår, der giver nogle spillere en fordel. 
+                 tilslutter sig markedet, tildeles de tilfældigt forskellige produktionsomkostninger pr. enhed, hvilket skaber ulige konkurrencevillår, der giver nogle producenter en fordel. 
                 PRoducenternes produktionsomkostninger ligger mellem <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. enhed. 
             {% else %}
                 Alle producenter har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, så alle konkurrerer på lige vilkår. 
