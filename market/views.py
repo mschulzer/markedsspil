@@ -7,8 +7,8 @@ from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
 from .models import Market, Trader, Trade, RoundStat, UnusedCosts
 from .forms import MarketForm, MarketUpdateForm, TraderForm, TradeForm
-from .helpers import create_forced_trade, process_trade, generate_balance_list, generate_cost_list, add_graph_context_for_monitor_page
-from django.contrib.auth.decorators import login_required, user_passes_test
+from .helpers import create_forced_trade, process_trade, generate_balance_list, add_graph_context_for_monitor_page, generate_prod_cost_list
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
@@ -269,6 +269,16 @@ def finish_round(request, market_id):
 
     round_stat.save()
 
+    # Update trader production cost
+    for trader in market.all_traders():
+        new_cost = trader.prod_cost + market.cost_slope
+        if new_cost > 0:
+            trader.prod_cost = new_cost
+            trader.save()
+
+    # Update total production cost change
+    market.accum_cost_change += market.cost_slope
+
     # Update market round
     market.round += 1
 
@@ -338,6 +348,7 @@ def play(request, market_id):
                 new_trade.trader = trader
                 new_trade.round = market.round
                 new_trade.balance_before = trader.balance
+                new_trade.prod_cost = trader.prod_cost
                 new_trade.save()
 
                 auto_play = form.cleaned_data['auto_play']
@@ -379,7 +390,7 @@ def play(request, market_id):
 
             # data for price graph
             'data_price_json': json.dumps([float(trade.unit_price) if (trade.unit_price != None) else None for trade in trades]),
-            'data_prod_cost_json': json.dumps(generate_cost_list(trader)),
+            'data_prod_cost_json': json.dumps(generate_prod_cost_list(market, trades, trader)),
             'data_market_avg_price_json': json.dumps([float(round_stat.avg_price) for round_stat in round_stats]),
 
             # add data for balance graph

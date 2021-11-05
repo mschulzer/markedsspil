@@ -49,10 +49,12 @@ def create_forced_trade(trader, round_num, is_new_trader):
         # situation 1
         balance_before = None
         balance_after = None
+        prod_cost = None
     else:
         # situation 2
         balance_after = trader.balance
         balance_before = trader.balance
+        prod_cost = trader.prod_cost
 
     forced_trade = Trade.objects.create(
         round=round_num,
@@ -63,9 +65,21 @@ def create_forced_trade(trader, round_num, is_new_trader):
         balance_after=balance_after,
         balance_before=balance_before,
         profit=None,
-        was_forced=True
+        was_forced=True,
+        prod_cost=prod_cost
     )
     return forced_trade
+
+
+def generate_prod_cost_list(market, trades, trader):
+
+    prod_costs = [float(trade.prod_cost) if (
+        trade.prod_cost != None) else None for trade in trades]
+
+    if not trader.should_be_waiting():
+        prod_costs += [float(trader.prod_cost)]
+
+    return prod_costs
 
 
 def generate_balance_list(trader):
@@ -97,61 +111,7 @@ def generate_balance_list(trader):
         balance_list[0] = None
         balance_list[trader.round_joined] = initial_balance
 
-    #assert len(balance_list) == trader.market.round + 1
-
     return balance_list
-
-    # The above implementation makes a lot of queries.
-    # The alternative implementation below (seems to) work and makes fewer queries.
-    #
-    # def process(entry):
-    #     "Helper function"
-    #     if type(entry) == dict:
-    #         if entry['balance_before']:
-    #             return float(entry['balance_before'])
-    #     elif entry:
-    #         return(float(entry))
-    #
-    # if len(trades) == 0:
-    #     return [initial_balance]
-    # balances = Trade.objects.filter(
-    #    trader=trader, round__lte=trader.market.round-1).values('balance_before')
-    #
-    # balances = list(map(process, balances))
-    # balances.append(process(trades.last().balance_after))
-    # if trader.round_joined > 0:
-    #     balances[trader.round_joined] = initial_balance
-
-
-def generate_cost_list(trader):
-    """
-    Generates a list of floats consisting of the prod_cost of a single trader.
-    The i'th entry of the list is the prod_cost in the i'th round. It should be either None, 
-    if the trader has not joined yet, or equal to the trader's fixed prod. cost. 
-
-    For a trader who joins the game in the first round the resulting list
-    should loook something like this
-    [8, 8, 8,...,8] 
-
-    For a trader who joined the game in "round 3" (market.round=2), 
-    the list should look something like this: 
-    [None, None, 8, 8, 8, ...,8]
-
-    If the game is endless (unlimited number of rounds), the length of the cost list
-    should be current_round +1. Else the lenght of the cost list should be equal 
-    to the total number of rounds of the game (market.max_rounds + 1)
-    """
-    prod_cost = float(trader.prod_cost)
-
-    if trader.market.endless:
-        prod_cost_list = [prod_cost for _ in range(trader.market.round + 1)]
-    else:
-        prod_cost_list = [prod_cost for _ in range(trader.market.max_rounds)]
-
-    if trader.round_joined > 0:
-        for i in range(trader.round_joined):
-            prod_cost_list[i] = None
-    return prod_cost_list
 
 
 def add_graph_context_for_monitor_page(context):

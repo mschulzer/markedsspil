@@ -3,7 +3,7 @@ To run all tests:
 $ make test
 
 To run all tests in this file:
-$ docker-compose run web pytest market/tests/test_views.py
+$ make test_views
 
 To run only one or some tests:
 docker-compose -f docker-compose.dev.yml run web pytest -k <substring of test function names to run>
@@ -187,11 +187,12 @@ def create_market_data():
         'product_name_singular': 'baguettes',
         'product_name_plural': 'baguettes',
         'initial_balance': 5000,
-        'alpha': 21.4024,
-        'beta': 44.2123,
-        'theta': 2.0105,
+        'alpha': 21.4,
+        'beta': 44.2,
+        'theta': 2.0,
         'min_cost': 11,
         'max_cost': 144,
+        'cost_slope': 0,
         'max_rounds': 15,
         'endless': False
     }
@@ -257,19 +258,6 @@ def test_create_market_no_market_is_created_when_alpha_not_defined_and_error_mgs
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
     assertContains(response, "This field is required.")
-
-
-def test_create_market_error_mgs_shown_to_user_when_alpha_bigger_than_9999999999(client, logged_in_user, create_market_data):
-    """ 
-    In the model, there are some constraints on alpha, beta and theta. They can't be bigger than 9999999999.9999
-    Choosing alpha = 10000000000 in the create form should should create an understandable message to the user,
-    not a database-error. 
-    """
-    create_market_data['alpha'] = 10000000000
-    response = client.post(reverse('market:create_market'), create_market_data)
-    assert response.status_code == 200
-    assertContains(
-        response, "Ensure that there are no more than 10 digits before the decimal point.")
 
 
 def test_create_market_if_user_chooses_negative_min_cost_he_gets_a_good_feedback_message(client, logged_in_user, create_market_data):
@@ -482,7 +470,7 @@ def test_player_view_get_form_attributes_are_set_correctly(client, db):
 
     form = response.context['form']
 
-    # we expect the max input value of unit_price to be 4* market.max_cost = 12
+    # we expect the max input value of unit_price to be 4* market.max_current_prod_cost = 12
     assert ('max="12.00"' in str(form))
     assert not ('max="16.00"' in str(form))
 
@@ -700,7 +688,7 @@ def test_market_edit_valid_post_data_updates_market_and_redirects(client, logged
     data = {'product_name_singular': 'surdejsbolle',
             'product_name_plural': 'surdejsboller', 'alpha': 14, 'beta': 34, 'theta': 32,
             'endless': True, 'initial_balance': 53, 'max_rounds': 12,
-            'min_cost': 35, 'max_cost': 3565}
+            'min_cost': 35, 'max_cost': 3565, 'cost_slope': 0}
 
     url = reverse('market:market_edit', args=(market.market_id,))
     response = client.post(url, data=data)
@@ -718,7 +706,7 @@ def test_market_edit_invalid_post_data_does_not_update_market(client, logged_in_
     """
     alpha is negative, so form is invalid. No values should be updated in this case
     """
-    market = MarketFactory(created_by=logged_in_user, alpha=105.55)
+    market = MarketFactory(created_by=logged_in_user, alpha=105.5)
     client.login(username='somename', password='testpass123')
 
     data = {'product_name_singular': 'surdejsbolle',
@@ -731,7 +719,7 @@ def test_market_edit_invalid_post_data_does_not_update_market(client, logged_in_
 
     market.refresh_from_db()
     # alpha has not changed
-    assert (float(market.alpha) == 105.55)
+    assert (float(market.alpha) == 105.5)
     # product name has not changed
     assert (market.product_name_singular == 'baguette')
     assert (response.status_code == 200)  # return template
@@ -853,8 +841,69 @@ def test_declare_bankruptcy(client, db):
         'market:play', args=(trader.market.market_id,)))
 
 
-
 #  Test finish_round view
+
+def test_finish_round_view_production_cost_positive_slope(client, db, logged_in_user):
+    """ 
+    1) At the end of a round, each trader's production cost is changed by the market's production cost slope 
+    2) The slope should be added to the markets total change counter
+    """
+    market = MarketFactory(created_by=logged_in_user, cost_slope=Decimal('10.00'))
+    trader = TraderFactory(market=market, prod_cost=Decimal('5.00'))
+    trade = UnProcessedTradeFactory(round=0, trader=trader)
+
+    url = reverse('market:finish_round', args=(market.market_id,))
+
+    response = client.post(url)
+    trader.refresh_from_db()
+    market.refresh_from_db()
+    trade = UnProcessedTradeFactory(round=1, trader=trader)
+
+    assert (trader.prod_cost == 15.00)
+    assert market.accum_cost_change == 10.00
+
+    response = client.post(url)
+    trader.refresh_from_db()
+    market.refresh_from_db()
+    assert (trader.prod_cost == 25.00)
+    assert market.accum_cost_change == 20.00
+
+
+def test_finish_round_view_production_cost_negative_slope(client, db, logged_in_user):
+    """
+    Negative cost slope reducees prod cost
+    """
+    market = MarketFactory(created_by=logged_in_user,
+                           cost_slope=Decimal('-10.0'))
+    trader = TraderFactory(market=market, prod_cost=Decimal('50.00'))
+    trade = UnProcessedTradeFactory(round=0, trader=trader)
+
+    url = reverse('market:finish_round', args=(market.market_id,))
+    response = client.post(url)
+    trader.refresh_from_db()
+    market.refresh_from_db()
+
+    assert (trader.prod_cost == 40.00)
+    assert market.accum_cost_change == -10.00
+
+
+def test_finish_round_view_production_cost_cannot_get_negative(client, db, logged_in_user):
+    """
+    Negative cost slope reducees prod cost
+    """
+    market = MarketFactory(created_by=logged_in_user,
+                           cost_slope=Decimal('-10.00'))
+    trader = TraderFactory(market=market, prod_cost=Decimal('5.00'))
+    trade = UnProcessedTradeFactory(round=0, trader=trader)
+
+    url = reverse('market:finish_round', args=(market.market_id,))
+    response = client.post(url)
+    trader.refresh_from_db()
+
+    # trader's cost
+    assert (trader.prod_cost == 5.00)
+
+
 
 def test_finish_round_view_404_when_market_does_not_exists(client, logged_in_user):
     """ If market with given id does not exist, return 404 page """

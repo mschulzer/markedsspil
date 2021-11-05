@@ -1,3 +1,15 @@
+"""
+To run all tests:
+$ make test
+
+To run all tests in this file:
+$ make test_models
+
+To run only one or some tests:
+docker-compose -f docker-compose.dev.yml run web pytest -k <substring of test function names to run>
+"""
+
+
 from ..models import Trade, RoundStat, UnusedCosts, UsedCosts
 from decimal import Decimal
 from .factories import MarketFactory, TradeFactory, TraderFactory
@@ -8,6 +20,20 @@ from .factories import MarketFactory, TradeFactory, TraderFactory
     
 ### Test TraderModel ###
 # Most relevant properties are currently being tested in the test_factories test suite
+
+
+def test_max_allowed_price(db):
+    market = MarketFactory(max_cost=100)
+    trader1 = TraderFactory(market=market, prod_cost=16)
+    trader2 = TraderFactory(market=market, prod_cost=26)
+    assert market.max_allowed_price() == 400
+
+
+def test_max_allowed_price(db):
+    market = MarketFactory(max_cost=12, accum_cost_change=50)
+
+    assert market.max_allowed_price() == (12 + 50)*4
+
 
 def test_prod_cost_algorithm(db):
     # We start out with a market and unused costs.

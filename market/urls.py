@@ -25,7 +25,7 @@ urlpatterns = [
     path('<market_id>/trader_table/',
          views.trader_table, name='trader_table'),
 
-     # APIs
-     path('<market_id>/current_round/',
+    # APIs
+    path('<market_id>/current_round/',
           views.current_round, name='current_round'),
 ]

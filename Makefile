@@ -6,6 +6,7 @@
 
 help:   # Show this help.
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
+	
 
 # ---------- Development ---------- #
 build:  ## Build or rebuild development docker image
@@ -20,10 +21,38 @@ shell:  ## Open shell in running docker development container
 develop_create_backup:	## Create backup of development database
 	docker-compose -f docker-compose.dev.yml run --rm pgbackups /backup.sh
 
+migrations: # make migrations
+	docker-compose -f docker-compose.dev.yml exec web python manage.py makemigrations
+
+migrate: # make migrations
+	docker-compose -f docker-compose.dev.yml exec web python manage.py migrate
+
+dev_superuser: # make development superuser 
+	docker-compose -f docker-compose.dev.yml exec web python manage.py createsuperuser
+
+
 # ---------- Checks and tests ---------- #
 test: ## Execute tests within the docker image
 	docker-compose -f docker-compose.dev.yml run --rm web django-admin compilemessages
 	DJANGO_SETTINGS_MODULE=config.settings docker-compose -f docker-compose.dev.yml run --rm web pytest
+
+test_functional: ## run test suite in test_functional.py
+	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_functional.py
+
+test_forms: ## run test suite in test_forms.py
+	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_forms.py
+
+test_views: ## run test suite in test_views.py
+	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_views.py
+
+test_helpers: ## run test suite in test_helpers.py
+	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_helpers.py
+
+test_models: ## run test suite in test_helpers.py
+	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_models.py
+
+test_factories: ## run test suite in test_helpers.py
+	docker-compose -f docker-compose.dev.yml run web pytest market/tests/test_factories.py
 
 
 flake8: ## PEP8 codestyle check

@@ -1,7 +1,14 @@
 """
-To only run the tests in this file:
-$ docker-compose run web pytest market/tests/test_functional.py
+To run all tests:
+$ make test
+
+To run all tests in this file:
+$ make test_functional
+
+To run only one or some tests:
+docker-compose -f docker-compose.dev.yml run web pytest -k <substring of test function names to run>
 """
+
 from ..models import Market, Trader, Trade
 from django.urls import reverse
 from .factories import TraderFactory, MarketFactory, TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory
@@ -15,11 +22,12 @@ def test_round_0_one_forced_move(logged_in_user, client):
         'product_name_singular': 'baguette',
         'product_name_plural': 'baguettes',
         'initial_balance': 4000,
-        'alpha': 21.402,
+        'alpha': 21.4,
         'beta': 44.2,
-        'theta': 2.0105,
+        'theta': 2.0,
         'min_cost': 11,
         'max_cost': 144,
+        'cost_slope': 1.0,
         'max_rounds': 15,
         'endless': False}
     client.post(
