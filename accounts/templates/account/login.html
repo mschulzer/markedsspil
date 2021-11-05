@@ -1,13 +1,11 @@
 {% extends 'market/base.html' %}
 {% load crispy_forms_tags %}
-{% load i18n %}
 
 {% block title %}Log på{% endblock title %}
 
 {% block content %}
 <div class="container">
-    <h2>Log på</h2>
-    <p class="mb-4">Du har brug for en konto, hvis du vil oprette et marked.</p>
+    <h2 class="mb-3 mt-5">Log på</h2>
 
     <form method="post">
         {% csrf_token %}
@@ -16,7 +14,7 @@
             <button class="btn btn-primary" type="submit">Log på</button>
         </div>
     </form>
-    <p>Glemt din adgangskode?<a href="{% url 'account_reset_password' %}"> Få ny adgangskode</a></p>
-    <p>Har du ikke nogen konto?<a href="{% url 'account_signup' %}"> Få en konto</a></p>
+    <p>Glemt adgangskode?<a href="{% url 'account_reset_password' %}"> Nulstil din adgangskode her.</a></p>
+    <p>Har du ikke nogen konto?<a href="{% url 'account_signup' %}"> Opret ny bruger</a></p>
 </div>
 {% endblock content %}

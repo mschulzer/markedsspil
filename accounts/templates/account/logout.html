@@ -4,7 +4,7 @@
 {% block title %}Log af{% endblock %}
 
 {% block content %}
-  <h2>Log af</h2>
+  <h2 class="mb-3 mt-5">Log af</h2>
   Du er i øjeblikket logget på med email-adressen {{ user.email }}.
   <p>Er du sikker på, at du ønsker at logge af?</p>
   <form method="post" action="{% url 'account_logout' %}">

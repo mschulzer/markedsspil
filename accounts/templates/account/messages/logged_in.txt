@@ -1,4 +1,4 @@
 
 {% load account %}
 {% user_display user as name %}
-Du er nu logget ind. 
+Du er nu logget på. 

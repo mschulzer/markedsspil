@@ -2,7 +2,6 @@
 {% autoescape off %}
 
 Hej fra Markedsspillet.dk!
-
 {% block content %}{% endblock %}
 
 Vi er glade for, at du bruger Markedsspillet!

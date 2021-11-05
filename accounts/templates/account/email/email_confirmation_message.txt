@@ -5,12 +5,10 @@
 {% autoescape off %}
 {% user_display user as user_display %}
 
-{% blocktrans %}
 Du modtager denne email fordi brugeren {{ user_display }} har angivet din email-adresse 
 for at oprette en konto på Markedsspillet.dk.
 
 Hvis dette er korrekt, kan du bekræfte på {{ activate_url }}.
-{% endblocktrans %}
 
 {% endautoescape %}
 {% endblock %}

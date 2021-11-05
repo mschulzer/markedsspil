@@ -8,8 +8,8 @@ python manage.py migrate
 echo "${0}: collecting static files."
 python manage.py collectstatic --noinput --clear
 
-echo "${0}: generating .mo files for translations"
-django-admin compilemessages
+#echo "${0}: generating .mo files for translations"
+#django-admin compilemessages
 
 echo "${0}: running production server."
 mkdir -p /var/log/gunicorn
