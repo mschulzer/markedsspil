@@ -440,7 +440,7 @@ def test_player_view_get_proper_behavior_in_round_4_when_user_has_made_trade_in_
     assertTemplateUsed(response, 'market/play/play.html'),
 
     # The player should know that he didn't trade last round
-    assertContains(response, "You didn't make a trade last round.")
+    assertContains(response, "Du handlede ikke i sidste runde.")
 
     # template should contain a submit button
     assertContains(response, "submit")
@@ -497,7 +497,7 @@ def test_player_view_get_game_over_when_rounds_equal_max_round(client, db):
     response = client.get(reverse('market:play', args=(market.market_id,)))
 
     # user is informed about the game state
-    assertContains(response, "The game has ended")
+    assertContains(response, "Spillet er slut")
 
     # the player interface does not contain a submit button
     assertNotContains(response, 'submit')
@@ -628,7 +628,7 @@ def test_mymarkets_view_no_markets_from_other_users(client, logged_in_user):
     response = client.get(reverse('market:my_markets'))
     assert (response.status_code == 200)
     assertContains(
-        response, 'You have not yet created a market.')
+        response, 'Du har ikke oprettet nogen markeder endnu.')
     assertNotContains(response, market.market_id)
 
 

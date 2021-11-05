@@ -1,5 +1,4 @@
 {% load static %}
-{% load i18n %}
 {% load sekizai_tags %}
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>{% translate 'Market Simulator' %} | {% block title %}{% endblock %}</title>
+        <title>Markedsspillet | {% block title %}{% endblock %}</title>
         <!-- Favicon-->
         <!-- <link rel="icon" type="image/x-icon" href="assets/favicon.ico" /> -->
         <link href="{% static "style.css" %}" rel="stylesheet" />
@@ -20,14 +19,14 @@
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
             <div class="container">
-                <a class="navbar-brand" href="{% url 'market:home' %}">{% translate 'Market Simulator' %}</a>
+                <a class="navbar-brand" href="{% url 'market:home' %}">Markedsspillet</a>
                 {% if user.is_authenticated %}      
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarResponsive">
                     <ul class="navbar-nav ml-auto">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'market:create_market'%}">{% translate 'Create market' %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'market:my_markets'%}">{% translate 'My markets' %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'account_logout' %}">{% translate 'Log Out' %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'market:create_market'%}">Opret marked</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'market:my_markets'%}">Mine markeder</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'account_logout' %}">Log af</a></li>
                     </ul>
                 </div>
                 {% endif %}                

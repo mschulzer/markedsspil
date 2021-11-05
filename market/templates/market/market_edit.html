@@ -1,19 +1,19 @@
 {% extends "market/base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
-{% load i18n %}
 
-{% block title %}{% translate 'Edit' %}{% endblock %}
+{% block title %}Indstillinger{% endblock %}
 
 {% block content %}
 
 <h3 class="mb-4">
-    Market details <span class="text-black-50">[{{ market.market_id }}]</span> 
+    Markedsindstillinger <span class="text-black-50">[{{ market.market_id }}]</span> 
 </h3>
 
 {% if not market.game_over %}
 	<p class="mt-0">
-		{% translate 'You are allowed to edit most of the settings. Changes will take effect from this round forward.'%}<br>
+		Nedenfor har du mulighed for at redigere de fleste af indstillingerne for dit marked. 
+		Ændringer vil træde i kraft fra denne runde og frem.<br>
 	</p>
 {% endif %}
 <br>
@@ -22,9 +22,9 @@
     {% csrf_token %}
     {{ form|crispy }}
     <div class="d-flex justify-content-between mt-5">
-        <a href="{% url 'market:monitor' market.market_id %}" class="btn btn-primary">Go Back</a>
+        <a href="{% url 'market:monitor' market.market_id %}" class="btn btn-primary">Tilbage</a>
 		{% if not market.game_over %}
-		<button class="btn btn-warning" type="button" onclick="submit_form()">{% translate 'Update' %}</button>
+		<button class="btn btn-warning" type="button" onclick="submit_form()">Opdater</button>
 		{% endif %}
     </div>
 </form>

@@ -1,14 +1,14 @@
 #
 print("")
-print("Your algorithm produced these raw values:")
+print("Din algoritme producerede disse rå output-værdier:")
 try:
     price_choice
-    print("Price:", price_choice)
+    print("Pris:", price_choice)
 except:
-    print("Price: Not defined in your script!")
+    print("Pris: Blev ikke korrekt defineret!")
 
 try:
     amount_choice
-    print("Amount: ", amount_choice)
+    print("Antal:", amount_choice)
 except:
-    print("Amount: Not defined in your script!")
+    print("Antalt: Blev ikke korrekt defineret!")

@@ -12,32 +12,32 @@ class MarketForm(forms.ModelForm):
         fields = ['initial_balance', 'min_cost', 'max_cost', 'cost_slope', 'max_rounds', 'endless',
                   'alpha', 'beta', 'theta', 'product_name_singular', 'product_name_plural', 'allow_robots']
         help_texts = {
-            'product_name_singular': _("The name of the product being traded in singular form (e.g 'baguette')"),
-            'product_name_plural': _("The name of the product being traded in plural form (e.g. 'baguettes')"),
-            'initial_balance': _("How much money should the participants start out with?"),
-            'alpha': _("How big should the demand for a trader's product be, if all traders set their price to 0?"),
-            'beta': _("How much should the demand of a single trader's product be reduced, when she/he raises their unit price by one?"),
-            'theta': _("How much should the demand of a single trader's product increase, when the market's average price goes up by one?"),
-            'min_cost': _("What is the lowest production cost for one unit of the product?"),
-            'max_cost': _("What is the highest production cost for one unit of the product?"),
-            'cost_slope': _("The amount you choose here will be added to each trader's production cost at the end of each round (untill you change the value)"),
-            'max_rounds': _(f"How many rounds should be played before the game ends? Choose number between 1 and {Market.UPPER_LIMIT_ON_MAX_ROUNDS}"),
-            'endless': _("The game should go on for an indefinite number of rounds"),
-            'allow_robots': _("Allow players to use trade algorithms")
+            'product_name_singular': "Navnet på produktet i ental (f.eks. 'baguette')",
+            'product_name_plural': "Navnet på produktet i flertal (f.eks. 'baguetter')",
+            'initial_balance': "Hvor mange penge skal deltagerne starte med?",
+            'alpha': "Hvor stor skal efterspørgslen på produktet være, hvis alle forhandlere sætter prisen til 0 kr?",
+            'beta': "Hvor meget skal efterspørgslen på en forhandlers produkt mindskes, hvis forhandleren øger enhedsprisen med 1 kr?",
+            'theta': "Hvor meget skal efterspørgslen på en forhandlers produkt øges, hvis den gennemsnitlige markedspris stiger med 1 kr?",
+            'min_cost': "Hvad er den laveste produktionsomkostning pr. enhed en forhandler kan tildeles?",
+            'max_cost': "Hvad er den højeste produktionsomkostning pr. enhed en forhandler kan tildeles?",
+            'cost_slope': "Beløbet, du vælger her, vil blive lagt til hver forhandlers produktionsomkostning pr. enhed ved afslutningen af hver runde (indtil du ændrer værdien)",
+            'max_rounds': f"Hvor mange runder skal der spilles? Vælg et tal mellem 1 og {Market.UPPER_LIMIT_ON_MAX_ROUNDS}",
+            'endless': "Der skal ikke være et loft over antal runder (spillet skal bare fortætte, så længe du ønsker det)",
+            'allow_robots': "Spillerne skal kunne handle via algoritmer skrevet i Python"
         }
         labels = {
-            'product_name_singular': _('Product name (singular)'),
-            'product_name_plural': _('Product name (plural)'),
-            'initial_balance': _('Initial balance'),
-            'alpha': _('Alpha'),
-            'beta': _('Beta'),
-            'theta': _('Theta'),
-            'min_cost': _('Min. prod. cost'),
-            'max_cost': _('Max. prod. cost'),
-            'cost_slope': _('Change of production cost'),
-            'endless': _('Endless'),
-            'max_rounds': _('Max rounds'),
-            'allow_robots': _('Allow robots')
+            'product_name_singular': 'Produktnavn (ental)',
+            'product_name_plural': 'Produktnavn (flertal)',
+            'initial_balance': 'Startsaldo',
+            'alpha': 'Alfa',
+            'beta': 'Beta',
+            'theta': 'Theta',
+            'min_cost': 'Minimal omkostning pr. enhed',
+            'max_cost': 'Maksimal omkostning pr. enhed',
+            'cost_slope': 'Ændring i produktionsomkostning pr. runde',
+            'endless': 'Uendeligt spil',
+            'max_rounds': 'Antal runder',
+            'allow_robots': 'Tillad robotspillere'
         }
         widgets = {
             'initial_balance': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),

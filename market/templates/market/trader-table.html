@@ -1,11 +1,9 @@
-{% load i18n %}
-
 {% if market.active_or_bankrupt_traders|length == 0 %}
     <i>
-        {% translate 'Waiting for the first trader to join the market...' %}
+        Venter på at den første spiller tilslutter sig markedet... 
     </i>
 {% else %}
-    <p>All traders on the market, ordered by their currrent balance.</p>
+    <p>Alle spillere på markedet, ordnet efter deres aktuelle saldo.</p>
     <div class="table-responsive">
         <table class="table table-striped mb-5" id="trader_status_table"> 
 
@@ -15,13 +13,13 @@
                 -->
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">{% translate 'Name' %}</th>
+                    <th scope="col">Navn</th>
                     {% if not market.game_over %}
-                        <th class="d-none d-md-block" scope="col">{% translate 'Ready for next round' %}</th>
-                        <th class="d-md-none" scope="col">{% translate 'Ready' %}</th>
+                        <th class="d-none d-md-block" scope="col">Klar til næste runde</th>
+                        <th class="d-md-none" scope="col">Klar</th>
                     {% endif %}
-                        <th scope="col">{% translate 'Cost/unit' %}</th>
-                    <th scope="col">{% translate 'Balance' %}</th>
+                        <th scope="col">Pris/enhed</th>
+                    <th scope="col">Saldo</th>
                     {% if not market.game_over %}
                     <th></th>
                     {% endif %}
@@ -77,21 +75,19 @@
             {% if market.num_ready_traders == 0 %}
                 <button type="button" data-toggle="tooltip" id="toggle_auto_finish_btn" class="btn btn-warning" disabled
                  title="You can't finish a round before at least one (non-bankrupt) trader is ready.">
-                    &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
+                    &nbsp;&nbsp;Afslut Runde {{ market.round|add:1 }}&nbsp;&nbsp;
                 </button>
             {% else %}
                 {% if market.num_ready_traders < market.num_active_traders %}       
                     <!-- not all active traders are ready, so show a submit button with pop-up confirmation -->   
                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#nextRoundConfirmationPopUp">
-                        {% comment %} {% translate 'Finish Round' %} {% endcomment %}
-                        &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
+                        &nbsp;&nbsp;Afslut Runde {{ market.round|add:1 }}&nbsp;&nbsp;
                     </button>
                 
                 {% else %}
                     <!-- all active traders are ready so show a submit button with no confirmation required -->
                     <button type="button" class="btn btn-primary" onclick="next_round()">
-                        {% comment %} {% translate 'Finish Round' %} {% endcomment %}
-                        &nbsp;&nbsp;Finish Round {{ market.round|add:1 }}&nbsp;&nbsp;
+                        &nbsp;&nbsp;Afslut Runde {{ market.round|add:1 }}&nbsp;&nbsp;
                     </button>
                     {% if market.monitor_auto_pilot %}
                         <script> 

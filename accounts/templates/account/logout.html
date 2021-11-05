@@ -1,16 +1,15 @@
 {% extends 'market/base.html' %}
 {% load crispy_forms_tags %}
-{% load i18n %}
 
-{% block title %}{% translate 'Log Out' %}{% endblock %}
+{% block title %}Log af{% endblock %}
 
 {% block content %}
-  <h2>{% translate 'Log Out' %}</h2>
-  You are currently logged in as {{ user.email }}.
-  <p>{% translate 'Are you sure you want to log out?' %}</p>
+  <h2 class="mb-3 mt-5">Log af</h2>
+  Du er i øjeblikket logget på med email-adressen {{ user.email }}.
+  <p>Er du sikker på, at du ønsker at logge af?</p>
   <form method="post" action="{% url 'account_logout' %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <button class="btn btn-danger" type="submit">{% translate 'Log Out' %}</button>
+    <button class="btn btn-danger" type="submit">Log af</button>
   </form>
 {% endblock content %}

@@ -1,29 +1,29 @@
 {% extends "market/base.html" %}
-{% load i18n %}
 {% load account %}
 
-{% block head_title %}{% trans "Confirm E-mail Address" %}{% endblock %}
+{% block head_title %}Bekræft email-adresse{% endblock %}
 
 
 {% block content %}
-<h2>{% trans "Confirm E-mail Address" %}</h2>
+<h2>Bekræft email-adresse</h2>
 
 {% if confirmation %}
 
-{% user_display confirmation.email_address.user as user_display %}
+    {% user_display confirmation.email_address.user as user_display %}
 
-<p>{% blocktrans with confirmation.email_address.email as email %}Please confirm that <a href="mailto:{{ email }}">{{ email }}</a> is an e-mail address for user {{ user_display }}.{% endblocktrans %}</p>
+    <p>Bekræft venligst, at <a href="mailto:{{ confirmation.email_address.email }}">
+    {{ confirmation.email_address.email }}</a> er din emailadresse.</p>
 
-<form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
-    {% csrf_token %}
-    <button class="btn btn-primary" type="submit">{% trans 'Confirm' %}</button>
-</form>
+    <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">Bekræft</button>
+    </form>
 
 {% else %}
 
-{% url 'account_email' as email_url %}
 
-<p>{% blocktrans %}This e-mail confirmation link expired or is invalid. Please <a href="{{ email_url }}">issue a new e-mail confirmation request</a>.{% endblocktrans %}</p>
+Dette link til email-bekræftelse er udløbet eller ugyldigt. Vær venlig at 
+oprette en ny forespørgsel om bekræftelse af email: <a href="{% url 'account_email' %}">.</a>.</p>
 
 {% endif %}
 

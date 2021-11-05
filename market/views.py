@@ -29,7 +29,7 @@ def market_edit(request, market_id):
             form.save()
             messages.success(
                 request, _(
-                    "You updated the market.")
+                    "Du opdaterede markedet.")
             )
 
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))

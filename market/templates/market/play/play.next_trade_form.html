@@ -1,14 +1,13 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load static%}
-{% load i18n %}
 {% load sekizai_tags %}
 
 
 <!-- Next trade form -->
 <div class="card mb-3">
     <div class="card-header">
-        {% translate 'Make your next trade' %}
+        Foretag din næste handel
     </div>
     <div class="card-body pb-2">
         <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
@@ -16,26 +15,29 @@
             {{ form|crispy }}
         </form>
         <div class="d-flex justify-content-center mt-4 mb-4">
-            <input type="button" value="{% translate 'Make Trade!' %}" class="btn btn-outline-primary" onclick="make_trade_button_handler()">
+            <input type="button" value="Foretag handel!" class="btn btn-outline-primary" onclick="make_trade_button_handler()">
             <button class="btn btn-warning" data-toggle="modal" data-target="#confirmationPopUp" id="warning_button" style="display:none">
         </div>
 
         <div class="d-flex justify-content-center">
+           
             <ul class="text-secondary">
                 <li>
-                    {% translate 'Total prod. cost' %}: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b> kr.
+                    Samlede produktionsomkostninger: <span id="total_prod_cost_formula"></span><b id="total_prod_cost"></b> kr.
                 </li>
                 <li>
-                    {% translate 'Balance after production' %}: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b> kr.
+                    Saldo efter produktion: <span id="balance_after_production_formula"></span><b id="balance_after_production"></b> kr.
                 </li>
                 <li>
-                    {% translate 'Income if all units are sold' %}: <span id="income_best_case_formula"></span><b id="income_best_case"></b> kr.
+                    Indtægt hvis alt sælges: <span id="income_best_case_formula"></span><b id="income_best_case"></b> kr.
                 </li>
                 <li>
-                    {% translate 'Profit if all units are sold' %}: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b> kr. 
+                    Udbytte hvis alt sælges: <span id="profit_best_case_formula"></span> <b id="profit_best_case"></b> kr. 
                 </li>
-                <li>{% translate 'Profit if no units are sold' %}: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b> kr.
+               
+                <li>Udbytte hvis intet sælges: <span id="profit_worst_case_formula"></span><b id="profit_worst_case"></b> kr.
                 </li>
+           
             </ul>        
         </div>
     </div>
@@ -46,22 +48,20 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">{% translate 'Confirm your trade' %}</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Bekræft din handel</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    {% blocktranslate %}
-                    Your choice of price per unit is lower than your production cost per unit. This is guaranteed to make a loss. 
+                    Din pris pr. enhed er lavere end dine omkostninger pr. enhed. Dette vil med sikkerhed give underskud. 
                     <br><br>
-                    Are you sure you want to proceed with this trade?
-                    {% endblocktranslate %}
+                    Er du sikker på, at du vil gennemføre denne handel?
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{% translate 'Cancel' %}</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fortryd</button>
                     <button type="submit" class="btn btn-danger"
-                            form="trade_form">{% translate 'Proceed' %}</button>
+                            form="trade_form">Fortsæt</button>
                 </div>
             </div>
         </div>

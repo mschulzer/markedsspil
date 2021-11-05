@@ -1,24 +1,20 @@
 {% extends 'market/base.html' %}
 {% load crispy_forms_tags %}
-{% load i18n %}
 
-{% block title %}{% translate 'Log In' %}{% endblock title %}
+{% block title %}Log på{% endblock title %}
 
 {% block content %}
 <div class="container">
-    <h2>{% translate 'LogIn_Title' %}</h2>
-    <p class="mb-4">
-    In order to host a market you need an account.<i> Traders joining a market don't need an account.</i> 
-    </p>
+    <h2 class="mb-3 mt-5">Log på</h2>
 
     <form method="post">
         {% csrf_token %}
         {{ form|crispy }}
         <div class="mt-3 mb-4 d-flex justify-content-center">
-            <button class="btn btn-primary" type="submit">{% translate 'LogIn_Title' %}</button>
+            <button class="btn btn-primary" type="submit">Log på</button>
         </div>
     </form>
-    <p>{% translate 'ForgotPassword' %} <a href="{% url 'account_reset_password' %}">{% translate 'ResetPassword' %}</a></p>
-    <p>{% translate 'HaveNoAccount' %} <a href="{% url 'account_signup' %}">{% translate 'SignUp' %}</a></p>
+    <p>Glemt adgangskode?<a href="{% url 'account_reset_password' %}"> Nulstil din adgangskode her.</a></p>
+    <p>Har du ikke nogen konto?<a href="{% url 'account_signup' %}"> Opret ny bruger</a></p>
 </div>
 {% endblock content %}

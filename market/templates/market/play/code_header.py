@@ -1,30 +1,30 @@
 {% load custom_tags %}
 """
-Below we define some useful constants that you can use in your script. The value of these constants will change from round to round.
+Nedenfor definerer vi nogle brugbare konstanter, du kan anvende i din kode. Værdien af disse konstanter vil ændre sig fra runde til runde. 
 """ 
-# your current balance
+# Din aktuelle saldo
 balance = {{ trader.balance|to_float }}
 
-# your production cost per unit (fixed)
+# Din produktionsomkostning pr. enhed
 prod_cost = {{ trader.prod_cost|to_float }}
 
-# the maximal number of {{ market.product_name_plural }} you can afford to produce
+# Det maksimale antal {{ market.product_name_plural }} du har råd til at producere
 max_amount = {{ max_amount }}
 
-# the maximal price per {{ market.product_name_singular }} you can choose (fixed)
+# Den maksimale pris pr. {{ market.product_name_singular }} du kan vælge
 max_price = {{ max_price|to_float }}
 
-# current round
+# Runde
 round = {{ market.round|add:1 }}
 {% if market.round > 0 %}
-# market average price last round (will be None in first round)
+# Markedets gennemsnitspris i sidste rundend (vil være None i første runde)
 avg_price = {{ round_stats.all.last.avg_price|to_float }}
 {% else %}
-# market average price last round (will be None in first round)
+# Markedets gennemsnitspris i sidste rundend (vil være None i første runnde)
 avg_price = None
 {% endif %}{% if market.round > 0 %}
-# demand for your {{ market.product_name_plural }} last round (will be None in first round)
+# Efterspørgslen efter dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
 demand_last_round = {{ trades.last.demand }}
 {% else %}
-# demand for your {{ market.product_name_plural }} last round (will be None in first round)
+# Efterspørgslen efter dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
 demand_last_round = None{% endif %}

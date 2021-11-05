@@ -11,10 +11,6 @@ python manage.py migrate
 echo "${0}: collecting static files."
 python manage.py collectstatic --noinput --clear
 
-echo "${0}: generating .mo files for translations"
-python manage.py compilemessages
-# cp -rv static/* static_shared/
-
 echo "${0}: populating test database"
 python manage.py setup_test_data
 

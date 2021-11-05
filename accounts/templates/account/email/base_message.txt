@@ -1,13 +1,10 @@
 
-{% load i18n %}
-
 {% autoescape off %}
 
-{% translate 'Hello from Markedsspillet.dk!' %}
-
+Hej fra Markedsspillet.dk!
 {% block content %}{% endblock %}
 
-{% translate 'Thank you for using markedsspillet!' %}
+Vi er glade for, at du bruger Markedsspillet!
 
 {% endautoescape %} 
 

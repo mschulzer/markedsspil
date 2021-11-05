@@ -1,7 +1,6 @@
 {% load crispy_forms_tags %}
 {% load custom_tags %}
 {% load static%}
-{% load i18n %}
 {% load sekizai_tags %}
 
 <!-- Price chart-->
@@ -60,14 +59,14 @@
 
     // Balance chart 
     var traderBalanceDataSet = {
-        label: "Your balance",
+        label: "Din saldo",
         data: JSON.parse("{{ trader_balance_json }}"),
         lineTension: 0,
         borderColor: traderColor,
     };
 
     var averageBalanceDataSet = {
-        label: "{% translate 'Market average balance' %}",
+        label: 'Gennemsnitlig saldo',
         data: JSON.parse("{{ avg_balance_json }}"),
         lineTension: 0,
         borderColor: thirdColor,
@@ -75,7 +74,7 @@
     
     balance_labels = JSON.parse("{{ round_labels_json }}") // labels on x-axis
     {% if not market.endless %}
-        balance_labels.unshift("Start")
+        balance_labels.unshift("0")
     {% endif %}
     
     var lineChart = new Chart(document.getElementById('balanceCanvas'), {
@@ -89,7 +88,7 @@
                 scales: {
                     y: {
                         title:{ 
-                            text: 'Balance (kr.)',
+                            text: 'Saldo (kr.)',
                             display: reponsive_display_y_axis_title()
                         },
                         ticks: {
@@ -99,7 +98,7 @@
                     },
                     x: {
                         title:{ 
-                            text: 'Round',
+                            text: 'Runde',
                             display: 'true'
                         }
                     },            
@@ -107,7 +106,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: "{% translate 'Balance' %}",
+                        text: "Saldo",
                     }
                 },
             }
@@ -117,20 +116,20 @@
 
     // Price chart
     var dataYourPrice = {
-        label: "{% translate 'Your price' %}",
+        label: "Din pris",
         data: JSON.parse("{{ data_price_json }}"),
         lineTension: 0,
         borderColor: traderColor,
     };
 
     var dataMarketAvgPrice = {
-        label: "{% translate 'Market average price' %}",
+        label: "Gennemsnitspris",
         data: JSON.parse("{{ data_market_avg_price_json }}"),
         borderColor: secondColor,
     };
 
     var dataProdCost = {
-        label: "{% translate 'Your unit cost' %}",
+        label: "Dine omkostninger",
         data: JSON.parse("{{ data_prod_cost_json }}"),
         borderColor: thirdColor,
     };
@@ -146,7 +145,7 @@
             scales: {
                 y: {
                     title:{ 
-                        text: 'Cost and price (kr.)',
+                        text: 'Pr. enhed (kr.)',
                         display: reponsive_display_y_axis_title()
                     },
                     ticks: {
@@ -156,7 +155,7 @@
                 },
                 x: {
                     title:{ 
-                        text: 'Round',
+                        text: 'Runde',
                         display: 'true'
                     }
                 },         
@@ -164,7 +163,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: "{% translate 'Price history' %}",
+                    text: "Prishistorik",
                 },
             }
         }
@@ -172,20 +171,20 @@
 
     // Units chart 
     var dataDemand = {
-        label: "{% translate 'Demand' %}",
+        label: "Efterspørgssel",
         data: JSON.parse("{{ data_demand_json }}"),
         lineTension: 0,
         borderColor: traderColor,
     };
 
     var dataSold = {
-        label: "{% translate 'Sold' %}",
+        label: "Solgt",
         data: JSON.parse("{{ data_sold_json }}"),
         borderColor: secondColor,
     };
 
     var dataProduced = {
-        label: "{% translate 'Produced' %}",
+        label: "Produceret",
         data: JSON.parse("{{ data_produced_json }}"),
         borderColor: thirdColor,
     };
@@ -201,14 +200,14 @@
             scales: {
                 y: {
                     title:{ 
-                        text: 'Number of units',
+                        text: 'Antal enheder',
                         display: reponsive_display_y_axis_title()
                     },    
                     suggestedMax: 100,
                 },
                 x: {
                     title:{
-                        text: 'Round',
+                        text: 'Runde',
                         display: 'true'
                     }
                 },         
@@ -216,7 +215,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: "{% translate 'Your production history' %}",
+                    text: "Produktionshistorik",
                 },
             },
         }
