@@ -39,6 +39,9 @@ class Market(models.Model):
     theta = models.DecimalField(max_digits=14, decimal_places=2,
                                 validators=[MinValueValidator(Decimal('0.00'))])
 
+    gamma = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=False,
+                                validators=[MinValueValidator(Decimal('0.00'))])
+
     # w/ below settings, initial balance, min_cost and max_cost has to be <= 9999999999.99
     # min_cost and max_cost has to be positive
     initial_balance = models.DecimalField(

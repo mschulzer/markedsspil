@@ -10,6 +10,7 @@ class MarketAdmin(admin.ModelAdmin):
         'alpha',
         'beta',
         'theta',
+        'gamma',
         'min_cost',
         'max_cost',
         'product_name_singular',
