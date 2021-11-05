@@ -15,6 +15,11 @@ build:  ## Build or rebuild development docker image
 develop:  ## Run development server
 	docker-compose -f docker-compose.dev.yml up --remove-orphans
 
+
+stop: ## Stop production server
+	docker-compose -f docker-compose.dev.yml down --remove-orphans
+
+
 shell:  ## Open shell in running docker development container
 	docker-compose -f docker-compose.dev.yml exec web /bin/bash
 
