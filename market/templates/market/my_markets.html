@@ -32,12 +32,12 @@
                     </td>
                     <td>
                         {% if market.game_over %}
-                            Game is over
+                            Spillet er slut
                         {% else %}
                             {% if market.endless %}
-                            Endless
+                                Runde {{ market.round|add:1 }}
                             {% else %}
-                            Round {{ market.round|add:1 }}/{{ market.max_rounds  }}
+                                Runde {{ market.round|add:1 }}/{{ market.max_rounds  }}
                             {% endif %}
                         {% endif %}
                     </td>
@@ -47,8 +47,8 @@
                         Grundefterspørgsel: {{ market.alpha }}<br>
                         Konkurrenceforhold: {{ market.theta }}<br>
                         Prisfølsomhed: {{ market.gamma }}<br>
-                        Min. cost: {{ market.min_cost }}<br>
-                        Maks. cost: {{ market.max_cost }}<br>
+                        Min. omkostning: {{ market.min_cost }}<br>
+                        Maks. omkostnig: {{ market.max_cost }}<br>
                     </td>          
                     <td>  
                         <button class="btn btn-warning" onclick="prepare_delete('{{ market.market_id }}')">

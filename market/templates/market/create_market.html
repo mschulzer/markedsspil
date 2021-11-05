@@ -15,13 +15,13 @@
 	
 	<div class="card-body">
 		<form id='market_radio_form'>
-			<h5 class="card-title">Vælg markedsscenarie<span class="text-muted text" style="font-size:18px"> (se/rediger indstillingerne nedenfor)</span></h5>
-			<div class="pl-3 mb-2">
+			<h5 class="card-title">Vælg markedsscenarie<span class="text-muted text h5"> (se/rediger indstillingerne nedenfor)</span></h5>
+			<div class="pl-3 mt-4 mb-2">
 				{% for scenario in scenarios %}
 					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
 						{% if forloop.counter0 == 0 %}checked{% endif%}>
-					<label for="scenario_{{ forloop.counter0 }}" class="mb-0 pb-0">{{ scenario.title }}</label>
-					<p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p>
+					<label for="scenario_{{ forloop.counter0 }}" class="mb-0 pb-0 font-weight-semibold" style="font-size:18px">{{ scenario.title }}</label>
+					<p class="text-secondary p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p>
 				{% endfor %}
 			</div>
 		</form> 
