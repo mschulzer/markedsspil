@@ -15,11 +15,11 @@ class MarketForm(forms.ModelForm):
             'product_name_singular': "Navnet på produktet i ental (f.eks. 'baguette')",
             'product_name_plural': "Navnet på produktet i flertal (f.eks. 'baguetter')",
             'initial_balance': "Hvor mange penge skal deltagerne starte med?",
-            # alpha = grundlæggende efterspørgsel
+            # alpha = grundlæggende efterspørgsel (e)
             'alpha': "Hvor stor er efterspørgslen på producentens vare, hvis både producentens egen salgspris og gennemsnitsprisen på markedet er 0 kr.?",
-            # theta = konkurrenceforhold
-            'theta': "Hvor meget øges efterspørgslen på producentens vare, hvis gennemsnitsprisen stiger med 1 kr., mens producentens egen salgspris forbliver uændret?",
-            # gamma = prisfølsomhed
+            # theta = konkurrenceforhold (k)
+            'theta': "Hvor meget øges efterspørgslen på producentens vare for hver krone, producentens salgspris er lavere end markedets gennemsnitspris?",
+            # gamma = prisfølsomhed (f)
             'gamma': "Hvor meget falder efterspørgslen på producentens vare, hvis både producentens egen salgspris og gennemsnitsprisen på markedet stiger med 1 kr.?",
             'min_cost': "Hvad er den laveste produktionsomkostning pr. enhed en producent kan tildeles?",
             'max_cost': "Hvad er den højeste produktionsomkostning pr. enhed en producent kan tildeles?",

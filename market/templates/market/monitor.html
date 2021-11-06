@@ -51,24 +51,29 @@
     <div class="card card-body">
         <p>
             I dette <b>{{ market.product_name_singular}}</b>-market har alle producenter en startsaldo på <b>{{ market.initial_balance }}</b> kr. 
+            
+            <br><br>
+            
             {% if market.min_cost < market.max_cost %}
-                 tilslutter sig markedet, tildeles de tilfældigt forskellige produktionsomkostninger pr. enhed, hvilket skaber ulige konkurrencevillår, der giver nogle producenter en fordel. 
-                PRoducenternes produktionsomkostninger ligger mellem <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. enhed. 
+                Når en producent tilslutter sig markedet, tildeles producenten tilfældigt en produktionsomkostning på mellem 
+                <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. {{ market.product_name_singular }}. 
+                Dette giver nogle producenter en klar konkurrencefordel. 
             {% else %}
-                Alle producenter har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, så alle konkurrerer på lige vilkår. 
+                Alle producenter har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, 
+                så producenter konkurrerer på lige vilkår. 
             {% endif %}
            
             <br><br>
             
             Den grundlæggende efterspørgsmål på markedet er sat til <b>{{ market.alpha }}</b>. 
-            Hvis både producentens egen slagspris og gennemsnitsprisen på markedet er 0 kr., så vil producenten derfor opleve en efterspørgsel på 
-            <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. 
+            Producenten vil derfor opleve en efterspørgsel på <b>{{ market.alpha }}</b> {{ market.product_name_plural }}, hvis både producentens 
+            egen slagspris og markedets gennemsnitspris er 0 kr.
             
             <br><br>
 
             Konkurrenceforholdet er sat til <b>{{ market.theta }}</b>. 
-            Producenten vil derfor opleve en øget efterspørgsel på <b>{{ market.theta }}</b> {{ market.product_name_plural }},
-            hvis gennemsnitsprisen på markedet stiger med 1 kr. i en situation, hvor hans egen salgspris forbliver uændret.
+            Producenten vil derfor opleve en øget efterspørgsel på <b>{{ market.theta }}</b> {{ market.product_name_plural }} for hver krone, producentens
+            salgspris er lavere end end markedets gennemsnitspris.
              
             <br><br>
 
@@ -79,14 +84,14 @@
             <br><br>
 
             {% if market.endless %}
-                Spillet er indstillet til at være <b>uendeligt</b>, so det kan ikke fortsætte i så mange runder, I har lyst til. 
+                Spillet er indstillet til at være <b>uendeligt</b>, så det kan ikke fortsætte i så mange runder, I har lyst til. 
             {% else %}
-                Spillet er indstillet til at stoppe efter <b>{{ market.max_rounds }}</b> runder.
+                Spillet er indstillet til at stoppe efter <b>{{ market.max_rounds }}</b> runder. 
             {% endif %} 
         
         </p>
         {% if request.user == market.created_by %}
-            <a href="{% url 'market:market_edit' market.market_id %}">Rediger detaljer</a> 
+            <a href="{% url 'market:market_edit' market.market_id %}">Rediger indstillinger</a> 
         {% endif %}
     </div>
 </div>

@@ -44,7 +44,7 @@ SCENARIOS = [
     },
     {
         "title": "Scenarie 3: Monopol / Ingen konkurrence",
-        "description": mark_safe("En situation hvor forbrugerne slet ikke tager højde for forskellen mellem producentens pris og gennemsnitsprisen på markedet. Dvs. der er reelt ikke nogen konkurrence mellem producenterne, der i stedet fungerer som <b>monopol</b> på hver deres marked. I dette scenarie tildeles producenterne tilfældigt forskellige produktionsomkostninger ved spillets start, hvilket giver nogle producenter en klar konkurrencefordel."),
+        "description": mark_safe("En situation hvor forbrugerne slet ikke tager højde for forskellen mellem producentens pris og gennemsnitsprisen på markedet. Dvs. der er reelt ikke nogen konkurrence mellem producenterne, der i stedet fungerer som <b>monopol</b> på hver deres marked."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,
