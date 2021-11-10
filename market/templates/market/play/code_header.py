@@ -23,8 +23,8 @@ avg_price = {{ round_stats.all.last.avg_price|to_float }}
 # Markedets gennemsnitspris i sidste rundend (vil være None i første runnde)
 avg_price = None
 {% endif %}{% if market.round > 0 %}
-# Efterspørgslen efter dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
+# Efterspørgslen på dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
 demand_last_round = {{ trades.last.demand }}
 {% else %}
-# Efterspørgslen efter dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
+# Efterspørgslen på dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
 demand_last_round = None{% endif %}

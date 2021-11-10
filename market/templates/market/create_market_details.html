@@ -1,0 +1,68 @@
+{% extends "market/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<h2 class="mt-5 mb-3">Opret et nyt marked</h2>	
+
+{% if scenario_title %}
+	<p class="mb-4">Du har taget udgangspunkt i scenariet  "{{ scenario_title }}", men kan frit redigere i indstilingerne nedenfor.</p>
+{% endif %}
+
+<form action="" class="mb-5" method="post" id="create_market_form">{% csrf_token %}
+	{{ form|crispy }}
+	<input type="hidden" value="{{ scenario_title }}" name="scenario_title">
+</form>
+
+<div class="d-flex justify-content-center mt-5 mb-5">
+	<button class="btn btn-primary" type="button" onclick="submit_form()">
+		<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+			<path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
+		</svg>
+		Opret marked
+	</button>
+</div>
+
+
+{% endblock content %}
+
+{% block javascript %}
+
+<!-- Import scripts shared with market-edit page -->
+<script src="{% static "create-update-market-helpers.js" %}"></script>
+
+
+<script>   
+	function submit_form(){
+		// If user wants to create an "endless" game 
+   		if (document.getElementById('id_endless').checked) {
+        	// Set value of max_rounds to a valid number (some positive integer less than the chosen limit)
+        	// before submitting the form (the exact value will not matter in endless games): 
+        	document.getElementById('id_max_rounds').value = 15;
+		}
+		document.getElementById('create_market_form').submit()
+    }
+
+	function ensureTwoDecimalOnFirstRendering(){
+		document.getElementById('id_initial_balance').value=parseFloat(document.getElementById('id_initial_balance').value).toFixed(2); 
+		document.getElementById('id_min_cost').value=parseFloat(document.getElementById('id_min_cost').value).toFixed(2); 
+		document.getElementById('id_max_cost').value=parseFloat(document.getElementById('id_max_cost').value).toFixed(2); 
+		document.getElementById('id_cost_slope').value=parseFloat(document.getElementById('id_cost_slope').value).toFixed(2); 
+	}
+	ensureTwoDecimalOnFirstRendering()
+	
+	// Hide/show 'max_rounds' field depending on value of 'endless'
+	adjust_max_round_field()
+	
+	document.getElementById('div_id_endless').addEventListener('change', function() {
+		adjust_max_round_field()
+	});
+
+	function setTwoNumberDecimal(el) {
+		// Function to ensure two decimals on monetary amounts after changing form values
+        el.value = parseFloat(el.value).toFixed(2);
+    };
+</script>	
+
+{% endblock javascript %}

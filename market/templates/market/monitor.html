@@ -37,7 +37,7 @@
 <!-- Join Link Collapse Content-->
 <div class="collapse my-1" id="collapseJoin" >
     <div class="card card-body">
-        <p class="mb-1">Players can join the market by going to this URL: </p>
+        <p class="mb-1">Spillere kan tilslutte sig markedet på denne adresse: </p>
         <div class="d-flex">
             <input class="form-control" type="text" 
                 value="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.get_host }}{% url 'market:home' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
@@ -50,35 +50,49 @@
 <div class="collapse my-1" id="collapseDetails">
     <div class="card card-body">
         <p>
-            I dette <b>{{ market.product_name_singular}}</b>-market har alle spillere en startsaldo på <b>{{ market.initial_balance }}</b> kr. 
+            I dette <b>{{ market.product_name_singular}}</b>-market har alle producenter en startsaldo på <b>{{ market.initial_balance }}</b> kr. 
+            
+            <br><br>
+            
             {% if market.min_cost < market.max_cost %}
-                Når spillerne tilslutter sig markedet, tildeles de tilfældigt forskellige produktionsomkostninger pr. enhed, hvilket skaber ulige konkurrencevillår, der giver nogle spillere en fordel. 
-                Spillernes produktionsomkostninger ligger mellem <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. enhed. 
+                Når en producent tilslutter sig markedet, tildeles producenten en produktionsomkostning på mellem 
+                <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. {{ market.product_name_singular }}. 
+                Dette giver nogle producenter en klar konkurrencefordel. 
             {% else %}
-                Alle spillere har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, så alle konkurrerer på lige vilkår. 
+                Alle producenter har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, 
+                så producenterne konkurrerer på lige vilkår. 
             {% endif %}
-            {% if market.endless %}
-                Spillet er indstillet til at være <b>uendeligt</b>, so det kan ikke fortsætte i så mange runder, I har lyst til. 
-            {% else %}
-                Spillet er indstillet til at stoppe efter <b>{{ market.max_rounds }}</b> runder.
-            {% endif %} 
+           
             <br><br>
-            Den grundlæggende efterspørgsmål på markedet er sat til <b>{{ market.alpha }}</b>. Dette betyder, at hvis alle spillere sætter prisen til 0 kr., så vil de hver især opleve en efterspørgsmål på 
-            <b>{{ market.alpha }}</b> {{ market.product_name_plural }}. <br><br>
+            
+            Den grundlæggende efterspørgsmål (e) på markedet er sat til <b>{{ market.alpha }}</b>. 
+            Producenten vil derfor opleve en efterspørgsel på <b>{{ market.alpha }}</b> {{ market.product_name_plural }} pr. runde, hvis både producentens 
+            egen slagspris og markedets gennemsnitspris er 0 kr.
+            
+            <br><br>
 
-            Prisfølsomheden er sat til <b>{{ market.beta }}</b>. Dette betyder, at en spiller vil opleve et fald i efterspørgsel på <b>{{ market.beta }}</b> {{ market.product_name_plural }}, hvis spilleren 
-            hæver prisen med 1 kr. pr. {{ market.product_name_singular }} i en situation, hvor markedets gennemsnitspris forbliver uændret. Omvendt vil en spiller opleve en stigning i efterspørgsel på <b>{{ market.beta }}</b> 
-            {{ market.product_name_plural }}, hvis spilleren 
-            sænker prisen med 1 kr. pr. {{ market.product_name_singular }} i en situation, hvor markedets gennemsnitspris forbliver uændret.
-            
-            
+            Konkurrenceforholdet (k) er sat til <b>{{ market.theta }}</b>. 
+            Producenten vil derfor opleve en øget efterspørgsel på <b>{{ market.theta }}</b> {{ market.product_name_plural }} for hver krone, producentens
+            salgspris er lavere end markedets gennemsnitspris.
+             
             <br><br>
-            Konkurrenceforholdet er sat til <b>{{ market.theta }}</b>. Dette betyder, at en spiller vil opleve en stigning på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis 
-            spillerens pris forbliver uændret i en situation, hvor markedets gennemsnitspris stiger med 1 kr pr. {{ market.product_name_singular }}. Omvendt vil en spiller opleve et fald på <b>{{ market.theta }}</b> {{ market.product_name_plural }}, hvis spillerens
-            pris forbliver uændret i en situation, hvor markedets gennemsnitspris falder med 1 kr {{ market.product_name_singular }}.
+
+            
+            Prisfølsomheden (f) er sat til <b>{{ market.gamma }}</b>. Producenten vil derfor opleve et fald i efterspørgsel på 
+            <b>{{ market.gamma }}</b> {{ market.product_name_plural }}, hvis både producentens egen salgspris og gennemsnitsprisen
+            på markedet stiger med 1 kr. 
+          
+            <br><br>
+
+            {% if market.endless %}
+                Spillet er indstillet til at være <b>uendeligt</b>, så det kan ikke fortsætte i så mange runder, I har lyst til. 
+            {% else %}
+                Spillet er indstillet til at stoppe efter <b>{{ market.max_rounds }}</b> runder. 
+            {% endif %} 
+        
         </p>
         {% if request.user == market.created_by %}
-            <a href="{% url 'market:market_edit' market.market_id %}">Rediger detaljer</a> 
+            <a href="{% url 'market:market_edit' market.market_id %}">Se/rediger detaljerede markedsindstillinger</a> 
         {% endif %}
     </div>
 </div>
@@ -228,7 +242,7 @@
         <div class="card-header" id="heading_balance">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_balance" aria-expanded="true" aria-controls="collapse_balance">
-                    Balance history
+                    Saldoer
                 </button>
             </h5>
         </div>
@@ -244,7 +258,7 @@
         <div class="card-header" id="heading_price">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_price" aria-expanded="true" aria-controls="collapse_price">
-                    Price history
+                    Salgspriser
                 </button>
             </h5>
         </div>
@@ -260,7 +274,7 @@
         <div class="card-header" id="heading_amount">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_amount" aria-expanded="true" aria-controls="collapse_amount">
-                    Production history 
+                    Produktionstal
                 </button>
             </h5>
         </div>

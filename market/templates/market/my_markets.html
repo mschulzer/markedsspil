@@ -18,7 +18,7 @@
                     <th>Oprettet</th>
                     <th>Antal spillere</th>
                     <th>Status</th>
-                    <th>Instillinger</th>
+                    <th>Indstillinger</th>
                     <th>Slet marked</th>
                 </tr>
             </thead>
@@ -32,23 +32,23 @@
                     </td>
                     <td>
                         {% if market.game_over %}
-                            Game is over
+                            Spillet er slut
                         {% else %}
                             {% if market.endless %}
-                            Endless
+                                Runde {{ market.round|add:1 }}
                             {% else %}
-                            Round {{ market.round|add:1 }}/{{ market.max_rounds  }}
+                                Runde {{ market.round|add:1 }}/{{ market.max_rounds  }}
                             {% endif %}
                         {% endif %}
                     </td>
                     <td>
                         Produkt: {{ market.product_name_plural }}<br>
                         Startsaldo: {{ market.initial_balance }}<br>
-                        Alfa: {{ market.alpha }}<br>
-                        Beta: {{ market.beta }}<br>
-                        Theta: {{ market.theta }}<br>
-                        Min. cost: {{ market.min_cost }}<br>
-                        Maks. cost: {{ market.max_cost }}<br>
+                        Grundefterspørgsel (e): {{ market.alpha }}<br>
+                        Konkurrenceforhold (k): {{ market.theta }}<br>
+                        Prisfølsomhed (f): {{ market.gamma }}<br>
+                        Min. omkostning: {{ market.min_cost }}<br>
+                        Maks. omkostnig: {{ market.max_cost }}<br>
                     </td>          
                     <td>  
                         <button class="btn btn-warning" onclick="prepare_delete('{{ market.market_id }}')">

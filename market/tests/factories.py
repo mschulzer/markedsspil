@@ -23,8 +23,8 @@ class MarketFactory(factory.django.DjangoModelFactory):
     product_name_plural = 'baguettes'
     initial_balance = Decimal('5000.00')
     alpha = Decimal('105.0')
-    beta = Decimal('17.5')
     theta = Decimal('14.5')
+    gamma = Decimal('3.0')
     min_cost = Decimal('8.00')
     max_cost = Decimal('8.00')
     created_by = factory.SubFactory(UserFactory)
@@ -53,7 +53,8 @@ class TradeFactory(factory.django.DjangoModelFactory):
     trader = factory.SubFactory(TraderFactory)
     unit_price = Decimal('10.20')
     unit_amount = 13
-    demand = max(0, round_to_int(MarketFactory.alpha - MarketFactory.beta*unit_price  + MarketFactory.theta * Decimal('12.32'))) # 12.32 is stand in for market avg. prce 
+    demand = max(0, round_to_int(MarketFactory.alpha - (MarketFactory.gamma + MarketFactory.theta)
+                 * unit_price + MarketFactory.theta * Decimal('12.32')))  # 12.32 is stand in for market avg. prce
     units_sold = min(demand, unit_amount) 
     profit = Decimal(units_sold * unit_price - unit_amount * TraderFactory.prod_cost)
     balance_after = Decimal(TraderFactory.balance) + profit

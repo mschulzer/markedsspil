@@ -12,7 +12,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
-from django.utils.translation import gettext as _
 
 
 @login_required
@@ -28,10 +27,8 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, _(
-                    "Du opdaterede markedet.")
+                request, "Du opdaterede markedet."
             )
-
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
 
     else:  # request.method = 'GET'
@@ -40,7 +37,6 @@ def market_edit(request, market_id):
     context = {
         "form": form,
         "market": market,
-        "upper_limit_on_max_rounds": Market.UPPER_LIMIT_ON_MAX_ROUNDS
     }
 
     return render(request, "market/market_edit.html", context)
@@ -149,12 +145,39 @@ def my_markets(request):
 @login_required
 def create_market(request):
     if request.method == 'POST':
+        scenario = SCENARIOS[int(request.POST['scenario_id'])]
+        form = MarketForm(scenario)
+
+        if form.is_valid():
+            # the form should always be valid as input parameters are defined backend!
+            new_market = form.save(commit=False)
+            new_market.created_by = request.user
+            new_market.save()
+            if new_market.min_cost < new_market.max_cost:
+                # add min_cost og max_cost to the list of unused costs
+                UnusedCosts(market=new_market, cost=new_market.min_cost).save()
+                UnusedCosts(market=new_market, cost=new_market.max_cost).save()
+            return redirect(reverse('market:monitor', args=(new_market.market_id,)))
+
+    elif request.method == 'GET':
+        form = MarketForm()
+
+    return render(request, 'market/create_market.html', {'scenarios': SCENARIOS})
+
+@login_required
+def create_market_details(request):
+
+    scenario_title = ""
+
+    if request.method == 'POST':
+        scenario_title = request.POST['scenario_title']
         form = MarketForm(request.POST)
+
         if form.is_valid():
             new_market = form.save(commit=False)
             new_market.created_by = request.user
             new_market.save()
-            # if all traders are not to have equal production cost
+            # if traders should be assigned different equal production cost
             if new_market.min_cost < new_market.max_cost:
                 # add min_cost og max_cost to the list of unused costs
                 UnusedCosts(market=new_market, cost=new_market.min_cost).save()
@@ -163,16 +186,19 @@ def create_market(request):
             return redirect(reverse('market:monitor', args=(new_market.market_id,)))
 
     elif request.method == 'GET':
-        form = MarketForm()
+        if 'scenario_id' in request.GET:
+            scenario = SCENARIOS[int(request.GET['scenario_id'])]
+            scenario_title = scenario['title']
+        else:
+            return HttpResponseRedirect(reverse('market:create_market'))
+
+        form = MarketForm(initial=scenario)
 
     context = {
+        'scenario_title': scenario_title,
         'form': form,
-        'scenarios': SCENARIOS,
-        'scenarios_json': json.dumps(SCENARIOS),
-        'upper_limit_on_max_rounds': Market.UPPER_LIMIT_ON_MAX_ROUNDS
     }
-
-    return render(request, 'market/create_market.html', context)
+    return render(request, 'market/create_market_details.html', context)
 
 
 @require_POST
@@ -416,37 +442,3 @@ def current_round(request, market_id):
             'game_over': market.game_over
         }
     )
-
-
-# def download(request, market_id):
-#     # not properly tested yet
-#     # known issues:
-#     # if trader_stats does not exist for all traders in all rounds script will crash.
-#     market = get_object_or_404(Market, market_id=market_id)
-#     market_traders = Trader.objects.filter(market=market)
-#     total_rounds = market.round
-#     data = "Round,Average price,Average amount,Average profit,"
-#     for trader in market_traders:
-#         data += trader.name + " balance,"
-#     data += "<br>"
-#     for r in range(total_rounds):
-#         data += str(r) + ","
-#         round_stats = Stats.objects.filter(round=r, market=market)
-#         avg_price = sum(
-#             [trader.price for trader in round_stats]) / len(round_stats)
-#         data += str(avg_price) + ","
-#         avg_amount = sum(
-#             [trader.amount for trader in round_stats]) / len(round_stats)
-#         data += str(avg_amount) + ","
-#         avg_profit = sum(
-#             [trader.profit for trader in round_stats]) / len(round_stats)
-#         data += str(avg_profit) + ","
-#         for trader in market_traders:
-#             trader_stats = Stats.objects.get(
-#                 round=r, market=market, trader=trader)
-#             data += str(trader_stats.balance) + ","
-#         data += "<br>"
-#     output = open(market.market_id + "_stats.csv", "w")
-#     output.write(data)
-#     output.close()
-#     return HttpResponse(data)

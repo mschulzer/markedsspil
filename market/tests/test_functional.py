@@ -17,21 +17,23 @@ from .factories import TraderFactory, MarketFactory, TradeFactory, UnProcessedTr
 # Two player game
 def test_round_0_one_forced_move(logged_in_user, client):
 
-    # A teacher creates a market
+    # A teacher creates a market through detailed create market page
     post_data = {
         'product_name_singular': 'baguette',
         'product_name_plural': 'baguettes',
         'initial_balance': 4000,
         'alpha': 21.4,
-        'beta': 44.2,
+        'gamma': 3.1,
         'theta': 2.0,
         'min_cost': 11,
         'max_cost': 144,
         'cost_slope': 1.0,
         'max_rounds': 15,
-        'endless': False}
+        'endless': False,
+        'scenario_title': 'Scenario Title'
+    }
     client.post(
-        reverse('market:create_market'),
+        reverse('market:create_market_details'),
         post_data
     )
     assert Market.objects.all().count() == 1

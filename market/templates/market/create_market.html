@@ -1,130 +1,64 @@
 {% extends "market/base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
 {% block title %}Opret nyt marked{% endblock %}
 
 {% block content %}
 
-<h3 class="mt-5">Opret et nyt marked</h3>
-<h6 class="mb-3">Vælg et prædefineret markedsscenarie eller opret et marked med dine egne indstillinger.</h6>
+<h2 class="mt-5 mb-3">Opret et nyt marked</h2>	
 
-<div class="card mb-3">
-	<div class="card-header">
-		Markedsscenarier
-	</div>
-	
-	<div class="card-body">
-		<form id='market_radio_form'>
-			<h5 class="card-title">Vælg markedsscenarie<span class="text-muted text" style="font-size:18px"> (se/rediger indstillingerne nedenfor)</span></h5>
-			<div class="pl-3 mb-2">
-				{% for scenario in scenarios %}
-					<input type="radio" id="scenario_{{ forloop.counter0 }}" name="scenario" value="{{ forloop.counter0 }}"
-						{% if forloop.counter0 == 0 %}checked{% endif%}>
-					<label for="scenario_{{ forloop.counter0 }}" class="mb-0 pb-0">{{ scenario.title }}</label>
-					<p class="text-muted p-0 m-0 mb-4" style="font-size:14px">{{ scenario.description }}</p>
-				{% endfor %}
+{% for scenario in scenarios %}
+	<div class="card mb-3">
+		<div class="card-header">Scenarie {{ forloop.counter }}</div>
+		<div class="row">
+			<div class="col-md-8">
+				<div class="card-body">
+					<h5 class="card-title">{{ scenario.title }}</h5>
+					<p class="card-text"> {{ scenario.description }}</p>
+					<br>
+					<br>	
+					<div class="d-flex justify-content-around">
+						<button class="btn btn-outline-primary" onclick="show_details({{ forloop.counter0 }})">Se/rediger indstillinger</button>
+						<button class="btn btn-primary" type="button" onclick="create_market({{ forloop.counter0 }})">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+								<path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
+							</svg>
+							Opret marked
+						</button> 
+					</div>
+				</div>  
 			</div>
-		</form> 
+			<div class="col-md-4">
+				<img src="{% static 'img/baguettes3.jpg' %}" class="img-fluid rounded-start" alt="image description">
+			</div>
+		</div>
 	</div>
-</div>
+{% endfor %}
+<br>
 
-<div class="card mb-3">
-    <div class="card-header" id="headingOne">
-      <h5 class="mb-0">
-        <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-        	Markedsdetaljer
-        </button>
-      </h5>
-    </div>
+<form action="" id="create_market_form" method="post">{% csrf_token %}
+	<input type="hidden" value="" name="scenario_id" id="create_market_scenario_id">
+</form>
 
-    <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
-      <div class="card-body">
-      		<form action="" id="create-market-form" method="post">{% csrf_token %}
-			{{ form|crispy }}
-		</form>
-	  </div>
-    </div>
-</div>
-
-<div class="d-flex justify-content-center">
-	<input onclick="submit_form()" value="Opret" class="btn btn-primary mt-3 mb-4" form="create-market-form">
-</div>
+<form action="{% url 'market:create_market_details' %}" id="show_details_form" method="get">
+	<input type="hidden" value="" name="scenario_id" id="show_details_scenario_id">
+</form>
 
 
 {% endblock content %}
 
 {% block javascript %}
 
-<!-- Import scripts shared with market-edit page -->
-<script src="{% static "create-update-market-helpers.js" %}"></script>
-
 <script>
-	market_form = document.getElementById('create-market-form');
-   
-	scenarios = {{ scenarios_json|safe }}
-
-	function fill_form(scenario){
-		console.log("fill_form")
-		// toFixed(2) ensures two decimals on initial rendering of form
-		document.getElementById('id_product_name_singular').value=scenario.product_name_singular
-		document.getElementById('id_product_name_plural').value=scenario.product_name_plural
-		document.getElementById('id_alpha').value=scenario.alpha
-		document.getElementById('id_beta').value=scenario.beta
-		document.getElementById('id_theta').value=scenario.theta	
-		document.getElementById('id_max_rounds').value=scenario.max_rounds
-		document.getElementById('id_endless').checked=scenario.endless
-		if (scenario.initial_balance == ""){
-			// User has chosen the "custom scenario"
-			document.getElementById('id_initial_balance').value=scenario.initial_balance; 
-			document.getElementById('id_min_cost').value=scenario.min_cost; 
-			document.getElementById('id_max_cost').value=scenario.max_cost;
-		}
-		else{ 
-			document.getElementById('id_initial_balance').value=scenario.initial_balance.toFixed(2); 
-			document.getElementById('id_min_cost').value=scenario.min_cost.toFixed(2); 
-			document.getElementById('id_max_cost').value=scenario.max_cost.toFixed(2);
-		}
-		adjust_max_round_field()
+	function create_market(scenario_id){
+		document.getElementById('create_market_scenario_id').value = scenario_id
+		document.getElementById('create_market_form').submit() 
 	}
 
-	/* We should NOT fill out form with predefined scenario values after an unsuccesful post-attempt.
-	   Instead, the form will be filled out with the posted values + error messages */
-	{% if not form.errors %}fill_form(scenarios[0]){% endif %}
-	
-	document.getElementById('market_radio_form').addEventListener('change', function() {
-		scenario_number = document.querySelector('input[name="scenario"]:checked').value
-		scenario = scenarios[scenario_number]
-			fill_form(scenario);
-		if(scenario_number == 2) {
-			// Radio button value changed to 'Custom Scenario'
-			// This should make market details section expanded
-			document.getElementById('collapseOne').classList.add('show')
-		}
-		else {
-			document.getElementById('collapseOne').classList.remove('show')
-		}
-	}); 
-
-	document.getElementById('div_id_endless').addEventListener('change', function() {
-		adjust_max_round_field()
-	});
-
-	adjust_max_round_field()
-
-	function setTwoNumberDecimal(el) {
-		// Ensure two decimals after changing form values
-        el.value = parseFloat(el.value).toFixed(2);
-    };
-
-
-	{% if form.errors %}
-		// If there are errors in the form, the market details should expand, making the errors messages visible. 
-		document.getElementById('collapseOne').classList.add('show')
-	{% endif %}
-
+	function show_details(scenario_id){
+		document.getElementById('show_details_scenario_id').value = scenario_id
+		document.getElementById('show_details_form').submit()
+	}
 </script>
-
-
 {% endblock javascript %}
 
 
