@@ -55,7 +55,7 @@
             <br><br>
             
             {% if market.min_cost < market.max_cost %}
-                Når en producent tilslutter sig markedet, tildeles producenten tilfældigt en produktionsomkostning på mellem 
+                Når en producent tilslutter sig markedet, tildeles producenten en produktionsomkostning på mellem 
                 <b>{{ market.min_cost }}</b> kr. og <b>{{ market.max_cost }}</b> kr. pr. {{ market.product_name_singular }}. 
                 Dette giver nogle producenter en klar konkurrencefordel. 
             {% else %}

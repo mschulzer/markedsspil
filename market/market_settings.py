@@ -29,7 +29,7 @@ SCENARIOS = [
     },
     {
         "title": "Scenarie 2: Forskellige omkostninger",
-        "description": "I dette scenarie tildeles producenterne tilfældigt forskellige produktionsomkostninger ved spillets start, hvilket giver nogle producenter en klar konkurrencefordel.",
+        "description": "I dette scenarie tildeles producenterne forskellige produktionsomkostninger ved spillets start, hvilket giver nogle producenter en klar konkurrencefordel.",
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,
