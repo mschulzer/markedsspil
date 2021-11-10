@@ -28,23 +28,24 @@ class MarketForm(forms.ModelForm):
             'allow_robots': "Producenterne skal kunne agere via algoritmer skrevet i Python"
         }
         labels = {
-            'product_name_singular': 'Produktnavn (ental)',
-            'product_name_plural': 'Produktnavn (flertal)',
+            'product_name_singular': 'Produktnavn i ental',
+            'product_name_plural': 'Produktnavn i flertal',
             'initial_balance': 'Startsaldo',
-            'alpha': 'Grundlæggende efterspørgsel',
-            'theta': 'Konkurrenceforhold',
-            'gamma': 'Prisfølsomhed',
+            'alpha': 'Grundlæggende efterspørgsel (e)',
+            'theta': 'Konkurrenceforhold (k)',
+            'gamma': 'Prisfølsomhed (f)',
             'min_cost': 'Minimal omkostning pr. enhed',
             'max_cost': 'Maksimal omkostning pr. enhed',
             'cost_slope': 'Ændring i produktionsomkostning pr. runde',
             'endless': 'Uendeligt spil',
             'max_rounds': 'Antal runder',
-            'allow_robots': 'Tillad robotspillere'
+            'allow_robots': 'Tillad robotspillere (beta version)'
         }
         widgets = {
             'initial_balance': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),
             'min_cost': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),
-            'max_cost': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"})
+            'max_cost': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),
+            'cost_slope': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"})
         }
 
     def clean(self):

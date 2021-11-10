@@ -14,6 +14,7 @@ from ..models import Market, Trader, Trade, RoundStat, UnusedCosts
 from ..forms import TraderForm
 from decimal import Decimal
 from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory, TraderFactory, UserFactory, MarketFactory
+from ..market_settings import SCENARIOS
 
 import pytest
 from pytest_django.asserts import assertTemplateUsed, assertContains, assertNotContains
@@ -155,12 +156,7 @@ def test_join_market_view_new_trader_who_enters_game_late_created_with_forced_tr
         'market:play', args=(market.market_id,)))
 
 
-# Test Create Market View GET Request
-def test_create_market_view_url_and_template(client, logged_in_user):
-    response = client.get('/create_market/')
-    assert response.status_code == 200
-    assertTemplateUsed(response, 'market/create_market.html')
-
+# Test create_market View GET Request
 
 def test_create_market_view_name_and_template(client, logged_in_user):
     response = client.get(reverse('market:create_market'))
@@ -175,7 +171,46 @@ def test_create_market_view_login_required(client, logged_in_user):
     assert response.status_code == 302
     assert response['Location'] == '/accounts/login/?next=/create_market/'
 
-# Test Create Market View POST Request
+
+# Test create_market View POST Request
+def test_create_market_details_view_valid_data(client, logged_in_user):
+    """ 
+    A market is created when posting valid data & logged in user is set as market's creator 
+    After successfull creation, client is redirected to monitor page
+    """
+    response = client.post(
+        reverse('market:create_market'), {'scenario_id': 3})
+    assert Market.objects.all().count() == 1
+    market = Market.objects.first()
+    assert (market.created_by == logged_in_user)
+    assert (market.gamma == SCENARIOS[3]['gamma'])
+    assert (response.status_code == 302)
+    assert(response['Location'] == reverse(
+        'market:monitor', args=(market.market_id,)))
+
+
+# Test create_market_details View GET Request
+
+def test_create_market_details_view_name_and_template(client, logged_in_user):
+    response = client.get(
+        reverse('market:create_market_details')+'?scenario_id=4')
+    assert response.status_code == 200
+    assertTemplateUsed(response, 'market/create_market_details.html')
+
+
+def test_create_market_details_view_name_and_template_no(client, logged_in_user):
+    """ Redirect if no scenario id id provided """
+    response = client.get(reverse('market:create_market_details'))
+    assert response.status_code == 302
+
+
+def test_create_market_view_login_required(client, logged_in_user):
+    """ User not logged in will be redirected to login page """
+    client.logout()
+    response = client.get(reverse('market:create_market_details'))
+    assert response.status_code == 302
+    assert response['Location'] == '/accounts/login/?next=/create_market_details/'
+
 
 
 @pytest.fixture
@@ -191,7 +226,8 @@ def create_market_data():
         'max_cost': 144,
         'cost_slope': 0,
         'max_rounds': 15,
-        'endless': False
+        'endless': False,
+        'scenario_title': 'Scenario Title'
     }
 
 
@@ -201,7 +237,8 @@ def test_create_market_is_created_when_data_is_valid(client, logged_in_user, cre
     Since min_cost < max_cost two new Unused costs are produced
     After successfull creation, client is redirected to monitor page
     """
-    response = client.post(reverse('market:create_market'), create_market_data)
+    response = client.post(
+        reverse('market:create_market_details'), create_market_data)
     assert Market.objects.all().count() == 1
     market = Market.objects.first()
     assert (market.created_by == logged_in_user)
@@ -227,7 +264,8 @@ def test_create_market_when_min_costs_equals_max_cost_no_unused_costs_are_produc
     """
     create_market_data['max_cost'] = 11
 
-    response = client.post(reverse('market:create_market'), create_market_data)
+    response = client.post(
+        reverse('market:create_market_details'), create_market_data)
     assert (Market.objects.all().count() == 1)
     market = Market.objects.first()
     assert (response.status_code == 302)
@@ -242,7 +280,8 @@ def test_create_market_when_min_costs_equals_max_cost_no_unused_costs_are_produc
 def test_create_market_no_market_is_created_when_min_cost_bigger_than_max_cost_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
     """ data is invalid """
     create_market_data['min_cost'] = 200
-    response = client.post(reverse('market:create_market'), create_market_data)
+    response = client.post(
+        reverse('market:create_market_details'), create_market_data)
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
     assertContains(
@@ -252,7 +291,8 @@ def test_create_market_no_market_is_created_when_min_cost_bigger_than_max_cost_a
 def test_create_market_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
     """ data is invalid """
     create_market_data['alpha'] = ''
-    response = client.post(reverse('market:create_market'), create_market_data)
+    response = client.post(
+        reverse('market:create_market_details'), create_market_data)
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
     assertContains(response, "This field is required.")
@@ -264,7 +304,8 @@ def test_create_market_if_user_chooses_negative_min_cost_he_gets_a_good_feedback
     If the users chooses negative value, this should not cast a database error, but a nice feedback message
     """
     create_market_data['min_cost'] = -11
-    response = client.post(reverse('market:create_market'), create_market_data)
+    response = client.post(
+        reverse('market:create_market_details'), create_market_data)
     assert response.status_code == 200
     assertContains(
         response, "Ensure this value is greater than or equal to 0.01.")
@@ -275,7 +316,8 @@ def test_create_market_if_user_chooses_negative_max_rounds_he_gets_a_good_error_
     Max_rounds must be an integer >= 1. 
     """
     create_market_data['max_rounds'] = -4
-    response = client.post(reverse('market:create_market'), create_market_data)
+    response = client.post(
+        reverse('market:create_market_details'), create_market_data)
     assert (response.status_code == 200)
     assertContains(response, "Antal runder kan ikke være mindre end 1")
 

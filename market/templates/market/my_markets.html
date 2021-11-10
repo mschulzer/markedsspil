@@ -18,7 +18,7 @@
                     <th>Oprettet</th>
                     <th>Antal spillere</th>
                     <th>Status</th>
-                    <th>Instillinger</th>
+                    <th>Indstillinger</th>
                     <th>Slet marked</th>
                 </tr>
             </thead>
@@ -44,9 +44,9 @@
                     <td>
                         Produkt: {{ market.product_name_plural }}<br>
                         Startsaldo: {{ market.initial_balance }}<br>
-                        Grundefterspørgsel: {{ market.alpha }}<br>
-                        Konkurrenceforhold: {{ market.theta }}<br>
-                        Prisfølsomhed: {{ market.gamma }}<br>
+                        Grundefterspørgsel (e): {{ market.alpha }}<br>
+                        Konkurrenceforhold (k): {{ market.theta }}<br>
+                        Prisfølsomhed (f): {{ market.gamma }}<br>
                         Min. omkostning: {{ market.min_cost }}<br>
                         Maks. omkostnig: {{ market.max_cost }}<br>
                     </td>          

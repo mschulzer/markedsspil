@@ -37,7 +37,7 @@
 <!-- Join Link Collapse Content-->
 <div class="collapse my-1" id="collapseJoin" >
     <div class="card card-body">
-        <p class="mb-1">Players can join the market by going to this URL: </p>
+        <p class="mb-1">Spillere kan tilslutte sig markedet på denne adresse: </p>
         <div class="d-flex">
             <input class="form-control" type="text" 
                 value="{% if request.is_secure %}https{% else %}http{% endif %}://{{ request.get_host }}{% url 'market:home' %}?market_id={{ market.market_id }}" id="join_link" style="width:350px">
@@ -60,26 +60,27 @@
                 Dette giver nogle producenter en klar konkurrencefordel. 
             {% else %}
                 Alle producenter har de samme produktionsomkostninger på <b>{{ market.min_cost}}</b> kr. pr. {{ market.product_name_singular }}, 
-                så producenter konkurrerer på lige vilkår. 
+                så producenterne konkurrerer på lige vilkår. 
             {% endif %}
            
             <br><br>
             
-            Den grundlæggende efterspørgsmål på markedet er sat til <b>{{ market.alpha }}</b>. 
-            Producenten vil derfor opleve en efterspørgsel på <b>{{ market.alpha }}</b> {{ market.product_name_plural }}, hvis både producentens 
+            Den grundlæggende efterspørgsmål (e) på markedet er sat til <b>{{ market.alpha }}</b>. 
+            Producenten vil derfor opleve en efterspørgsel på <b>{{ market.alpha }}</b> {{ market.product_name_plural }} pr. runde, hvis både producentens 
             egen slagspris og markedets gennemsnitspris er 0 kr.
             
             <br><br>
 
-            Konkurrenceforholdet er sat til <b>{{ market.theta }}</b>. 
+            Konkurrenceforholdet (k) er sat til <b>{{ market.theta }}</b>. 
             Producenten vil derfor opleve en øget efterspørgsel på <b>{{ market.theta }}</b> {{ market.product_name_plural }} for hver krone, producentens
-            salgspris er lavere end end markedets gennemsnitspris.
+            salgspris er lavere end markedets gennemsnitspris.
              
             <br><br>
 
             
-            Prisfølsomheden er sat til <b>{{ market.gamma }}</b>. Producenten vil derfor opleve et fald i efterspørgsel på 
-            <b>{{ market.gamma }}</b> {{ market.product_name_plural }}, hvis både gennemsnitsprisen på market og producentens egen salgspris stiger med 1 kr. 
+            Prisfølsomheden (f) er sat til <b>{{ market.gamma }}</b>. Producenten vil derfor opleve et fald i efterspørgsel på 
+            <b>{{ market.gamma }}</b> {{ market.product_name_plural }}, hvis både producentens egen salgspris og gennemsnitsprisen
+            på markedet stiger med 1 kr. 
           
             <br><br>
 
@@ -91,7 +92,7 @@
         
         </p>
         {% if request.user == market.created_by %}
-            <a href="{% url 'market:market_edit' market.market_id %}">Rediger indstillinger</a> 
+            <a href="{% url 'market:market_edit' market.market_id %}">Se/rediger detaljerede markedsindstillinger</a> 
         {% endif %}
     </div>
 </div>
@@ -241,7 +242,7 @@
         <div class="card-header" id="heading_balance">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_balance" aria-expanded="true" aria-controls="collapse_balance">
-                    Balance history
+                    Saldoer
                 </button>
             </h5>
         </div>
@@ -257,7 +258,7 @@
         <div class="card-header" id="heading_price">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_price" aria-expanded="true" aria-controls="collapse_price">
-                    Price history
+                    Salgspriser
                 </button>
             </h5>
         </div>
@@ -273,7 +274,7 @@
         <div class="card-header" id="heading_amount">
             <h5 class="mb-0">
                 <button class="btn btn-link" data-toggle="collapse" data-target="#collapse_amount" aria-expanded="true" aria-controls="collapse_amount">
-                    Production history 
+                    Produktionstal
                 </button>
             </h5>
         </div>
