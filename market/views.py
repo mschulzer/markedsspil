@@ -12,7 +12,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
-from django.utils.translation import gettext as _
 
 
 @login_required
@@ -28,10 +27,8 @@ def market_edit(request, market_id):
         if form.is_valid():
             form.save()
             messages.success(
-                request, _(
-                    "Du opdaterede markedet.")
+                request, "Du opdaterede markedet."
             )
-
             return HttpResponseRedirect(reverse('market:monitor', args=(market.market_id,)))
 
     else:  # request.method = 'GET'

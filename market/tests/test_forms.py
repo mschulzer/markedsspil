@@ -86,7 +86,8 @@ def test_min_cost_bigger_than_max_cost_is_invalid(form_data):
     form_data['max_cost'] = 2 # min_cost = 3
     form = MarketForm(data=form_data)
     assert not form.is_valid()
-    assert "Max cost must be bigger than min cost" in str(form)
+    assert "Den minimale omkostning kan ikke være større end den maksimale omkostning" in str(
+        form)
     with pytest.raises(ValidationError):
         form.clean()
     with pytest.raises(ValueError):
@@ -224,7 +225,8 @@ def test_if_not_endless_max_rounds_can_be_invalid_1(db, market_update_form_data)
     form = MarketUpdateForm(market_update_form_data, instance=market)
     assert not form.is_valid()
 
-    assert "Number of rounds can&#x27;t be smaller than the current round of the market" in str(form)
+    assert "Antal runder kan ikke vælges mindre end den aktuelle runde af markedet" in str(
+        form)
 
 def test_if_not_endless_max_rounds_can_be_invalid_2(db, market_update_form_data):
     """ If endless = False, max_rounds must be chosen bigger than current round of the market (>market.round) """
@@ -234,7 +236,8 @@ def test_if_not_endless_max_rounds_can_be_invalid_2(db, market_update_form_data)
     form = MarketUpdateForm(market_update_form_data, instance=market)
     assert not form.is_valid()
 
-    assert "Number of rounds can&#x27;t be smaller than the current round of the market" in str(form)
+    assert "Antal runder kan ikke vælges mindre end den aktuelle runde af markedet" in str(
+        form)
 
 def test_if_not_endless_max_rounds_can_be_invalid_3(db, market_update_form_data):
     """ It is okay to choose current round as last round when editing market """
@@ -251,7 +254,7 @@ def test_editing_a_market_that_is_game_over_is_invalid_1(db, market_update_form_
     market_update_form_data['max_rounds'] = 1000
     form = MarketUpdateForm(market_update_form_data, instance=market)
     assert not (form.is_valid())
-    assert ("game is over" in str(form))
+    assert ("Du kan ikke redigere i et marked, som er afsluttet" in str(form))
 
 def test_editing_a_market_that_is_game_over_is_invalid_2(db, market_update_form_data):
     """ Form should not be valid when game is over """
@@ -260,7 +263,7 @@ def test_editing_a_market_that_is_game_over_is_invalid_2(db, market_update_form_
     market_update_form_data['product_name_singular'] = 'XXX'
     form = MarketUpdateForm(market_update_form_data, instance=market)
     assert not(form.is_valid())
-    assert("game is over" in str(form))
+    assert("Du kan ikke redigere i et marked, som er afsluttet" in str(form))
 
 def test_max_rounds_cant_be_zero(db, market_update_form_data):
     """ Form is invalied when max_rounds < 1 """
@@ -308,7 +311,8 @@ def test_market_does_not_exist_is_invalid(db):
     form = TraderForm(data=data)
 
     assert not form.is_valid()
-    assert "There is no market with this ID" in str(form)
+    assert "Der er intet marked med dette ID" in str(
+        form)
 
 
 def test_name_has_to_be_unique_on_market(db):
@@ -319,7 +323,7 @@ def test_name_has_to_be_unique_on_market(db):
     form = TraderForm(data=data)
 
     assert not form.is_valid()
-    assert "A trader with this name has already joined this market. Please select another name" in str(
+    assert "Der er allerede en producent med dette navn på markedet. Vælg et andet navn" in str(
         form)
 
 

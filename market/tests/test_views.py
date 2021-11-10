@@ -62,9 +62,6 @@ def test_home_view_notify_users_who_have_already_joined_a_market(client, db):
 # Test join_market view
 
 def test_join_market_view_proper_behavior_when_no_market_id_in_form(db, client):
-    from django.utils import translation
-    translation.activate("en-US")
-
     response = client.post(reverse('market:join_market'), {
         'username': 'Helle', 'market_id': ''})
     assert response.status_code == 200
@@ -89,7 +86,7 @@ def test_join_market_view_proper_behavior_when_no_market_with_posted_market_id(d
     assert (response.status_code == 200)
     assert not ('trader_id' in client.session)
     assertContains(
-        response, '<strong>There is no market with this ID</strong>')
+        response, 'Der er intet marked med dette ID')
     assert (Trader.objects.all().count() == 0)
 
 
@@ -102,7 +99,7 @@ def test_join_market_view_proper_behaviour_and_nice_feedback_message_when_userna
     assert (response.status_code == 200)
     assert not ('trader_id' in client.session)
     assertContains(
-        response, 'A trader with this name has already joined this market. Please select another name')
+        response, 'Der er allerede en producent med dette navn')
     assert (Trader.objects.all().count() == 1)
 
 
@@ -248,7 +245,8 @@ def test_create_market_no_market_is_created_when_min_cost_bigger_than_max_cost_a
     response = client.post(reverse('market:create_market'), create_market_data)
     assert response.status_code == 200
     assert Market.objects.all().count() == 0
-    assertContains(response, "Max cost must be bigger than min cost")
+    assertContains(
+        response, "Den minimale omkostning kan ikke være større end den maksimale")
 
 
 def test_create_market_no_market_is_created_when_alpha_not_defined_and_error_mgs_is_generated(client, logged_in_user, create_market_data):
@@ -279,7 +277,7 @@ def test_create_market_if_user_chooses_negative_max_rounds_he_gets_a_good_error_
     create_market_data['max_rounds'] = -4
     response = client.post(reverse('market:create_market'), create_market_data)
     assert (response.status_code == 200)
-    assertContains(response, "There must be at least 1 round")
+    assertContains(response, "Antal runder kan ikke være mindre end 1")
 
 
 # Test Monitor View

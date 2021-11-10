@@ -1,7 +1,6 @@
 from django import forms
 from .models import Market, Trade, Trader
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext as _
 from math import floor
 
 
@@ -60,7 +59,7 @@ class MarketForm(forms.ModelForm):
         if min_cost and max_cost:
             if min_cost > max_cost:
                 raise ValidationError(
-                    "Max cost must be bigger than min cost")
+                    "Den minimale omkostning kan ikke være større end den maksimale omkostning")
 
         return cleaned_data
 
@@ -69,7 +68,8 @@ class MarketForm(forms.ModelForm):
         max_rounds = self.cleaned_data['max_rounds']
 
         if not (max_rounds is None) and max_rounds < 1:
-            raise forms.ValidationError('There must be at least 1 round')
+            raise forms.ValidationError(
+                'Antal runder kan ikke være mindre end 1')
         return max_rounds
 
 
@@ -94,29 +94,28 @@ class MarketUpdateForm(MarketForm):
         max_rounds = cleaned_data.get("max_rounds")
         if self.instance.game_over:
             raise ValidationError(
-                "You can't edit a market that has ended (game is over)")
+                "Du kan ikke redigere i et marked, som er afsluttet.")
         if not endless:
             if max_rounds:
                 if max_rounds < self.instance.round + 1:
                     raise forms.ValidationError(
-                        "Number of rounds can't be smaller than the current round of the market".format(
-                            self.instance.round + 1)
+                        "Antal runder kan ikke vælges mindre end den aktuelle runde af markedet"
                     )
         return cleaned_data
 
 
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label=_("Market ID"), help_text=_(
-        'Enter the ID of the market you want to join.'))
+    market_id = forms.CharField(max_length=16, label="Market ID",
+                                help_text="Indtast ID'et på det marked, du vil deltage i")
 
     class Meta:
         model = Trader
         fields = ['name']
         labels = {
-            'name': _('Name'),
+            'name': 'Navn',
         }
         help_texts = {
-            'name': _('The name you choose will be visible to other traders on the market.'),
+            'name': 'Navnet du vælger her vil være synligt for de andre deltagere i markedet.',
         }
 
     def clean_market_id(self):
@@ -124,7 +123,7 @@ class TraderForm(forms.ModelForm):
         market_id = self.cleaned_data['market_id'].upper()
 
         if not Market.objects.filter(pk=market_id).exists():
-            raise forms.ValidationError(_('There is no market with this ID'))
+            raise forms.ValidationError('Der er intet marked med dette ID')
         return market_id
 
     def clean(self):
@@ -139,11 +138,11 @@ class TraderForm(forms.ModelForm):
             market = Market.objects.get(market_id=cleaned_market_id)
             if market.game_over:
                 raise forms.ValidationError(
-                    _('This market has has ended. No new traders can join.'))
+                    'Dette marked er afsluttet. Ingen nye handlende kan deltage.')
 
             elif Trader.objects.filter(name=cleaned_name, market=market).exists():
                 raise forms.ValidationError(
-                    _('A trader with this name has already joined this market. Please select another name'))
+                    'Der er allerede en producent med dette navn på markedet. Vælg et andet navn.')
 
         return cleaned_data
 
@@ -183,10 +182,10 @@ class TradeForm(forms.ModelForm):
 
             # Labels
             self.fields['unit_price'].label = (
-                _("Set your price for one {0}")).format(trader.market.product_name_singular)
+                f"Vælg pris for 1 {trader.market.product_name_singular}")
 
             self.fields['unit_amount'].label = (
-                _("How many {0} do you want to produce?")).format(trader.market.product_name_plural)
+                f"Hvor mange {trader.market.product_name_plural} vil du producere?")
 
             # Set default value of price slider equal to the trader's prod cost
             self.fields['unit_price'].widget.attrs['value'] = trader.prod_cost

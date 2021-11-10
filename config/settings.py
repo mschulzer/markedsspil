@@ -29,8 +29,8 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(" ")
 
 # Where to find translation files
-LOCALE_PATHS = (os.path.join(os.path.dirname(
-    os.path.realpath(__name__)), 'locale'), )
+# LOCALE_PATHS = (os.path.join(os.path.dirname(
+#     os.path.realpath(__name__)), 'locale'), )
 
 # Application definition
 

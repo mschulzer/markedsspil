@@ -12,9 +12,8 @@ The `web` container executes `entrypoint.dev.sh` on start-up which:
  1. Resets the database entirely
  2. Runs migrations for the database
  3. Collects static files
- 4. Generate translation files
- 5. Populate a test-database
- 6. Runs the Django development webserver exposed on port 8000
+ 4. Populate a test-database
+ 5. Runs the Django development webserver exposed on port 8000
 
 The database is reset in production to ensure that we use the same
 starting point for any manual tests that we do.
@@ -30,8 +29,7 @@ In production we run the following services as docker containers:
 The `web` container executes `entrypoint.prod.sh` on start-up which:
  1. Runs migrations for the database
  2. Collects static files
- 3. Generate translation files
- 4. Runs the Gunicorn server exposed on port 8000
+ 3. Runs the Gunicorn server exposed on port 8000
 
 Backups
 -------
