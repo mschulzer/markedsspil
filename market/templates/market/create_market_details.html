@@ -7,7 +7,7 @@
 <h2 class="mt-5 mb-3">Opret et nyt marked</h2>	
 
 {% if scenario_title %}
-	<p class="mb-4">Du har taget udgangspunkt i scenariet  "{{ scenario_title }}", men kan frit redigere i indstilingerne nedenfor.</p>
+	<p class="mb-4">Du har taget udgangspunkt i scenariet  "{{ scenario_title }}", men kan frit redigere i indstilingerne nedenfor.<br>De fleste af indstillingerne kan også ændres i løbet af spillet.</p>
 {% endif %}
 
 <form action="" class="mb-5" method="post" id="create_market_form">{% csrf_token %}
