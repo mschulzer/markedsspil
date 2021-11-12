@@ -43,15 +43,15 @@
             <div class="card-body container">
                 {% if user.is_authenticated %}     
 
-                <p>Når du opretter et nyt marked, får du automatisk rollen som 'game master'. Ønsker du at skabe et nyt marked?</p>
-                <div class="d-flex justify-content-center p">
+                <p>Opret et marked, hvis du ønsker at være game master for et markedsspil med andre deltagere: </p>
+                <div class="d-flex justify-content-center mb-4">
                     <a class="pr-2" href="{% url 'market:create_market' %}">
                         <button class="btn btn-primary">
                             Opret nyt marked
                         </button>
                     </a>
                 </div>
-                <p class="mt-3">Her kan du genbesøge markeder, du har oprettet tidligere:</p>
+                <p class="mt-3">Her kan du finde de markeder, du evt. har oprettet tidligere:</p>
                 <div class="d-flex justify-content-center p">
                     <a class="pl-2 mb-3" href="{% url 'market:my_markets' %}">
                         <button class="btn btn-primary">
