@@ -27,7 +27,7 @@ SCENARIOS = [
         "max_rounds": 15,
         "endless": False,
         "allow_robots": False,
-        "img": 'img/baguettes3.jpg'
+        "img": 'img/baguettes3.jpg',
     },
     {
         "title": "Forskellige omkostninger",
@@ -44,7 +44,7 @@ SCENARIOS = [
         "max_rounds": 15,
         "endless": False,
         "allow_robots": False,
-        "img": 'img/baguettes3.jpg'
+        "img": 'img/baguettes3.jpg',
     },
     {
         "title": "Monopol / Ingen konkurrence",

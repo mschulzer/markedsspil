@@ -16,7 +16,7 @@ Den oprindelige artikel omhandler et empirisk studie, hvor deltagere
 har ageret agenter. Derefter er en model tilpasset deltagernes
 opførsel i eksperimentet, hvilket gør det muligt at simulere deres
 videre opførsel. Denne videre simulering, har vi ikke med i selve
-spillet, men kan afprøves i denne Python notebook:
+spillet, men den kan afprøves i denne Python notebook:
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/DatalogiForAlle/market_competition/master?filepath=empirical_market_competition_mc.ipynb)
 
 Forfattere
