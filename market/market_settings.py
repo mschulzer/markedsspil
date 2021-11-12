@@ -11,10 +11,11 @@ gamma is the price sensitivity
 """
 from django.utils.safestring import mark_safe
 
+
 SCENARIOS = [
     {
-        "title": "Samme omkostninger",
-        "description": "I dette scenarie har alle producenter de samme produktionsomkostninger pr. enhed. Alle konkurrerer derfor på lige vilkår. Dette er et godt scenarie at begynde med.",
+        "title": "Standard baguettemarked",
+        "description": "I dette scenarie, som forløber over 15 runder, er både prisfølsomhed og konkurrenceforhold tilstræbt normale, og alle producenter har samme produktionsomkostninger pr. baguette. Dette kan være et godt scenarie at begynde med.",
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,
@@ -23,15 +24,15 @@ SCENARIOS = [
         "gamma": 3.0,
         "min_cost": 8,
         "max_cost": 8,
-        "cost_slope":0,
+        "cost_slope": 0,
         "max_rounds": 15,
         "endless": False,
         "allow_robots": False,
-        "img": 'img/baguettes3.jpg'
+        "img": 'img/baguettes3.jpg',
     },
     {
-        "title": "Forskellige omkostninger",
-        "description": "I dette scenarie tildeles producenterne forskellige produktionsomkostninger ved spillets start, hvilket giver nogle producenter en klar konkurrencefordel.",
+        "title": "Forskellige produktionsomkostninger",
+        "description": "I dette scenarie tildeles producenterne forskellige produktionsomkostninger pr. baguette ved spillets start, hvilket giver nogle producenter en klar konkurrencefordel. Bortset fra det er situationen magen til scenarie 1.",
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,
@@ -44,11 +45,11 @@ SCENARIOS = [
         "max_rounds": 15,
         "endless": False,
         "allow_robots": False,
-        "img": 'img/baguettes3.jpg'
+        "img": 'img/baguettes3.jpg',
     },
     {
         "title": "Monopol / Ingen konkurrence",
-        "description": mark_safe("En situation hvor forbrugerne slet ikke tager højde for forskellen mellem producentens pris og gennemsnitsprisen på markedet. Dvs. der er reelt ikke nogen konkurrence mellem producenterne, der i stedet fungerer som <b>monopol</b> på hver deres marked."),
+        "description": mark_safe("I dette scenarie tager forbrugerne slet ikke tager højde for forskellen mellem producentens pris og gennemsnitsprisen på markedet. Det vil sige, at der reelt ikke er nogen konkurrence mellem producenterne, der i stedet fungerer som <b>monopolister</b> på hver deres marked. Bortset fra det er situationen magen til scenarie 1."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,
@@ -65,7 +66,7 @@ SCENARIOS = [
     },
     {
         "title": "Hård konkurrence",
-        "description": mark_safe("En situation hvor forbrugerne i meget høj grad tager højde for forskellen mellem producentens pris og gennemsnitsprisen på markedet. Dvs. en situation som er meget tæt på <b>fuldkommen konkurrence</b> mellem producenterne på markedet."),
+        "description": mark_safe("I dette scenarie tager forbrugerne i meget høj grad tager højde for forskellen mellem producentens pris og gennemsnitsprisen på markedet. Vi er med andre ord tæt på <b>fuldkommen konkurrence</b> mellem producenterne på markedet. Bortset fra det er scenariet magen til scenarie 1."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,
@@ -82,7 +83,7 @@ SCENARIOS = [
     },
     {
         "title": "Stor prisfølsomhed",
-        "description": mark_safe("En situation hvor forbrugernes efterspørgsel i meget høj grad afhænger af det prisniveau varen sælges til på markedet. Dvs. en vare med <b>høj priselasticitet</b> som f.eks. luksusvarer der godt kan undværes i tilfælde af en prisstigning."),
+        "description": mark_safe("I dette scenarie afhænger forbrugernes efterspørgsel i meget høj grad afhænger af det prisniveau, varen sælges for på markedet. Baguetter er altså en vare med <b>høj priselasticitet</b>, hvilket normalt kendetegner f.eks. luksusvarer, der kan undværes i tilfælde af en prisstigning. Bortset fra det er situationen stort set magen til scenarie 1."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,
@@ -90,7 +91,7 @@ SCENARIOS = [
         "theta": 14.5,
         "gamma": 20.5,
         "min_cost": 8,
-        "max_cost": 8,       
+        "max_cost": 8,
         "cost_slope": 0,
         "max_rounds": 15,
         "endless": False,
@@ -99,7 +100,7 @@ SCENARIOS = [
     },
     {
         "title": "Lille prisfølsomhed",
-        "description": mark_safe("En situation hvor forbrugernes efterspørgsel kun i meget ringe grad afhænger af det prisniveau varen sælges til på markedet. Dvs. en vare med <b>lav priselasticitet</b> som f.eks. essentielle varer der dårligt kan undværes selv ved en prisstigning."),
+        "description": mark_safe("I dette scenarie afhænger forbrugernes efterspørgsel kun i meget ringe grad af det prisniveau, varen sælges for på markedet. Baguetter er med andre ord en vare med <b>lav priselasticitet</b>, hvilket normalt kendetegner f.eks. essentielle varer, der dårligt kan undværes selv ved en prisstigning. Bortset fra det er situationen stort set magen til scenarie 1."),
         "product_name_singular": "baguette",
         "product_name_plural": "baguetter",
         "initial_balance": 5000,

@@ -1,4 +1,5 @@
 {% extends "market/base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block title %}Home{% endblock %}
@@ -42,15 +43,15 @@
             <div class="card-body container">
                 {% if user.is_authenticated %}     
 
-                <p>Når du opretter et nyt marked, får du automatisk rollen som 'game master'. Ønsker du at skabe et nyt marked?</p>
-                <div class="d-flex justify-content-center p">
+                <p>Opret et marked, hvis du ønsker at være game master for et markedsspil med andre deltagere: </p>
+                <div class="d-flex justify-content-center mb-4">
                     <a class="pr-2" href="{% url 'market:create_market' %}">
                         <button class="btn btn-primary">
                             Opret nyt marked
                         </button>
                     </a>
                 </div>
-                <p class="mt-3">Her kan du genbesøge markeder, du har oprettet tidligere:</p>
+                <p class="mt-3">Her kan du finde de markeder, du evt. har oprettet tidligere:</p>
                 <div class="d-flex justify-content-center p">
                     <a class="pl-2 mb-3" href="{% url 'market:my_markets' %}">
                         <button class="btn btn-primary">
@@ -87,11 +88,50 @@
     </div>
 </div>
 
+{% endblock content %}
+
+
+
+{% block footer %}
+
+<div class="d-none d-md-block">
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</div>
+
+<nav class="py-4 d-none d-lg-block bg-light">
+    <div class="container">
+        <div class="d-flex text-center justify-content-center justify-content-md-between flex-row">
+            <a href="https://dataekspeditioner.dk/"><img src="{% static 'img/dataekspeditioner_sort.png' %}" class="pt-4 pb-5 pb-md-0" width="260" alt="dataekspeditioner-logo"></a>
+            <a href="https://ku.dk"><img src="{% static 'img/ku_logo_dk_hh-300x112.png' %}" class="pt-2 px-5"  width="250"  alt="Københavns Universitet"></a>
+            <a href="https://novonordiskfonden.dk/da/"><img src="{% static 'img/NNF_blue_RGB_solid.png' %}" class="pr-3" width="130" alt="Novo Nordisk Fonden"></a> 
+        </div>
+    </div>
+</nav>  
+
+
+<div class="d-none d-md-block d-lg-none">
+
+<nav class="py-4 px-5 bg-light">
+        <div class="d-flex justify-content-between flex-row bg-light">
+            <a href="https://dataekspeditioner.dk/"><img src="{% static 'img/dataekspeditioner_sort.png' %}" class="pt-3" width="150" alt="dataekspeditioner-logo"></a>
+            <a href="https://ku.dk"><img src="{% static 'img/ku_logo_dk_hh-300x112.png' %}" class="px-2 pt-2" width="150"  alt="Københavns Universitet"></a>
+            <a href="https://novonordiskfonden.dk/da/"><img src="{% static 'img/NNF_blue_RGB_solid.png' %}" class="pr-3" width="80" alt="Novo Nordisk Fonden"></a> 
+        </div>
+</nav>  
+</div> 
+{% endblock footer %}
+
+
+
+
+{% block javascript%}
+
 {% if request.session.market_id %}
-<script>
-    // if client has already joined a game, fill out name field
-    document.getElementById('id_name').value = "{{ request.session.username }}"
-</script>
+    <script>
+        // if client has already joined a game, fill out name field
+        document.getElementById('id_name').value = "{{ request.session.username }}"
+    </script>
 {% endif %}
 
-{% endblock %}
+{% endblock javascript%}
+    
