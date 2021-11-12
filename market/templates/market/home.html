@@ -88,35 +88,30 @@
     </div>
 </div>
 
-{% if request.session.market_id %}
-<script>
-    // if client has already joined a game, fill out name field
-    document.getElementById('id_name').value = "{{ request.session.username }}"
-</script>
-{% endif %}
-
-<style>
-@media screen and (max-width: 1060px) {
-    .hide-when-s {
-        display: none;
-    }
-}
-@media screen and (min-width: 1060px) {
-    .hide-when-b {
-        display: none;
-    }
-}
-
-</style>
-
-<nav class="bg-light fixed-bottom pt-2 pb-5 py-md-5">
+<nav class="pt-2 mt-5 fixed-bottom bg-light py-3 py-lg-5 d-none d-md-block" style="z-index: -1;">
     <div class="container">
         <div class="d-flex text-center justify-content-center justify-content-md-between flex-column flex-md-row">
             <a href="https://dataekspeditioner.dk/"><img src="{% static 'img/dataekspeditioner_sort.png' %}" class="pt-4 pb-5 pb-md-0" width="260" alt="dataekspeditioner-logo"></a>
-            <a href="ku.dk"><img src="{% static 'img/ku_logo_dk_hh-300x112.png' %}" class="px-0 px-md-5 pb-md-0 pb-5" width="300"  alt="Københavns Universitet"></a>
+            <a href="https://ku.dk"><img src="{% static 'img/ku_logo_dk_hh-300x112.png' %}" class="px-0 px-md-5 pb-md-0 pb-5" width="300"  alt="Københavns Universitet"></a>
             <a href="https://novonordiskfonden.dk/da/"><img src="{% static 'img/NNF_blue_RGB_solid.png' %}" class="pr-3" width="130" alt="Novo Nordisk Fonden"></a> 
         </div>
     </div>
-</div>
+</nav>  
 
-{% endblock %}
+{% endblock content %}
+
+
+
+
+
+{% block javascript%}
+
+{% if request.session.market_id %}
+    <script>
+        // if client has already joined a game, fill out name field
+        document.getElementById('id_name').value = "{{ request.session.username }}"
+    </script>
+{% endif %}
+
+{% endblock javascript%}
+    

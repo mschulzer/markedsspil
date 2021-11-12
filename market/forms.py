@@ -13,7 +13,7 @@ class MarketForm(forms.ModelForm):
         help_texts = {
             'product_name_singular': "Navnet på produktet i ental (f.eks. 'baguette')",
             'product_name_plural': "Navnet på produktet i flertal (f.eks. 'baguetter')",
-            'initial_balance': "Hvor mange penge skal deltagerne starte med?",
+            'initial_balance': "Hvor mange penge skal deltagerne have fra start?",
             # alpha = grundlæggende efterspørgsel (e)
             'alpha': "Hvor stor er efterspørgslen på producentens vare, hvis både producentens egen salgspris og gennemsnitsprisen på markedet er 0 kr.?",
             # theta = konkurrenceforhold (k)
