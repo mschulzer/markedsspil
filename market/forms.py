@@ -106,7 +106,7 @@ class MarketUpdateForm(MarketForm):
 
 
 class TraderForm(forms.ModelForm):
-    market_id = forms.CharField(max_length=16, label="Market ID",
+    market_id = forms.CharField(max_length=16, label="Markeds-ID",
                                 help_text="Indtast ID'et på det marked, du vil deltage i")
 
     class Meta:

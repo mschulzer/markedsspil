@@ -8,12 +8,12 @@
     {% if market.game_over %}
         {% if market.check_game_over %}
             <!-- The game was played to the final round -->
-            Spillet er slut efter {{ market.max_rounds }} runder.<br><br>
+            Spillet er slut efter {{ market.max_rounds }} runder.
         {% else %}
             <!-- The game ended prematurely (all traders are bankrupt) -->
-            Spillet er slut efter {{ market.round }} runder.<br>
+            Spillet er slut efter {{ market.round }} runder.
         {% endif %}
-            Endelig saldo: <b>{{ trader.balance }}</b> kr.
+            Din endelige saldo er <b>{{ trader.balance }}</b> kr.
     {% else %}
             Saldo: <b>{{ trader.balance }}</b> kr.
     {% endif %}
@@ -107,14 +107,14 @@
 
             {% endif %}
 
-                Din pris pr. {{ market.product_name_singular }} var <b>{{ trades.last.unit_price }} </b>kr.,
-                og gennemsnitsprisen var <b>{{ round_stats.all.last.avg_price }}</b> kr.
+                Din pris pr. {{ market.product_name_singular }} var <b>{{ trades.last.unit_price }} </b>kr. 
+                Gennemsnitsprisen på markedet var <b>{{ round_stats.all.last.avg_price }}</b> kr.
 
                 Dit udbytte var
                 {% if trades.last.profit < 0 %}
-                    <b style="color:red">
+                    <b class="text-danger">
                 {% else %}
-                    <b style="color:green">
+                    <b class="text-success">
                 {% endif %}
                     {{ trades.last.profit }}</b> kr.
             {% endif %}

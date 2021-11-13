@@ -7,7 +7,7 @@
 <!-- Next trade form -->
 <div class="card mb-3">
     <div class="card-header">
-        Foretag din næste handel
+        Din næste handel
     </div>
     <div class="card-body pb-2">
         <form action="{% url 'market:play' market.market_id %}" method="post" class="mb-4" id='trade_form'>
@@ -15,7 +15,7 @@
             {{ form|crispy }}
         </form>
         <div class="d-flex justify-content-center mt-4 mb-4">
-            <input type="button" value="Foretag handel!" class="btn btn-outline-primary" onclick="make_trade_button_handler()">
+            <input type="button" value="Lav handel!" class="btn btn-outline-primary" onclick="make_trade_button_handler()">
             <button class="btn btn-warning" data-toggle="modal" data-target="#confirmationPopUp" id="warning_button" style="display:none">
         </div>
 
