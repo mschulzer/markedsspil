@@ -42,9 +42,9 @@
                             {% endif %}
                         {% endif %}
                         <td>{{ trader.prod_cost }}</td>
-                        <td>{{ trader.balance }} {% if trader.bankrupt %}<small class="pl-2">bankrupt</small>{% endif %}</td>
+                        <td>{{ trader.balance }} {% if trader.bankrupt %}<small class="pl-2">konkurs</small>{% endif %}</td>
                         {% if not market.game_over %}
-                            <td><a href="#" onclick="prepare_remove_trader({{ trader.id }}, '{{ trader.name }}')">Remove</a></td>
+                            <td><a href="#" onclick="prepare_remove_trader({{ trader.id }}, '{{ trader.name }}')">Fjern</a></td>
                         {% endif %}
                     </tr>
                 {% endfor %}
@@ -55,14 +55,14 @@
     {% if market.all_are_bankrupt and not market.game_over %}
         <div class="alert alert-danger mb-4">
             <p>
-                All traders on the market are bankrupt!
-                The game can't proceed before new traders join the market. Do you want to finish the game prematurely?
+                Alle spillere på markedet er gået konkurs! Spillet kan kun fortsætte, hvis nye producenter tilslutter sig markedet. 
+                Skal vi afslutte spillet?
             </p>
             <form action="{% url 'market:set_game_over' market.market_id %}" method = "POST">
                 <div class="d-flex justify-content-center">
                     <button class="btn btn-danger">
                         {% csrf_token %}
-                        Finish Game
+                        Afslut Spil
                     </button>
                 </div>
             </form>
@@ -74,7 +74,7 @@
         <div class="d-flex justify-content-center">
             {% if market.num_ready_traders == 0 %}
                 <button type="button" data-toggle="tooltip" id="toggle_auto_finish_btn" class="btn btn-warning" disabled
-                 title="You can't finish a round before at least one (non-bankrupt) trader is ready.">
+                 title="Du kan ikke afslutte runden før mindst én spiller er klar.">
                     &nbsp;&nbsp;Afslut Runde {{ market.round|add:1 }}&nbsp;&nbsp;
                 </button>
             {% else %}
