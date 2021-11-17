@@ -13,7 +13,6 @@ from django.contrib import messages
 import json
 from .market_settings import SCENARIOS
 
-
 @login_required
 def market_edit(request, market_id):
     market = get_object_or_404(Market, market_id=market_id)
