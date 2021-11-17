@@ -94,10 +94,10 @@
 
 {% block footer %}
 
-<div class="d-none d-md-block">
-    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-</div>
+<footer id="footer" class="bg-info">few
 
+</footer>
+{% comment %} 
 <nav class="py-4 d-none d-lg-block bg-light">
     <div class="container">
         <div class="d-flex text-center justify-content-center justify-content-md-between flex-row">
@@ -106,19 +106,18 @@
             <a href="https://novonordiskfonden.dk/da/"><img src="{% static 'img/NNF_blue_RGB_solid.png' %}" class="pr-3" width="130" alt="Novo Nordisk Fonden"></a> 
         </div>
     </div>
-</nav>  
-
+</nav>   {% endcomment %}
+{% comment %} 
 
 <div class="d-none d-md-block d-lg-none">
-
-<nav class="py-4 px-5 bg-light">
-        <div class="d-flex justify-content-between flex-row bg-light">
-            <a href="https://dataekspeditioner.dk/"><img src="{% static 'img/dataekspeditioner_sort.png' %}" class="pt-3" width="150" alt="dataekspeditioner-logo"></a>
-            <a href="https://ku.dk"><img src="{% static 'img/ku_logo_dk_hh-300x112.png' %}" class="px-2 pt-2" width="150"  alt="Københavns Universitet"></a>
-            <a href="https://novonordiskfonden.dk/da/"><img src="{% static 'img/NNF_blue_RGB_solid.png' %}" class="pr-3" width="80" alt="Novo Nordisk Fonden"></a> 
-        </div>
-</nav>  
-</div> 
+    <nav class="py-4 px-5 bg-light">
+            <div class="d-flex justify-content-between flex-row bg-light">
+                <a href="https://dataekspeditioner.dk/"><img src="{% static 'img/dataekspeditioner_sort.png' %}" class="pt-3" width="150" alt="dataekspeditioner-logo"></a>
+                <a href="https://ku.dk"><img src="{% static 'img/ku_logo_dk_hh-300x112.png' %}" class="px-2 pt-2" width="150"  alt="Københavns Universitet"></a>
+                <a href="https://novonordiskfonden.dk/da/"><img src="{% static 'img/NNF_blue_RGB_solid.png' %}" class="pr-3" width="80" alt="Novo Nordisk Fonden"></a> 
+            </div>
+    </nav>  
+</div>  {% endcomment %}
 {% endblock footer %}
 
 
