@@ -116,7 +116,7 @@ class TraderForm(forms.ModelForm):
             'name': 'Navn',
         }
         help_texts = {
-            'name': 'Navnet du vælger her vil være synligt for de andre deltagere i markedet.',
+            'name': 'Navnet, du vælger her, vil være synligt for de andre deltagere på markedet.',
         }
 
     def clean_market_id(self):

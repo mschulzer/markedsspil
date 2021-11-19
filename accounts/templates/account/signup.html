@@ -4,15 +4,24 @@
 {% block title %}Opret ny bruger{% endblock title %}
 
 {% block content %}
-<h2 class="mb-3 mt-5">Opret ny bruger</h2>
+<h2 class="mb-2 mt-5">Opret ny bruger</h2>
 <p class="mb-4">
-Du har brug for en konto, hvis vil oprette et marked.  
+Du har brug for en konto, hvis du vil oprette et marked.  
 </p>
-<form method="post">
+<form method="post" id="signupform">
     {% csrf_token %}
     {{ form|crispy }}
     <div class="d-flex justify-content-center">
     <button class="btn btn-primary" type="submit">Opret ny bruger</button>
     </div>
 </form>
+
 {% endblock content %}
+
+{% block javascript %}
+<!-- To correct a spelling error in all-auth app-->
+<script>
+    document.getElementById('id_email').placeholder = "E-mailadresse"
+</script>
+
+{% endblock javascript %}
