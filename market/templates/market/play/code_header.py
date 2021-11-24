@@ -17,13 +17,25 @@ max_price = {{ max_price|to_float }}
 # Runde
 round = {{ market.round|add:1 }}
 {% if market.round > 0 %}
-# Markedets gennemsnitspris i sidste rundend (vil være None i første runde)
-avg_price = {{ round_stats.all.last.avg_price|to_float }}
+# Din produktion i sidste runde
+amount_last_round = {{ trades.last.unit_amount }}
 {% else %}
-# Markedets gennemsnitspris i sidste rundend (vil være None i første runnde)
-avg_price = None
+# Din produktion i sidste runde (vil være None i første runnde)
+amount_last_round = None
+{% endif %} {% if market.round > 0 %}
+# Din pris i sidste runde
+price_last_round = {{ trades.last.unit_price | to_float }}
+{% else %}
+# Din pris i sidste runde (vil være None i første runnde)
+price_last_round = None
 {% endif %}{% if market.round > 0 %}
-# Efterspørgslen på dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
+# Markedets gennemsnitspris i sidste runde
+avg_price_last_round = {{ round_stats.all.last.avg_price | to_float }}
+{% else %}
+# Markedets gennemsnitspris i sidste runde (vil være None i første runnde)
+avg_price_last_round = None
+{% endif %}{% if market.round > 0 %}
+# Efterspørgslen på dine {{ market.product_name_plural }} i sidste runde
 demand_last_round = {{ trades.last.demand }}
 {% else %}
 # Efterspørgslen på dine {{ market.product_name_plural }} i sidste runde (vil være None i første runde)
