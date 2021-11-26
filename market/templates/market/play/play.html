@@ -27,26 +27,23 @@
             {% include "market/play/play.charts.html" %}
         {% endif %}
     </div>
-
-    <!-- Robot code editor -->
-    {% if not wait and not market.game_over and not trader.bankrupt  %}
-         {% if market.allow_robots %}
-              <div class="col-12 col-lg-6 mt-3 mt-lg-0">
-                  {% include "market/play/play.robots.html" %}
-              </div>
-         {% endif %}
-    {% endif %}
     
     <div class="col-12 col-lg-6 mt-3 mt-lg-0 ">
+        
         <!-- Charts -->
         {% if not market.allow_robots %}
             {% include "market/play/play.charts.html" %}
         {% endif %}
 
-        <!-- Robot code editor -->
-        {% if market.game_over  %}
-            {% if market.allow_robots %}
+        <!-- Robot mode -->
+        {% if market.allow_robots %}
+            {% if market.game_over  %}
+                {% include "market/play/play.charts.html" %}      
                 {% include "market/play/play.robots.html" %}
+
+            {% else %}
+                {% include "market/play/play.robots.html" %}
+                {% include "market/play/play.charts.html" %}      
             {% endif %}
         {% endif %}
 

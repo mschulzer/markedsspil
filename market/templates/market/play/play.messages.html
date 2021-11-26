@@ -139,7 +139,7 @@
 {% if wait %}
 <script>
  function update_status_message(num_ready_traders, num_active_traders, round_num){
-     wait_message = `${ num_ready_traders } ud af ${ num_active_traders } spillere er klar til næste runde.`
+     wait_message = `${ num_ready_traders } ud af ${ num_active_traders } spillere har handlet i runde {{ market.round|add:1 }}.`     
      document.getElementById('wait_status').innerHTML = wait_message;
  }
  update_status_message(

@@ -26,26 +26,26 @@
 
     <div style="font-size:15px;" class="mt-5" id="client_code"></div>
 
-    {% if not market.game_over %}
-        <div class="d-flex justify-content-around pt-4 pb-0">
-            <button class="btn btn-primary" type="button" onclick="runit()">
-                Afprøv din kode
-            </button> 
-            <button class="btn btn-danger" type="button" onclick="autoplay()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                    <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
-                </svg>
-                Anvend algoritme!
-            </button> 
-            <script>
-            function autoplay(){
-                localStorage.setItem("client_code", document.getElementById('client_code').value);
-                runit(submit=true)
-            }
-            </script>
-        </div>
+    {% if not market.game_over and not trader.auto_play %}
+    <div class="d-flex justify-content-around pt-4 pb-0">
+        <button class="btn btn-primary" type="button" onclick="runit()">
+            Afprøv din kode
+        </button> 
+        <button class="btn btn-danger" type="button" onclick="autoplay()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
+            </svg>
+            Anvend algoritme!
+        </button> 
+        <script>
+        function autoplay(){
+            localStorage.setItem("client_code", client_code_textarea.getValue());
+            runit(submit=true)
+        }
+        </script>
+    </div>
     {% endif %}
-
+    
     <textarea id="code_after" class="bg-white" style="visibility:hidden; display:none;" readonly>{% include "market/play/code_footer.py" %}</textarea>
    
     <pre id="output" class="px-4 pb-0 pt-4">
@@ -60,17 +60,22 @@
 
     var code_before_textarea = CodeMirror(document.querySelector('#code_before'), {
         lineNumbers: true,
-        tabSize: 2,
+        tabSize: 4,
         value: `{% include "market/play/code_header.py" %}`,  
         mode: 'python',
         readOnly: 'nocursor'
     });
-
+    {% if trader.auto_play %}
+        client_code_value = localStorage.client_code;
+    {% else %}
+        client_code_value = `{% include "market/play/code_default_body.py" %}`
+    {% endif %} 
+    
     var client_code_textarea = CodeMirror(document.querySelector('#client_code'), {
         lineNumbers: true,
         firstLineNumber: code_before_textarea.lineCount() + 1,
-        tabSize: 2,
-        value: `{% include "market/play/code_default_body.py" %}`,  
+        tabSize: 4,
+        value: client_code_value,  
         mode: 'python',
     });
 
@@ -96,7 +101,7 @@
         
         document.getElementById("cleaned_values").innerHTML = ""
         //var code_before = document.getElementById("code_before").value;   
-        var code_before = code_before_textarea.getValue()
+        var code_before = code_before_textarea.getValue() 
 
         if (localStorage.client_code && submit) {
             var client_code = localStorage.client_code;
@@ -126,7 +131,6 @@
                 if (!price_choice){
                     price_choice = 0
                     console.log("price_choice not defined ... set to 0")
-                    //mypre.innerHTML += "price_choice not defined in your script. Price will be set to 0"
                 }
                 if(price_choice < 0){
                     price_choice = 0

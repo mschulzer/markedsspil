@@ -50,5 +50,7 @@ avg_price_last_round = None
 demand_last_round = {{ trades.last.demand }}
 {% else %}
 # Efterspørgslen på dine {{ market.product_name_plural }} i sidste runde
-#  (vil være None i første runde)
-demand_last_round = None{% endif %}
+# (vil være None i første runde)
+demand_last_round = None {% endif %}
+
+# Resten af koden skal du skrive nedenfor!
