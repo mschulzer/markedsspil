@@ -1,3 +1,5 @@
+""" Din kode skal stå her """
+
 import random
 
 # Din pris pr. {{ market.product_name_singular }}

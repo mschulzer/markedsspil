@@ -20,7 +20,12 @@
         {% if market.game_over or trader.bankrupt %}
             {% include "market/play/play.scoreboard.html" %}
         {% endif%}
-    
+
+         <!-- Charts -->
+        {% if market.allow_robots and not market.game_over %}
+            <div class="mt-5"></div>
+            {% include "market/play/play.charts.html" %}
+        {% endif %}
     </div>
 
     <!-- Robot code editor -->
@@ -32,9 +37,11 @@
          {% endif %}
     {% endif %}
     
-    <!-- Charts -->
     <div class="col-12 col-lg-6 mt-3 mt-lg-0 ">
-        {% include "market/play/play.charts.html" %}
+        <!-- Charts -->
+        {% if not market.allow_robots %}
+            {% include "market/play/play.charts.html" %}
+        {% endif %}
 
         <!-- Robot code editor -->
         {% if market.game_over  %}
