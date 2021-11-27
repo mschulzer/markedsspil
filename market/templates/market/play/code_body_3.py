@@ -1,4 +1,4 @@
-""" Du kan frit redigere i koden nedenfor """
+""" Algoritme 3 """
 
 # I runde 1 foretager vi disse valg
 if round == 1:

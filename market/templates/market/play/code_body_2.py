@@ -1,4 +1,4 @@
-""" Du kan frit redigere i koden nedenfor """
+""" Algoritme 2 """
 
 import random, math
 
@@ -9,7 +9,7 @@ if round == 1:
 
 else:
     # I senere runder:
-    if profit_last_round > 0:
+    if profit_last_round >= 0:
         # Hvis vi havde overskud, gør vi som i sidste runde:
         price_choice = price_last_round
         amount_choice = amount_last_round

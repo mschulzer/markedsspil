@@ -1,4 +1,4 @@
-""" Du kan frit redigere i koden nedenfor """
+""" Algoritme 1 """
 
 import random
 
