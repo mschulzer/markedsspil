@@ -1,3 +1,5 @@
+""" Algoritme 1 """
+
 import random
 
 # Din pris pr. {{ market.product_name_singular }}

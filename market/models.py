@@ -90,7 +90,7 @@ class Market(models.Model):
 
     def check_game_over(self):
         """ 
-        Checks if the game state is should be set to game_over. 
+        Checks if the game state should be set to game_over. 
         """
         if not self.endless and (self.round == self.max_rounds):
             return True

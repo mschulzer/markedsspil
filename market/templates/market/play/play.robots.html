@@ -3,152 +3,320 @@
 {% load static%}
 {% load sekizai_tags %}
 
-<div class="card mb-3 p-3 pb-0">
-    <h3>Handelsalgoritme</h3>
-    <p>Brug Python til at automatisere dine beslutninger!</p>
-    <textarea id="code_before" class="bg-light" readonly class="w-100" rows="12">{% include "market/play/code_header.py" %}</textarea>
+<link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css">
+</link>
 
-    <p class="mt-3">Din kode skal stå her:</p>
-    <textarea id="client_code" class="w-100" rows="9">{% include "market/play/code_default_body.py" %}</textarea>
+<script type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
+</script>
+
+<script type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/python/python.min.js">
+</script>
+
+
+{% if trader.auto_play %}
+<div class="alert alert-success" id="robot-message"></div>
+<script>
+    algo = localStorage.algo_choice;
+    console.log(algo)
+    if (algo == 'algo-custom'){
+        algotext = "din egen algoritme."
+    } else if (algo == '0'){
+        algotext = "algoritmen fra forklaringen."
+    } else if (algo == '1'){
+        algotext = "algoritme 1."
+    } else if (algo == '2'){
+        algotext = "algoritme 2."
+    } else if (algo == '3'){
+        algotext = "algoritme 3."
+    }
     {% if not market.game_over %}
-        <div class="d-flex justify-content-between p-3 pb-0">
-            <button class="btn btn-outline-primary" type="button" onclick="runit()">
-                Afprøv din kode
-            </button> 
-            <button class="btn btn-outline-danger" type="button" onclick="autoplay()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
-                    <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
-                </svg>
-                Anvend algoritme!
-            </button> 
-            <script>
-            function autoplay(){
-                localStorage.setItem("client_code", document.getElementById('client_code').value);
-                runit(submit=true)
-            }
-            </script>
-        </div>
+        document.getElementById('robot-message').innerHTML = "Robotten spiller! Robotten bruger " + algotext;
+    {% else %}
+        document.getElementById('robot-message').innerHTML = "Robotspil er stoppet. Robotten brugte " + algotext;
     {% endif %}
-    <textarea id="code_after" class="bg-light p-0 m-0" cols="40" rows="10" style="visibility:hidden; display:none;" readonly>{% include "market/play/code_footer.py" %}</textarea>
+</script>
+{% endif %}
+<div class="card mb-3 py-3 pr-2 pb-0 bg-light">
+    <div class="px-3">
+        <h3>Handelsalgoritme</h3>
+        <p class="text-bold">Brug Python til at automatisere dine beslutninger!</p>
+    </div>
 
-    <pre id="output">
+    <div style="font-size:15px;" id="code_before"></div>
+
+    <div class="d-flex justify-content-around mt-4 mb-0">
+
+        <label class="radio-inline">
+            <input type="radio" name="algo" id="algo0" onchange="handleRadioChange(0)"/> Forklaring 
+        </label>
+        
+        <label class="radio-inline">
+            <input type="radio" name="algo" id="algo-custom" onchange="handleRadioChange('algo-custom')"/> Din algoritme
+        </label>
+    </div>
+
+    <div class="d-flex justify-content-around mt-4 mb-4">
+
+        <label class="radio-inline">
+            <input type="radio" name="algo" id="algo1"  onchange="handleRadioChange(1)"/> Algoritme 1 
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="algo" id="algo2" onchange="handleRadioChange(2)"/> Algoritme 2
+        </label>
+        <label class="radio-inline">
+            <input type="radio" name="algo" id="algo3" onchange="handleRadioChange(3)"/> Algoritme 3
+        </label>
+    
+    </div>
+
+        
+    <div style="font-size:15px;" class="" id="client_code"></div>
+
+    {% if not market.game_over and not trader.auto_play and not wait %}
+    
+    
+    <div class="d-flex justify-content-around pt-4 pb-0">
+        <button class="btn btn-primary" type="button" onclick="runit()">
+            Afprøv kode
+        </button> 
+        <button class="btn btn-danger" type="button" data-toggle="modal" data-target="#autoPilotConfirmationPopUp">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+                <path d="M10.804 8 5 4.633v6.734L10.804 8zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696l6.363 3.692z"/>
+            </svg>
+            Start robot!
+        </button> 
+        <script>
+        function autoplay(){
+            localStorage.setItem("robot_code", client_code_textarea.getValue());
+            runit(submit=true)
+        }
+        </script>
+    </div>
+    {% endif %}
+    
+    <textarea id="code_after" class="bg-white" style="visibility:hidden; display:none;" readonly>{% include "market/play/code_footer.py" %}</textarea>
+   
+    <pre id="output" class="px-4 pb-0 pt-4">
         <!-- Python print statements in text-area will have output here-->
     </pre> 
     <div id="cleaned_values"></div>                   
 </div> <!-- end of algoritm card-->
 
+<!-- Auto pilot pop-up confirmation -->
+<div class="modal fade" id="autoPilotConfirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Bekræft start af robot</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Hvis du går videre, vil en robot foretage handlerne for dig i resten af spillets runder. Du kan ikke fortryde dette. 
+                <br><br>
+                Hvis du kun ønsker at anvende din algoritme i én runde, så tryk 'Fortryd' og herefter på 'Lav handel!'.
+                <br><br>
+                Vil du starte robotten?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fortryd</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal"
+                    onclick="autoplay()">Fortsæt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {% addtoblock 'js' %}
 <script type="text/javascript"> 
- // output functions are configurable.  This one just appends some text
- // to a pre element.
- function outf(text) { 
-     var mypre = document.getElementById("output"); 
-     mypre.innerHTML = mypre.innerHTML + text; 
- } 
- function builtinRead(x) {
-     if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
-         throw "File not found: '" + x + "'";
-     return Sk.builtinFiles["files"][x];
- }
 
- // Here's everything you need to run a python program in skulpt
- // grab the code from your textarea
- // get a reference to your pre element for output
- // configure the output function
- // call Sk.importMainWithBody()
- function runit(submit=false) { 
-     
-     document.getElementById("cleaned_values").innerHTML = ""
-     var code_before = document.getElementById("code_before").value;   
-     if (localStorage.client_code && submit) {
-         var client_code = localStorage.client_code;
-     } else{
-         var client_code = document.getElementById("client_code").value;
-     }
-     var code_after = document.getElementById("code_after").value;         
-     prog = code_before + client_code + code_after
-     
-     var mypre = document.getElementById("output"); 
-     mypre.innerHTML = ''; 
-     Sk.pre = "output";
-     Sk.configure({output:outf, read:builtinRead}); 
-     var myPromise = Sk.misceval.asyncToPromise(function() {
-         return Sk.importMainWithBody("<stdin>", false, prog, true);
-     });
-     myPromise.then(
-         function(mod) {
-             console.log('Skulpt: Python code parsed successfully');
-             max_amount = Sk.ffi.remapToJs(Sk.globals["max_amount"])
-             max_price = Sk.ffi.remapToJs(Sk.globals["max_price"])               
-             
-             // clean price_choice
-             price_choice = Sk.ffi.remapToJs(Sk.globals["price_choice"])
-             console.log("Input price_choice =", price_choice)
-             if (!price_choice){
-                 price_choice = 0
-                 console.log("price_choice not defined ... set to 0")
-                 //mypre.innerHTML += "price_choice not defined in your script. Price will be set to 0"
-             }
-             if(price_choice < 0){
-                 price_choice = 0
-                 console.log("price_choice negative ... set to 0")
-             }
-             if(price_choice > max_price ){
-                 price_choice = max_price
-                 console.log("price_choice bigger than max_price ... set to max_price")
-             }
-             if(!(typeof price_choice == 'number')){
-                 price_choice = 0
-                 console.log("price_choice not a number ... set to zero")
-             }
-             price_choice = price_choice.toFixed(2)
-             console.log("Cleaned price_choice = ", price_choice)
-             
-             // clean amount_choice
-             amount_choice = Sk.ffi.remapToJs(Sk.globals["amount_choice"])
-             console.log("Input amount_choice =", amount_choice)
-             if (!amount_choice){
-                 amount_choice = 0
-                 console.log(`amount_choice not defined... set to 0`)
-             }
-             if(amount_choice < 0){
-                 amount_choice = 0
-                 console.log("amount_choice negative ... set to 0")
-             }
-             if(amount_choice > max_amount ){
-                 amount_choice = max_amount
-                 console.log("amount_choice bigger than max_price ... set to max_amount")
-             }
-             if(!(typeof amount_choice == 'number')){
-                 amount_choice = 0
-                 console.log("amount_choice not a number ... set to zero")
-             }
-             amount_choice = Math.round(amount_choice);
-             console.log("Cleaned amount_choice = ", amount_choice)
-             
-             var $price_slider = $("#id_unit_price").data("ionRangeSlider");
-             var $amount_slider = $("#id_unit_amount").data("ionRangeSlider");
-             $price_slider.update({
-                 from: price_choice
-             });
-             $amount_slider.update({
-                 from: amount_choice
-             });
-             if (submit){              
-                 document.getElementById("id_auto_play").value = true
-                 document.getElementById('trade_form').submit()
-             }
-             else{
-                 mypre.innerHTML += `<br>Dine algoritme ville have resulteret i disse gyldige valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
-             }
-         },
-         function(err) {
-             console.log("Python error: " + err.toString());
-             mypre.innerHTML += err.toString()
-     });
- } 
- 
+    var code_before_textarea = CodeMirror(document.querySelector('#code_before'), {
+        lineNumbers: true,
+        firstLineNumber: 0,
+        tabSize: 4,
+        value: `{% include "market/play/code_header.py" %}`,  
+        mode: 'python',
+        readOnly: 'nocursor'
+    });
+
+    var client_code_textarea = CodeMirror(document.querySelector('#client_code'), {
+        lineNumbers: true,
+        firstLineNumber: code_before_textarea.lineCount(),
+        tabSize: 4,
+        value: '',  
+        mode: 'python',
+        readOnly: 'nocursor'
+
+    });
+    client_code_textarea.on('change', (client_code_textarea) => {
+        if(document.getElementById("algo-custom").checked){
+            localStorage.setItem("client_code", client_code_textarea.getValue());
+        }
+
+    });
+    
+    function handleRadioChange(selection){
+        localStorage.setItem("algo_choice", selection)
+        setRadioButtonCheckedAndTextAreaContent()
+    }
+
+    function setRadioButtonCheckedAndTextAreaContent(){
+        if (localStorage.algo_choice){
+            if (localStorage.algo_choice == 0){
+                document.getElementById('algo0').checked = true
+                client_code_textarea.setValue(`{% include "market/play/code_body_0.py" %}`)
+                client_code_textarea.setOption("readOnly", 'nocursor')
+            } else if (localStorage.algo_choice == 1){
+                document.getElementById('algo1').checked = true
+                client_code_textarea.setValue(`{% include "market/play/code_body_1.py" %}`)
+                client_code_textarea.setOption("readOnly", 'nocursor')    
+            } else if (localStorage.algo_choice == 2){
+                document.getElementById('algo2').checked = true
+                client_code_textarea.setValue(`{% include "market/play/code_body_2.py" %}`)
+                client_code_textarea.setOption("readOnly", 'nocursor')
+            } else if (localStorage.algo_choice == 3){
+                document.getElementById('algo3').checked = true
+                client_code_textarea.setValue(`{% include "market/play/code_body_3.py" %}`)
+                client_code_textarea.setOption("readOnly", 'nocursor')
+            }
+            else if (localStorage.algo_choice == 'algo-custom'){
+                document.getElementById('algo-custom').checked = true
+                client_code_textarea.setOption("readOnly", false)
+                if (localStorage.client_code){
+                    client_code_textarea.setValue(localStorage.client_code)
+                } else {    
+                    client_code_textarea.setValue(`{% include "market/play/code_body_4.py" %}`)
+               }   
+            }
+        }
+        else{
+            document.getElementById('algo0').checked = true
+            client_code_textarea.setValue(`{% include "market/play/code_body_0.py" %}`)
+            client_code_textarea.setOption("readOnly", 'nocursor')
+        }
+        
+    }
+    setRadioButtonCheckedAndTextAreaContent()
+
+
+    // output functions are configurable.  This one just appends some text
+    // to a pre element.
+    function outf(text) { 
+        var mypre = document.getElementById("output"); 
+        mypre.innerHTML = mypre.innerHTML + text; 
+    } 
+
+    function builtinRead(x) {
+        if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+            throw "File not found: '" + x + "'";
+        return Sk.builtinFiles["files"][x];
+    }
+
+    // Here's everything you need to run a python program in skulpt
+    // grab the code from your textarea
+    // get a reference to your pre element for output
+    // configure the output function
+    // call Sk.importMainWithBody()
+    function runit(submit=false) { 
+        
+        document.getElementById("cleaned_values").innerHTML = ""
+        //var code_before = document.getElementById("code_before").value;   
+        var code_before = code_before_textarea.getValue() 
+
+        if (submit) {
+            var robot_code = localStorage.robot_code;
+        } else{
+            var robot_code = client_code_textarea.getValue();
+        }
+        var code_after = document.getElementById("code_after").value;         
+        prog = code_before + robot_code + code_after
+        
+        var mypre = document.getElementById("output"); 
+
+        mypre.innerHTML = ''; 
+        Sk.pre = "output";
+        Sk.configure({output:outf, read:builtinRead}); 
+        var myPromise = Sk.misceval.asyncToPromise(function() {
+            return Sk.importMainWithBody("<stdin>", false, prog, true);
+        });
+        myPromise.then(
+            function(mod) {
+                console.log('Skulpt: Python code parsed successfully');
+                max_amount = Sk.ffi.remapToJs(Sk.globals["max_amount"])
+                max_price = Sk.ffi.remapToJs(Sk.globals["max_price"])               
+                
+                // clean price_choice
+                price_choice = Sk.ffi.remapToJs(Sk.globals["price_choice"])
+                console.log("Input price_choice =", price_choice)
+                if (!price_choice){
+                    price_choice = 0
+                    console.log("price_choice not defined ... set to 0")
+                }
+                if(price_choice < 0){
+                    price_choice = 0
+                    console.log("price_choice negative ... set to 0")
+                }
+                if(price_choice > max_price ){
+                    price_choice = max_price
+                    console.log("price_choice bigger than max_price ... set to max_price")
+                }
+                if(!(typeof price_choice == 'number')){
+                    price_choice = 0
+                    console.log("price_choice not a number ... set to zero")
+                }
+                price_choice = price_choice.toFixed(2)
+                console.log("Cleaned price_choice = ", price_choice)
+                
+                // clean amount_choice
+                amount_choice = Sk.ffi.remapToJs(Sk.globals["amount_choice"])
+                console.log("Input amount_choice =", amount_choice)
+                if (!amount_choice){
+                    amount_choice = 0
+                    console.log(`amount_choice not defined... set to 0`)
+                }
+                if(amount_choice < 0){
+                    amount_choice = 0
+                    console.log("amount_choice negative ... set to 0")
+                }
+                if(amount_choice > max_amount ){
+                    amount_choice = max_amount
+                    console.log("amount_choice bigger than max_price ... set to max_amount")
+                }
+                if(!(typeof amount_choice == 'number')){
+                    amount_choice = 0
+                    console.log("amount_choice not a number ... set to zero")
+                }
+                amount_choice = Math.round(amount_choice);
+                console.log("Cleaned amount_choice = ", amount_choice)
+                
+                var $price_slider = $("#id_unit_price").data("ionRangeSlider");
+                var $amount_slider = $("#id_unit_amount").data("ionRangeSlider");
+                $price_slider.update({
+                    from: price_choice
+                });
+                $amount_slider.update({
+                    from: amount_choice
+                });
+                if (submit){              
+                    document.getElementById("id_auto_play").value = true
+                    mypre.innerHTML += `<br>Dine algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
+                    document.getElementById('trade_form').submit()
+                }
+                else{
+                    mypre.innerHTML += `<br>Dine algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Autopilot!', hvis du ønsker at spille resten<br>af spillet med denne algoritme.</p>`
+                }
+            },
+            function(err) {
+                console.log("Python error: " + err.toString());
+                mypre.innerHTML += err.toString()
+        });
+    } 
 </script> 
 
 <!-- Skulpt -->

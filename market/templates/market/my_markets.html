@@ -49,6 +49,7 @@
                         Prisfølsomhed (f): {{ market.gamma }}<br>
                         Min. omkostning: {{ market.min_cost }}<br>
                         Maks. omkostnig: {{ market.max_cost }}<br>
+                        {% if market.allow_robots %}Spil med robotter{% else %}Spil uden robotter{% endif %}
                     </td>          
                     <td>  
                         <button class="btn btn-warning" onclick="prepare_delete('{{ market.market_id }}')">
