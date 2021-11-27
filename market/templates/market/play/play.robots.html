@@ -309,7 +309,7 @@
                     document.getElementById('trade_form').submit()
                 }
                 else{
-                    mypre.innerHTML += `<br>Dine algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Autopilot!', hvis du ønsker at spille resten<br>af spillet med denne algoritme.</p>`
+                    mypre.innerHTML += `<br>Dine algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
                 }
             },
             function(err) {
