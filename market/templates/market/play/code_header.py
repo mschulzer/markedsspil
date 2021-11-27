@@ -28,14 +28,14 @@ round = {{ market.round|add:1 }}
 amount_last_round = {{ trades.last.unit_amount }}
 {% else %}
 # Din produktion i sidste runde 
-# (vil være None i første runnde):
+# (vil være None i første runde):
 amount_last_round = None
 {% endif %} {% if market.round > 0 %}
 # Din pris i sidste runde:
 price_last_round = {{ trades.last.unit_price | to_float }}
 {% else %}
 # Din pris i sidste runde
-# (vil være None i første runnde):
+# (vil være None i første runde):
 price_last_round = None
 {% endif %}{% if market.round > 0 %}
 # Markedets gennemsnitspris i sidste runde:
@@ -51,6 +51,14 @@ demand_last_round = {{ trades.last.demand }}
 {% else %}
 # Efterspørgslen på dine {{ market.product_name_plural }} i sidste runde
 # (vil være None i første runde)
-demand_last_round = None {% endif %}
-
-# Resten af koden skal du skrive nedenfor!
+demand_last_round = None
+{% endif %}{% if market.round > 0 %}
+# Dit udbytte i sidste runde:
+profit_last_round = {{ trades.last.profit }}
+{% else %}
+# Dit udbytte i sidste runde
+# (vil være None i første runde)
+profit_last_round = None
+{% endif %}
+# Resten af koden skal du selv skrive i boksen
+# nedenfor

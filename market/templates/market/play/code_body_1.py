@@ -1,4 +1,4 @@
-""" Din kode skal stå her """
+""" Du kan frit redigere i koden nedenfor """
 
 import random
 
