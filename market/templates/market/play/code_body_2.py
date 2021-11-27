@@ -9,11 +9,11 @@ if round == 1:
 
 else:
     # I senere runder:
-    if profit_last_round >= 0:
+    if profit_last_round > 0:
         # Hvis vi havde overskud, gør vi som i sidste runde:
         price_choice = price_last_round
         amount_choice = amount_last_round
     else:
-        # Hvis vi havde underskud, prøver vi noget nyt:
+        # Hvis vi ikke havde underskud, prøver vi noget nyt:
         price_choice = random.uniform(0, max_price)
         amount_choice = random.randint(0, math.floor(max_amount/4))

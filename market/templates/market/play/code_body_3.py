@@ -8,4 +8,4 @@ if round == 1:
 # I senere runder:
 else:
     price_choice = avg_price_last_round + 3
-    amount_choice = min(demand_last_round, amount_last_round)
+    amount_choice = demand_last_round

@@ -60,5 +60,5 @@ profit_last_round = {{ trades.last.profit }}
 # (vil være None i første runde)
 profit_last_round = None
 {% endif %}
-# Resten af koden skal du selv skrive i boksen
+# Resten af koden skal du selv udfylde i boksen
 # nedenfor

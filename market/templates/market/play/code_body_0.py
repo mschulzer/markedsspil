@@ -13,5 +13,5 @@ amount_choice = 50
 # hvis de ikke bliver defineret korrekt.  
 
 # Hvis du har brug for hjælp eller inspiration, 
-# så prøv en af algoritmerne ovenfor. Forhåbentlig
+# så prøv algoritme 1, 2 eller 3. Forhåbentlig
 # kan du dog lave en bedre algoritme selv :-)
