@@ -63,8 +63,13 @@
 		document.getElementById("id_theta").setAttribute('readonly', true)
 		document.getElementById("id_endless").setAttribute('disabled', 'disabled')
 		document.getElementById("id_allow_robots").setAttribute('disabled', 'disabled')
-
 	{% endif %} 
+	
+	{% if market.allow_robots %}
+		// Once enabled, robots should not be disabled
+		document.getElementById("id_allow_robots").setAttribute('disabled', 'disabled')
+	{% endif%}
+
 </script>
 
 {% endblock javascript %}

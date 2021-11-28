@@ -11,7 +11,7 @@ from .helpers import create_forced_trade, process_trade, generate_balance_list, 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 import json
-from .market_settings import SCENARIOS
+from .scenarios import SCENARIOS
 
 @login_required
 def market_edit(request, market_id):

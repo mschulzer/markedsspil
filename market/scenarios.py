@@ -1,7 +1,6 @@
 """
 List of predefined market scenarios.
 Scenarios added to the list will get automatically shown as options in the create market interface.
-The first scenario in the list will be selected by default.
 
 Recall,
 alpha is the basic demand
@@ -30,6 +29,24 @@ SCENARIOS = [
         "allow_robots": False,
         "img": 'img/baguettes3.jpg',
     },
+    {
+        "title": "Standard baguettemarked med algoritmiske agenter",
+        "description": "Markedsindstillingerne i dette scenarie er magen til indstillingerne i scenarie 1. Men spillerne får mulighen for at handle via algoritmiske agenter kodet i Python.",
+        "product_name_singular": "baguette",
+        "product_name_plural": "baguetter",
+        "initial_balance": 5000,
+        "alpha": 105,
+        "theta": 14.5,
+        "gamma": 3.0,
+        "min_cost": 8,
+        "max_cost": 8,
+        "cost_slope": 0,
+        "max_rounds": 15,
+        "endless": False,
+        "allow_robots": True,
+        "img": 'img/baguettes3.jpg',
+    },
+
     {
         "title": "Forskellige produktionsomkostninger",
         "description": "I dette scenarie tildeles producenterne forskellige produktionsomkostninger pr. baguette ved spillets start, hvilket giver nogle producenter en klar konkurrencefordel. Bortset fra det er situationen magen til scenarie 1.",
