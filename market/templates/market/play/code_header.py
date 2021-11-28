@@ -18,7 +18,8 @@ prod_cost = {{ trader.prod_cost|to_float }}
 max_amount = {{ max_amount }}
 
 # Den maksimale pris pr. {{ market.product_name_singular }} du
-# kan vælge:
+# kan vælge (defineret som 4 * markedets største
+# produktionsomkostning pr. enhed):
 max_price = {{ max_price|to_float }}
 
 # Igangværende runde:

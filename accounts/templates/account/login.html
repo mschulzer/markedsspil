@@ -18,3 +18,13 @@
     <p>Har du ikke nogen konto?<a href="{% url 'account_signup' %}"> Opret ny bruger</a></p>
 </div>
 {% endblock content %}
+
+
+{% block javascript %}
+
+<!-- To correct a spelling error in all-auth app-->
+<script>
+    document.getElementById('id_login').placeholder = "E-mailadresse"
+</script>
+
+{% endblock javascript %}

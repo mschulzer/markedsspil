@@ -14,7 +14,7 @@ from ..models import Market, Trader, Trade, RoundStat, UnusedCosts
 from ..forms import TraderForm
 from decimal import Decimal
 from .factories import TradeFactory, UnProcessedTradeFactory, ForcedTradeFactory, TraderFactory, UserFactory, MarketFactory
-from ..market_settings import SCENARIOS
+from ..scenarios import SCENARIOS
 
 import pytest
 from pytest_django.asserts import assertTemplateUsed, assertContains, assertNotContains

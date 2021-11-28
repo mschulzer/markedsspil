@@ -39,7 +39,7 @@ class MarketForm(forms.ModelForm):
             'cost_slope': 'Ændring i produktionsomkostning pr. runde',
             'endless': 'Uendeligt spil',
             'max_rounds': 'Antal runder',
-            'allow_robots': 'Tillad robotspillere (beta version)'
+            'allow_robots': 'Tillad robotspil'
         }
         widgets = {
             'initial_balance': forms.NumberInput(attrs={'step': 0.01, 'onchange': "setTwoNumberDecimal(this)"}),
