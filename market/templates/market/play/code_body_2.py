@@ -9,7 +9,7 @@ if round == 1:
     price_choice = 2 * prod_cost
 
     # Vi vælger at producere en femtedel af 
-    # det maksimale antal vare, vi har råd til 
+    # det maksimale antal varer, vi har råd til 
     # at producere. 
     amount_choice = max_amount / 5
 
@@ -17,15 +17,14 @@ if round == 1:
 else:
     if profit_last_round > 0:
         # Hvis vi havde overskud, gør vi det samme som 
-        # i sidste runde
+        # i sidste runde:
         price_choice = price_last_round
         amount_choice = amount_last_round
     else:
         # Hvis vi ikke havde overskud, prøver vi noget nyt:
-
         # Vi vælger en tilfældig pris, som ligger et sted
         # mellem 100% og 150% af vores produktionsomkostning
-        # pr. vare. 
+        # pr. vare:
         price_choice = random.uniform(prod_cost, 1.5 * prod_cost)
 
         # Vi vælger at producere et tilfældigt antal varer, 

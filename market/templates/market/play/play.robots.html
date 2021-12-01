@@ -314,7 +314,7 @@
             },
             function(err) {
                 console.log("Python error: " + err.toString());
-                mypre.innerHTML += err.toString()
+                mypre.innerHTML += "Der er syntaksfejl i din Python-kode:<br>" + err.toString()
         });
     } 
 </script> 
