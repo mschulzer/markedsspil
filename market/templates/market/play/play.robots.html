@@ -74,7 +74,7 @@
         
     <div style="font-size:15px;" class="" id="client_code"></div>
 
-    {% if not market.game_over and not trader.auto_play and not wait %}
+    {% if not market.game_over and not wait %}
     
     <div class="d-flex justify-content-around pt-4 pb-0">
         <button class="btn btn-primary" type="button" onclick="runit()">
@@ -317,24 +317,6 @@
 
                 console.log("Python error: " + err.toString());
                 mypre.innerHTML += "Der er syntaksfejl i din Python-kode:<br>" + err.toString()
-                amount_choice = 0
-                price_choice = 0
-                    var $price_slider = $("#id_unit_price").data("ionRangeSlider");
-                    var $amount_slider = $("#id_unit_amount").data("ionRangeSlider");
-                    $price_slider.update({
-                    from: price_choice
-                });
-                $amount_slider.update({
-                    from: amount_choice
-                });
-                if (submit){              
-                    document.getElementById("id_auto_play").value = true
-                    mypre.innerHTML += `<br>Din algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
-                    document.getElementById('trade_form').submit()
-                }
-                else{
-                    mypre.innerHTML += `<br><br>Din algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
-                }
 
         });
     } 
