@@ -246,7 +246,7 @@
         });
         myPromise.then(
             function(mod) {
-                // If there are syntax errors in client's python code, this function will be executed
+                // If there are NO syntax errors in client's python code, this function will be executed
                 console.log('Skulpt: Python code parsed successfully');
                 max_amount = Sk.ffi.remapToJs(Sk.globals["max_amount"])
                 max_price = Sk.ffi.remapToJs(Sk.globals["max_price"])               
