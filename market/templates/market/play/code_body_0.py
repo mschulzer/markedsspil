@@ -39,4 +39,7 @@ amount_choice = 25
 # tilladte, så vil programmet automatisk 
 # vælge de nærmeste gyldige værdier for dig. 
 # Dette sikrer, at din robot ikke går i stå
-# midt i et spil. 
+# midt i et spil. Hvis der er en syntax-fejl
+# i din Python-kode, vil dog være nødt til 
+# at rette denne fejl, før din robot kan 
+# køre videre. 
