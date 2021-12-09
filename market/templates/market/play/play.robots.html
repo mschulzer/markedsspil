@@ -20,9 +20,8 @@
 <div class="alert alert-success" id="robot-message"></div>
 <script>
     algo = localStorage.algo_choice;
-    console.log(algo)
     if (algo == 'algo-custom'){
-        algotext = "din egen algoritme."
+        algotext = "'Din algoritme'."
     } else if (algo == '0'){
         algotext = "eksemplet fra instruktionen."
     } else if (algo == '1'){
@@ -75,8 +74,7 @@
         
     <div style="font-size:15px;" class="" id="client_code"></div>
 
-    {% if not market.game_over and not trader.auto_play and not wait %}
-    
+    {% if not market.game_over and not wait %}
     
     <div class="d-flex justify-content-around pt-4 pb-0">
         <button class="btn btn-primary" type="button" onclick="runit()">
@@ -139,7 +137,6 @@
     var code_before_textarea = CodeMirror(document.querySelector('#code_before'), {
         lineNumbers: true,
         firstLineNumber: 0,
-        tabSize: 4,
         value: `{% include "market/play/code_header.py" %}`,  
         mode: 'python',
         readOnly: 'nocursor'
@@ -149,6 +146,7 @@
         lineNumbers: true,
         firstLineNumber: code_before_textarea.lineCount(),
         tabSize: 4,
+        smartIndent: false,
         value: '',  
         mode: 'python',
         readOnly: 'nocursor'
@@ -224,7 +222,8 @@
     // configure the output function
     // call Sk.importMainWithBody()
     function runit(submit=false) { 
-        
+        console.log("##### Runde:", "{{ market.round|add:1 }} #####")
+
         document.getElementById("cleaned_values").innerHTML = ""
         //var code_before = document.getElementById("code_before").value;   
         var code_before = code_before_textarea.getValue() 
@@ -247,6 +246,7 @@
         });
         myPromise.then(
             function(mod) {
+                // If there are NO syntax errors in client's python code, this function will be executed
                 console.log('Skulpt: Python code parsed successfully');
                 max_amount = Sk.ffi.remapToJs(Sk.globals["max_amount"])
                 max_price = Sk.ffi.remapToJs(Sk.globals["max_price"])               
@@ -305,16 +305,19 @@
                 });
                 if (submit){              
                     document.getElementById("id_auto_play").value = true
-                    mypre.innerHTML += `<br>Dine algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
+                    mypre.innerHTML += `<br>Din algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
                     document.getElementById('trade_form').submit()
                 }
                 else{
-                    mypre.innerHTML += `<br>Dine algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
+                    mypre.innerHTML += `<br>Din algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
                 }
             },
             function(err) {
+                // If there are syntax errors in client's Python code, this function will be executed
+
                 console.log("Python error: " + err.toString());
                 mypre.innerHTML += "Der er syntaksfejl i din Python-kode:<br>" + err.toString()
+
         });
     } 
 </script> 
