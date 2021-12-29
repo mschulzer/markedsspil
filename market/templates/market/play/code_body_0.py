@@ -33,13 +33,13 @@ amount_choice = 25
 # 0, hvis disse variable ikke bliver defineret 
 # i dit program. 
 
+# Hvis der er syntaksfejl i din Python-kode
+# så sættes værdierne af 'price_choice' og
+# 'amount_choice' automatisk til 0. 
 # Hvis dit program definerer værdier af 
 # 'price_choice' eller 'amount_choice',
 # som ikke giver mening, eller ikke er
 # tilladte, så vil programmet automatisk 
 # vælge de nærmeste gyldige værdier for dig. 
-# Dette sikrer, at din robot ikke går i stå
-# midt i et spil. Hvis der er en syntax-fejl
-# i din Python-kode, vil dog være nødt til 
-# at rette denne fejl, før din robot kan 
-# køre videre. 
+# Dette sikrer, at din robot aldrig går i stå
+# midt i et spil. 
