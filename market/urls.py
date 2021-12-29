@@ -12,6 +12,7 @@ urlpatterns = [
     path('create_market_details/', views.create_market_details,
          name='create_market_details'),
     path('<market_id>/play/', views.play, name='play'),
+    path('<market_id>/play/robot_logs/', views.robot_logs, name='robot_logs'),
     path('<market_id>/monitor/', views.monitor, name='monitor'),
     path('<market_id>/market-edit/', views.market_edit, name='market_edit'),
     path('my_markets/', views.my_markets, name='my_markets'),

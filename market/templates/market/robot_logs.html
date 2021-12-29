@@ -1,0 +1,36 @@
+{% extends "market/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Robot-journal{% endblock %}
+
+{% block content %}
+
+<h2>Robotjournal</h2>
+
+<p>
+    Her kan du se detaljer om din robots kørsel i hver runde.<br>
+    Journalen kan blandt andet bruges til at afsløre fejl i din Python-kode.</br>
+</p>
+
+
+<div id="robot_logs"></div>
+
+<a href="{% url 'market:robot_logs' market.market_id %}" class='btn btn-primary mt-5 mx-5'>Opdatér journal</a>
+<button onclick="clean_logs()" class='btn btn-warning mt-5 mx-5'>Ryd journal</button>
+
+
+{% endblock content %}
+
+
+
+{% block javascript %}
+<script>
+    document.getElementById("robot_logs").innerHTML = localStorage.robot_logs 
+    function clean_logs(){
+        localStorage.setItem("robot_logs", "")
+        window.location.href="{% url 'market:robot_logs' market.market_id %}"
+    }
+</script> 
+{% endblock javascript %}
+
