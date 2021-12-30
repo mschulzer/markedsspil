@@ -41,16 +41,9 @@ def market_edit(request, market_id):
     return render(request, "market/market_edit.html", context)
 
 @require_GET
-def robot_logs(request, market_id):
-    market = get_object_or_404(Market, market_id=market_id)
-
-    if 'market_id' in request.session:
-        if request.session['market_id'] == market.market_id:
-            if market.allow_robots:
-                return render(request, 'market/robot_logs.html',{'market':market})
-        
-    return HttpResponseRedirect(reverse('market:home'))
-
+def robot_logs(request):
+    return render(request, 'market/robot_logs.html')
+ 
 
 
 @require_GET

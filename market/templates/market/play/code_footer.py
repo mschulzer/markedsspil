@@ -2,11 +2,11 @@
 print("")
 print("Din algoritme producerede disse rå output-værdier:")
 try:
-    print("Pris:", price_choice)
+  print("price_choice:", price_choice)
 except:
-    print("Pris: Blev ikke korrekt defineret!")
+  print("price_choice: Blev ikke korrekt defineret!")
 
 try:
-    print("Antal:", amount_choice)
+  print("amount_choice:", amount_choice)
 except:
-    print("Antalt: Blev ikke korrekt defineret!")
+  print("amount_choice: Blev ikke korrekt defineret!")

@@ -35,7 +35,7 @@
     {% else %}
         document.getElementById('robot-message').innerHTML = "Robotspil er stoppet. Robotten brugte " + algotext;
     {% endif %}
-        document.getElementById('robot-message').innerHTML += '<br>Her kan du se <a class="alert-link" target="_blank" href="{% url "market:robot_logs" market.market_id %}">detaljer</a> om robotkørslen.'
+        document.getElementById('robot-message').innerHTML += '<br>Her kan du se <a class="alert-link" target="_blank" href="{% url "market:robot_logs" %}">detaljer</a> om robotkørslen.'
 
 
 </script>
@@ -148,8 +148,8 @@
     var client_code_textarea = CodeMirror(document.querySelector('#client_code'), {
         lineNumbers: true,
         firstLineNumber: code_before_textarea.lineCount(),
-        tabSize: 4,
-        smartIndent: false,
+        tabSize: 2,
+        smartIndent: true,
         value: '',  
         mode: 'python',
         readOnly: 'nocursor'
@@ -226,7 +226,6 @@
     // call Sk.importMainWithBody()
    
     function runit(submit=false) { 
-        console.log("##### Runde:", "{{ market.round|add:1 }} #####")
 
         document.getElementById("cleaned_values").innerHTML = ""
         //var code_before = document.getElementById("code_before").value;   
@@ -250,17 +249,17 @@
         });
         var dt = new Date();
 
+        robot_logs = localStorage.getItem('robot_logs')
+        robot_logs += `<br><b>Runde: {{ market.round|add:1 }}</b>. Markeds-ID: {{ market.market_id }}. ${dt.toLocaleString('en-GB')}.<br>`
+
         myPromise.then(
             function(mod) {
                 // If there are NO syntax errors in client's python code, this function will be executed
     
-                robot_logs = localStorage.getItem('robot_logs')
- 
-                robot_logs += `<br><b>Runde: ${Sk.globals["round"]}</b> [${dt.toLocaleString('en-GB')}]<br>`
                 if(!submit){
                     robot_logs += "TEST-KØRSEL<br>"
                 }
-                robot_logs += `Der er ingen syntaksfejl i din Python-kode i denne runde.<br>`
+                robot_logs += `Der er ingen syntaksfejl i din Python-kode.<br>`
                 
                 max_amount = Sk.ffi.remapToJs(Sk.globals["max_amount"])
                 max_price = Sk.ffi.remapToJs(Sk.globals["max_price"])               
@@ -268,7 +267,7 @@
                 // clean price_choice
                 price_choice = Sk.ffi.remapToJs(Sk.globals["price_choice"])
                 
-                if (!price_choice){
+                if (!price_choice && price_choice != 0){
                     price_choice = 0
                     robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer ikke den variable 'price_choice'. Enhedsprisen bliver derfor sat til 0.00.<br>`
                 }
@@ -291,7 +290,7 @@
 
                 // clean amount_choice
                 amount_choice = Sk.ffi.remapToJs(Sk.globals["amount_choice"])
-                if (!amount_choice){
+                if (!amount_choice && amount_choice !=0 ){
                     amount_choice = 0
                     robot_logs += `<span class="text-danger">Advarsel!</span> Din kode definerer ikke den variable 'amount_choice'. Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
                 }
@@ -313,8 +312,8 @@
                     robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en værdi af 'amount_choice' som ikke er et tal. Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
                 }
                 amount_choice = Math.round(amount_choice);
-                robot_logs += `Efter afrunding til 2 decimaler er din endelige enhedspris i denne runde ${price_choice} kr. <br>`
-                robot_logs += `Efter afrunding til et heltal er dit endelige produktionstal i denne runde ${amount_choice} {{ market.product_name_plural }}.<br>`
+                robot_logs += `Efter afrunding til 2 decimaler er din endelige enhedspris ${price_choice} kr. <br>`
+                robot_logs += `Efter afrunding til et heltal er dit endelige produktionstal ${amount_choice} {{ market.product_name_plural }}.<br>`
                 localStorage.setItem("robot_logs", robot_logs);
 
                 var $price_slider = $("#id_unit_price").data("ionRangeSlider");
@@ -332,11 +331,11 @@
                 }
                 else{
                     mypre.innerHTML += `<br>Din algoritme ville have resulteret i disse valg:<br>`
-                    mypre.innerHMLT += `Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>`
+                    mypre.innerHTML += `Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>`
                     mypre.innerHTML += `Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br>` 
                     mypre.innerHTML += `<p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p>`
                     mypre.innerHTML += `<p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
-                    mypre.innerHTML += `<p>Her kan du se <a target="_blank" href="{% url "market:robot_logs" market.market_id %}">flere detaljer</a> om robottens prøve-kørsel.</p>`
+                    mypre.innerHTML += `<p>Her kan du se <a target="_blank" href="{% url "market:robot_logs" %}">flere detaljer</a> om robottens prøve-kørsel.</p>`
                 }
 
             },
@@ -353,12 +352,12 @@
                 $amount_slider.update({
                     from: amount_choice
                 });
+
+                robot_logs += `<span class="text-danger">Advarsel! </span>Der er syntaksfejl i din Python-kode.<br>`
+                robot_logs += `Python fejlmeddelse: ${err.toString()}.<br>`;      
+                localStorage.setItem("robot_logs", robot_logs);
+
                 if (submit){              
-                    robot_logs = localStorage.getItem('robot_logs')
-                    robot_logs += `<br><b>Runde: ${Sk.globals["round"]}</b> [${dt.toLocaleString('en-GB')}]<br>`
-                    robot_logs += `Advarsel! Der er syntaksfejl i din Python-kode i denne rundebr>`
-                    robot_logs += `Python fejlmeddelse: ${err.toString()}`;
-         
                     document.getElementById("id_auto_play").value = true
                     mypre.innerHTML += `<br>Din algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
                     document.getElementById('trade_form').submit()
@@ -366,7 +365,7 @@
                 else{
                     mypre.innerHTML += `<br><br>Din algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
                 }
-
+                
         });
     } 
 </script> 

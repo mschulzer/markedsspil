@@ -27,12 +27,15 @@
                         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                         <div class="collapse navbar-collapse" id="navbarResponsive">
                             <ul class="navbar-nav ml-auto">
+                                {% if market %}
+                                    <li class="nav-item"><a class="nav-link" href="{% url 'market:monitor' market.market_id %}">Marked</a></li>
+                                {% endif %}
                                 <li class="nav-item"><a class="nav-link" href="{% url 'market:create_market'%}">Opret marked</a></li>
                                 <li class="nav-item"><a class="nav-link" href="{% url 'market:my_markets'%}">Mine markeder</a></li>
                                 <li class="nav-item"><a class="nav-link" href="{% url 'account_logout' %}">Log af</a></li>
                             </ul>
                         </div>
-                        {% endif %}                
+                        {% endif %}    
                     </div>
                 </nav>
                 

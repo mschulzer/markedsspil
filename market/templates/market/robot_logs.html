@@ -9,14 +9,14 @@
 <h2>Robotjournal</h2>
 
 <p>
-    Her kan du se detaljer om din robots kørsel i hver runde.<br>
-    Journalen kan blandt andet bruges til at afsløre fejl i din Python-kode.</br>
+    Her kan du se detaljer om dine robotters kørsel.<br>
+    Journalen kan bruges til at finde fejl og problemer i din Python-kode.</br>
 </p>
 
 
 <div id="robot_logs"></div>
 
-<a href="{% url 'market:robot_logs' market.market_id %}" class='btn btn-primary mt-5 mx-5'>Opdatér journal</a>
+<a href="{% url 'market:robot_logs' %}" class='btn btn-primary mt-5 mx-5'>Opdatér journal</a>
 <button onclick="clean_logs()" class='btn btn-warning mt-5 mx-5'>Ryd journal</button>
 
 
@@ -26,10 +26,12 @@
 
 {% block javascript %}
 <script>
-    document.getElementById("robot_logs").innerHTML = localStorage.robot_logs 
+    if (localStorage.robot_logs){
+        document.getElementById("robot_logs").innerHTML = localStorage.robot_logs 
+    }
     function clean_logs(){
         localStorage.setItem("robot_logs", "")
-        window.location.href="{% url 'market:robot_logs' market.market_id %}"
+        window.location.href="{% url 'market:robot_logs' %}"
     }
 </script> 
 {% endblock javascript %}
