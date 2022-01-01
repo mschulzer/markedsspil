@@ -35,7 +35,8 @@
     {% else %}
         document.getElementById('robot-message').innerHTML = "Robotspil er stoppet. Robotten brugte " + algotext;
     {% endif %}
-        document.getElementById('robot-message').innerHTML += '<br>Her kan du se <a class="alert-link" target="_blank" href="{% url "market:robot_logs" %}">detaljer</a> om robotkørslen.'
+        document.getElementById('robot-message').innerHTML += 
+        '<br>Her kan du se <a class="alert-link" target="_blank" href="{% url "market:robot_logs" %}">detaljer</a> om robotkørslen.'
 
 
 </script>
@@ -203,11 +204,9 @@
         }
         
     }
+
     setRadioButtonCheckedAndTextAreaContent()
 
-
-    // output functions are configurable.  This one just appends some text
-    // to a pre element.
     function outf(text) { 
         var mypre = document.getElementById("output"); 
         mypre.innerHTML = mypre.innerHTML + text; 
@@ -218,17 +217,10 @@
             throw "File not found: '" + x + "'";
         return Sk.builtinFiles["files"][x];
     }
-
-    // Here's everything you need to run a python program in skulpt
-    // grab the code from your textarea
-    // get a reference to your pre element for output
-    // configure the output function
-    // call Sk.importMainWithBody()
    
     function runit(submit=false) { 
 
         document.getElementById("cleaned_values").innerHTML = ""
-        //var code_before = document.getElementById("code_before").value;   
         var code_before = code_before_textarea.getValue() 
 
         if (submit) {
@@ -250,12 +242,12 @@
         var dt = new Date();
 
         robot_logs = localStorage.getItem('robot_logs')
-        robot_logs += `<br><b>Runde: {{ market.round|add:1 }}</b>. Markeds-ID: {{ market.market_id }}. ${dt.toLocaleString('en-GB')}.<br>`
+        robot_logs += `<br><b>Runde: {{ market.round|add:1 }}</b>.` +
+                      ` Markeds-ID: {{ market.market_id }}. ${dt.toLocaleString('en-GB')}.<br>`
 
         myPromise.then(
             function(mod) {
                 // If there are NO syntax errors in client's python code, this function will be executed
-    
                 if(!submit){
                     robot_logs += "TEST-KØRSEL<br>"
                 }
@@ -269,22 +261,29 @@
                 
                 if (!price_choice && price_choice != 0){
                     price_choice = 0
-                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer ikke den variable 'price_choice'. Enhedsprisen bliver derfor sat til 0.00.<br>`
+                    robot_logs += `<span class="text-danger">Advarsel! </span>` +
+                                  `Din kode definerer ikke den variable 'price_choice'.` + 
+                                  `Enhedsprisen bliver derfor sat til 0.00.<br>`
                 }
                 else{
                     robot_logs += `Din kode definerer denne rå værdi af variablen 'price_choice': ${price_choice}.<br>`
                 }
                 if(price_choice < 0){
                     price_choice = 0
-                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en negativ værdi af 'price_choice'. Enhedsprisen bliver sat til 0.00.<br>`
+                    robot_logs += `<span class="text-danger">Advarsel! </span>` +
+                                  `Din kode definerer en negativ værdi af 'price_choice'.` +
+                                  `Enhedsprisen bliver sat til 0.00.<br>`
                 }
                 if(price_choice > max_price ){
                     price_choice = max_price
-                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en værdi af price_choice, som er højere end den tilladte maksimumspris på ${Sk.globals["max_price"]}. Enhedsprisen bliver sat til ${price_choice}.<br>`
+                    robot_logs += `<span class="text-danger">Advarsel! </span>` +
+                                  `Din kode definerer en værdi af price_choice, som er højere end den tilladte maksimumspris ` +
+                                  `på ${Sk.globals["max_price"]}. Enhedsprisen bliver sat til ${price_choice}.<br>`
                 }
                 if(!(typeof price_choice == 'number')){
                     price_choice = 0
-                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en værdi af price_choice, som er ikke er et tal. Enhedsprisen bliver sat til 0.00.<br>` 
+                    robot_logs += `<span class="text-danger">Advarsel! </span>` +
+                                  `Din kode definerer en værdi af price_choice, som er ikke er et tal. Enhedsprisen bliver sat til 0.00.<br>` 
                 }
                 price_choice = price_choice.toFixed(2)
 
@@ -292,7 +291,9 @@
                 amount_choice = Sk.ffi.remapToJs(Sk.globals["amount_choice"])
                 if (!amount_choice && amount_choice !=0 ){
                     amount_choice = 0
-                    robot_logs += `<span class="text-danger">Advarsel!</span> Din kode definerer ikke den variable 'amount_choice'. Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
+                    robot_logs += `<span class="text-danger">Advarsel!</span> ` +
+                                  `Din kode definerer ikke den variable 'amount_choice'. `+
+                                  `Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
                 }
                 else{
                     robot_logs += `Din kode definerer denne rå værdi af variablen 'amount_choice': ${amount_choice}.<br>`
@@ -300,16 +301,20 @@
 
                 if(amount_choice < 0){
                     amount_choice = 0
-                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en negativ værdi af 'amount_choice'. Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
+                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en negativ værdi af 'amount_choice'.` + 
+                                  ` Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
                 }
                 if(amount_choice > max_amount ){
                     amount_choice = max_amount
-                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en værdi af 'amount_choice' som er højere end den tilladte max-værdi på ${Sk.globals["max_amount"]}. Du producerer derfor ${amount_choice}} {{ market.product_name_plural}}.<br>`
+                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en værdi af 'amount_choice' ` +
+                                  `som er højere end den tilladte max-værdi på ${Sk.globals["max_amount"]}. ` +
+                                  `Du producerer derfor ${amount_choice} {{ market.product_name_plural}}.<br>`
 
                 }
                 if(!(typeof amount_choice == 'number')){
                     amount_choice = 0
-                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en værdi af 'amount_choice' som ikke er et tal. Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
+                    robot_logs += `<span class="text-danger">Advarsel! </span>Din kode definerer en værdi af ` + 
+                                  `'amount_choice' som ikke er et tal. Du producerer derfor 0 {{ market.product_name_plural }}.<br>`
                 }
                 amount_choice = Math.round(amount_choice);
                 robot_logs += `Efter afrunding til 2 decimaler er din endelige enhedspris ${price_choice} kr. <br>`
@@ -326,16 +331,18 @@
                 });
                 if (submit){              
                     document.getElementById("id_auto_play").value = true
-                    mypre.innerHTML += `<br>Din algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
+                    //mypre.innerHTML += `<br>Din algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}:` +
+                    //                   ` ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
                     document.getElementById('trade_form').submit()
                 }
                 else{
-                    mypre.innerHTML += `<br>Din algoritme ville have resulteret i disse valg:<br>`
-                    mypre.innerHTML += `Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>`
-                    mypre.innerHTML += `Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br>` 
-                    mypre.innerHTML += `<p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p>`
-                    mypre.innerHTML += `<p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
-                    mypre.innerHTML += `<p>Her kan du se <a target="_blank" href="{% url "market:robot_logs" %}">flere detaljer</a> om robottens prøve-kørsel.</p>`
+                    mypre.innerHTML += `<br>Din algoritme ville have resulteret i disse valg:<br>` +
+                                       `Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>` +
+                                       `Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br>` + 
+                                       `<p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p>` +
+                                       `<p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>` +
+                                       `<p>Her kan du se <a target="_blank" href="{% url "market:robot_logs" %}">` +
+                                       `flere detaljer</a> om robottens prøvekørsel.</p>`
                 }
 
             },
@@ -359,11 +366,16 @@
 
                 if (submit){              
                     document.getElementById("id_auto_play").value = true
-                    mypre.innerHTML += `<br>Din algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
+                    //mypre.innerHTML += `<br>Din algoritme resulterede i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ` + 
+                    //                   `${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>`
                     document.getElementById('trade_form').submit()
                 }
                 else{
-                    mypre.innerHTML += `<br><br>Din algoritme ville have resulteret i disse valg:<br>Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul><br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p><p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
+                    mypre.innerHTML += `<br><br>Din algoritme ville have resulteret i disse valg:<br>` +
+                                       `Pris pr. {{ market.product_name_singular }}: ${price_choice} kr.<br>` +
+                                       `Antal producerede {{ market.product_name_plural }}: ${amount_choice}</li></ul>` +
+                                       `<br><br><p>Tryk på 'Lav handel!', hvis du ønsker at handle med<br>disse værdier i denne runde.</p>` +
+                                       `<p>Tryk på 'Start robot!', hvis du ønsker at spille resten<br>af spillet med den valgte algoritme.</p>`
                 }
                 
         });
