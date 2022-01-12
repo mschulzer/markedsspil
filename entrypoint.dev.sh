@@ -1,9 +1,6 @@
 #!/bin/bash
 
 set -e
-# remove below two lines againg
-echo "${0}: making migrations."
-python manage.py makemigrations
 
 echo "${0}: running migrations."
 python manage.py reset_db --noinput
