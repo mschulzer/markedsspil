@@ -1,12 +1,15 @@
 #!/bin/bash
 
 set -e
+# remove below two lines againg
+echo "${0}: making migrations."
+python manage.py makemigrations
 
 echo "${0}: running migrations."
 python manage.py reset_db --noinput
 #python manage.py flush --no-input
 #python manage.py makemigrations --noinput
-python manage.py migrate
+python manage.py migrate 
 
 echo "${0}: collecting static files."
 python manage.py collectstatic --noinput --clear

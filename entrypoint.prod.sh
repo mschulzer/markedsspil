@@ -2,8 +2,10 @@
 
 set -e
 
-echo "${0}: running migrations."
+# remove below to lines againg
+echo "${0}: making migrations."
 python manage.py makemigrations
+
 
 echo "${0}: running migrations."
 python manage.py migrate
