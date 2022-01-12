@@ -19,7 +19,7 @@ from django.conf import settings
 
 urlpatterns = [
     # Django admin
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
 
     # User management
     path('accounts/', include('allauth.urls')),
