@@ -3,6 +3,9 @@
 set -e
 
 echo "${0}: running migrations."
+python manage.py makemigrations
+
+echo "${0}: running migrations."
 python manage.py migrate
 
 echo "${0}: collecting static files."
