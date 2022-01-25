@@ -160,9 +160,7 @@ if smtp_host is None or smtp_host == "":
 else:
     EMAIL_HOST = smtp_host
     EMAIL_PORT = os.environ.get("EMAIL_PORT")
-    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-    EMAIL_USE_TLS = False
+    EMAIL_USE_TLS = True
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
