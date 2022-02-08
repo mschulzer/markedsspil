@@ -160,8 +160,10 @@ if smtp_host is None or smtp_host == "":
 else:
     EMAIL_HOST = smtp_host
     EMAIL_PORT = os.environ.get("EMAIL_PORT")
-    EMAIL_USE_TLS = True
+    EMAIL_USE_TLS = False
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    print(smtp_host)
+    print(EMAIL_BACKEND)
 
 
 # Tell Django what default id fields to create in models
