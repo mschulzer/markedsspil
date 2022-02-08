@@ -15,3 +15,6 @@ COPY Pipfile Pipfile.lock /code/
 # Install pip, pipenv, and requirements
 RUN pip install --upgrade pip
 RUN pip install pipenv && pipenv install --system --dev --deploy
+
+# Update package list and install telnet
+RUN apt update && apt install telnet
