@@ -13,7 +13,7 @@ build:  ## Build or rebuild development docker image
 	docker-compose -f docker-compose.dev.yml build
 
 develop:  ## Run development server
-	docker-compose -f docker-compose.dev.yml up --remove-orphans
+	docker-compose -f docker-compose.dev.yml up --remove-orphans -d
 
 
 stop: ## Stop production server

@@ -1,0 +1,54 @@
+{% extends "market/base.html" %}
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load static%}
+
+{% block title %}Spil{% endblock %}
+{% block content %}
+
+<div class="row mt-lg-4" >
+    <div class="col-12 col-lg-6">
+        <!-- Messages -->
+        {% include "market/play/play.messages.html" %}
+
+        <!-- Next trade form -->
+        {% if not wait and not market.game_over and not trader.bankrupt  %}
+            {% include "market/play/play.next_trade_form.html" %}
+        {% endif %}
+
+        <!-- Scoreboard -->
+        {% if market.game_over or trader.bankrupt %}
+            {% include "market/play/play.scoreboard.html" %}
+        {% endif%}
+
+         <!-- Charts -->
+        {% if market.allow_robots and not market.game_over %}
+            <div class="mt-5"></div>
+            {% include "market/play/play.charts.html" %}
+        {% endif %}
+    </div>
+    
+    <div class="col-12 col-lg-6 mt-3 mt-lg-0 ">
+        
+        <!-- Charts -->
+        {% if not market.allow_robots %}
+            {% include "market/play/play.charts.html" %}
+        {% endif %}
+
+        <!-- Robot mode -->
+        {% if market.allow_robots %}
+            {% if market.game_over  %}
+                {% include "market/play/play.charts.html" %}      
+                {% include "market/play/play.robots.html" %}
+
+            {% else %}
+                {% include "market/play/play.robots.html" %}
+                {% include "market/play/play.charts.html" %}      
+            {% endif %}
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock content %}
+

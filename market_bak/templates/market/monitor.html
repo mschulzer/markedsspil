@@ -101,16 +101,16 @@
     {% if market.game_over %}
     Scoreboard
     {% else %}
-    Deltager Status
+    Trader Status
     {% endif %}
     <span class="text-black-50">
         {% if market.game_over %}
             [Game is over]
         {% else %}
             {% if market.endless %}
-                [Runde {{ market.round|add:1 }}]
+                [Round {{ market.round|add:1 }}]
             {% else %}
-                [Runde {{ market.round|add:1 }} / {{ market.max_rounds }}]
+                [Round {{ market.round|add:1 }} / {{ market.max_rounds }}]
             {% endif %}
         {% endif %}
     </span>

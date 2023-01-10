@@ -300,7 +300,6 @@ def finish_round(request, market_id):
     round_stat.save()
 
     # Update trader production cost
-    # SHOULD only be per round ...
     for trader in market.all_traders():
         new_cost = trader.prod_cost + market.cost_slope
         if new_cost > 0:

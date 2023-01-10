@@ -20,9 +20,9 @@ class MarketForm(forms.ModelForm):
             'theta': "Hvor meget øges efterspørgslen på producentens vare for hver krone, producentens salgspris er lavere end markedets gennemsnitspris?",
             # gamma = prisfølsomhed (f)
             'gamma': "Hvor meget falder efterspørgslen på producentens vare, hvis både producentens egen salgspris og gennemsnitsprisen på markedet stiger med 1 kr.?",
-            'min_cost': "Hvad er den laveste produktionsomkostning pr. enhed som en producent kan tildeles ved spillets start?",
-            'max_cost': "Hvad er den højeste produktionsomkostning pr. enhed som en producent kan tildeles ved spillets start?",
-            'cost_slope': "Undervejs i spillet kan du ændre værdien i dette felt for at justere alle producenters omkostninger pr. enhed.",
+            'min_cost': "Hvad er den laveste produktionsomkostning pr. enhed en producent kan tildeles?",
+            'max_cost': "Hvad er den højeste produktionsomkostning pr. enhed en producent kan tildeles?",
+            'cost_slope': "Beløbet, du vælger her, vil blive lagt til producentens omkostning pr. enhed ved afslutningen af hver runde (indtil du ændrer værdien)",
             'max_rounds': f"Hvor mange runder skal der spilles? Vælg et tal mellem 1 og {Market.UPPER_LIMIT_ON_MAX_ROUNDS}",
             'endless': "Der skal ikke være et loft over antal runder (spillet skal bare fortætte, så længe du ønsker det)",
             'allow_robots': "Producenterne skal kunne agere via algoritmer skrevet i Python"
@@ -34,9 +34,9 @@ class MarketForm(forms.ModelForm):
             'alpha': 'Grundlæggende efterspørgsel (e)',
             'theta': 'Konkurrenceforhold (k)',
             'gamma': 'Prisfølsomhed (f)',
-            'min_cost': 'Mindste omkostning pr. enhed',
-            'max_cost': 'Største omkostning pr. enhed',
-            'cost_slope': 'Ændring i omkostning pr. enhed',
+            'min_cost': 'Minimal omkostning pr. enhed',
+            'max_cost': 'Maksimal omkostning pr. enhed',
+            'cost_slope': 'Ændring i produktionsomkostning pr. runde',
             'endless': 'Uendeligt spil',
             'max_rounds': 'Antal runder',
             'allow_robots': 'Tillad robotspil'
@@ -157,7 +157,7 @@ class TradeForm(forms.ModelForm):
         fields = ('unit_price', 'unit_amount')
         widgets = {
             'unit_price': forms.NumberInput(attrs={'type': 'text', 'class': 'price-slider'}),
-            'unit_amount': forms.NumberInput(attrs={'type': 'text', 'class': 'production-slider', 'min': 10, 'max': 200}),
+            'unit_amount': forms.NumberInput(attrs={'type': 'text', 'class': 'production-slider'}),
         }
 
     def __init__(self, trader=None, market_average=None, *args, **kwargs):

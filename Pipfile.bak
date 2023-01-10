@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django-crispy-forms = "==1.9.2"
+gunicorn = "*"
+django = "~=3.2"
+factory-boy = "*"
+django-allauth = ">=0.42.0"
+django-dbbackup = "*"
+django-sekizai = "*"
+psycopg2-binary = "*"
+
+[dev-packages]
+black = "*"
+flake8 = "*"
+pytest = "*"
+pytest-django = "*"
+django-extensions = "*"
+
+[requires]
+python_version = "3.9"
+# This is to allow black to be installed, as it only exists as a prerelease
+sqlparse = ">=0.4.2"
+
+[pipenv]
+allow_prereleases = true

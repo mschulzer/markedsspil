@@ -1,0 +1,104 @@
+{% extends "market/base.html" %}
+
+{% block title %}Mine markeder{% endblock %}
+{% block content %}
+
+<h3 class="mt-5 mb-3">
+    Dine markeder
+</h3>
+
+{% if markets %}
+
+    <div class="table-responsive">
+        <table class="table table-sm table-striped" >
+
+            <thead>
+                <tr>
+                    <th>Marked</th>
+                    <th>Oprettet</th>
+                    <th>Antal spillere</th>
+                    <th>Status</th>
+                    <th>Indstillinger</th>
+                    <th>Slet marked</th>
+                </tr>
+            </thead>
+            {% for market in markets %}
+                <tr>
+                    <td><a href="{% url 'market:monitor' market.market_id %}">{{ market.market_id }}</a></td>                    
+                    </td>
+                    <td>{{ market.created_at }}</td>
+                    <td>
+                       {{ market.active_or_bankrupt_traders.count }}
+                    </td>
+                    <td>
+                        {% if market.game_over %}
+                            Spillet er slut
+                        {% else %}
+                            {% if market.endless %}
+                                Runde {{ market.round|add:1 }}
+                            {% else %}
+                                Runde {{ market.round|add:1 }}/{{ market.max_rounds  }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        Produkt: {{ market.product_name_plural }}<br>
+                        Startsaldo: {{ market.initial_balance }}<br>
+                        Grundefterspørgsel (e): {{ market.alpha }}<br>
+                        Konkurrenceforhold (k): {{ market.theta }}<br>
+                        Prisfølsomhed (f): {{ market.gamma }}<br>
+                        Min. omkostning: {{ market.min_cost }}<br>
+                        Maks. omkostnig: {{ market.max_cost }}<br>
+                        {% if market.allow_robots %}Spil med robotter{% else %}Spil uden robotter{% endif %}
+                    </td>          
+                    <td>  
+                        <button class="btn btn-warning" onclick="prepare_delete('{{ market.market_id }}')">
+                            Slet
+                        </button>                       
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <form id="delete_market_form" action="" method="POST">
+        {% csrf_token %}
+        <input id="delete_market_id" type="hidden" name="delete_market_id" value="">
+    </form>
+
+    <script>
+        function prepare_delete(market_id){
+            document.getElementById('delete_market_id').value = market_id
+            document.getElementById('modal-body').innerHTML = `Er du sikker på, at du vil slette markedet ${market_id}?` 
+            $('#confirmationPopUp').modal('show');
+        }
+    </script>
+    
+    <!-- Pop-up confirmation before delete -->
+    <div class="modal fade" id="confirmationPopUp" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Slet marked</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fortryd</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"
+                        onclick="document.getElementById('delete_market_form').submit()">Fjern</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% else %}
+    <p>Du har ikke oprettet nogen markeder endnu.</p>
+{% endif %}
+
+{% endblock content%}

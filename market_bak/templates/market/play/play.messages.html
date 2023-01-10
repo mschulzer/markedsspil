@@ -1,0 +1,176 @@
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load static%}
+{% load sekizai_tags %}
+
+<!-- Short blue status message-->
+<div class="alert alert-info">
+    {% if market.game_over %}
+        {% if market.check_game_over %}
+            <!-- The game was played to the final round -->
+            Spillet er slut efter {{ market.max_rounds }} runder.
+        {% else %}
+            <!-- The game ended prematurely (all traders are bankrupt) -->
+            Spillet er slut efter {{ market.round }} runder.
+        {% endif %}
+            Din endelige saldo er <b>{{ trader.balance }}</b> kr.
+    {% else %}
+            Saldo: <b>{{ trader.balance }}</b> kr.
+    {% endif %}
+</div>
+{% if not wait and trader.balance < trader.prod_cost %}
+    {% if trader.bankrupt %}
+        <div class="alert alert-warning">
+            Hej {{ trader.name }},
+            <br><br>
+            {% if not market.game_over %}
+                {% if market.endless %}
+                    Spillet er i runde <b>{{ market.round|add:1 }}</b>.
+                {% else %}
+                    Spillet er i runde <b>{{ market.round|add:1 }}</b> ud af <b>{{ market.max_rounds }}</b>.
+                {% endif %}
+            <br><br>
+            {% endif %}
+            Du har erklæret dig selv bankeråt. 
+        </div>
+
+    {% else %}
+        <div class="alert alert-danger">
+            <p>Du har ikke råd til at producere en eneste {{ market.product_name_singular }}!</p>
+            <form action="{% url 'market:declare_bankruptcy' trader.id %}" method = "POST">
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-danger">
+                        {% csrf_token %}
+                        Erklær dig selv bankeråt. 
+                    </button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
+{% endif %}
+
+{% if not trader.bankrupt %}
+    <!-- Long yellow status message -->
+    <div class="alert alert-warning">
+
+    Hej {{ trader.name }},
+
+    {% if not wait %}
+
+        <br><br>
+        <!-- Info about the current round number -->
+        {% if not market.game_over %}
+            {% if market.round == trader.round_joined %}
+                <!-- a verbose message welcoming new traders -->
+                {% if market.endless %}
+                    Du er nu klar til runde {{ market.round|add:1 }}</b> på {{ market.product_name_singular }}-markedet {{ market.market_id }}.
+                {% else %}
+                    Du er nu klar til runde <b>{{ market.round|add:1 }}</b> ud af <b>{{ market.max_rounds }}</b> på {{ market.product_name_singular }}-markedet {{ market.market_id }}.
+                {% endif %}
+                <br><br>
+                Dine produktionsomkostninger pr. {{ market.product_name_singular }} er <b>{{ trader.prod_cost }}</b> kr. Din startsaldo er <b>{{ trader.balance }}</b> kr.<br>
+
+            {% else %}
+                <!-- a less verbose message for traders who joined in a previous round -->
+                {% if market.endless %}
+                    Du er nu klar til runde <b>{{ market.round|add:1}}</b>.
+                {% else %}
+                    Du er nu klar til runde <b>{{ market.round|add:1}}</b> ud af <b>{{ market.max_rounds}}</b>.
+                {% endif %}
+                Dine produktionsomkostninger pr. {{ market.product_name_singular }} er <b>{{ trader.prod_cost }}</b> kr. 
+                 <br><br>
+
+            {% endif %}
+        {% endif %}
+
+    <!-- Text with info about last round choices and results.  -->
+    {% if trader.round_joined < market.round %}
+        {% if trades.last.was_forced %}
+            Du handlede ikke i sidste runde. 
+        {% else %}
+            {% if trades.last.unit_amount < trades.last.demand %}
+
+                Sidste runde solgte du <b>{{ trades.last.units_sold }}</b>
+                af de <b>{{ trades.last.unit_amount }}</b> {{ market.product_name_plural }}, du producerede.
+                Du kunne have solgt <b>{{ trades.last.demand }}</b> {{ market.product_name_plural }}.
+
+
+            {% elif trades.last.unit_amount == trades.last.demand %}
+
+                Sidste runde solgte du alle de <b>{{ trades.last.units_sold }}</b>, du producerede.
+                Din produktion svarede præcis til efterspørgslen. 
+
+            {% else %}
+
+                Sidste runde solgte du <b>{{ trades.last.units_sold }}</b>
+                af de <b>{{ trades.last.unit_amount }}</b> {{ market.product_name_plural }}, du producerede.
+
+            {% endif %}
+
+                Din pris pr. {{ market.product_name_singular }} var <b>{{ trades.last.unit_price }} </b>kr. 
+                Gennemsnitsprisen på markedet var <b>{{ round_stats.all.last.avg_price }}</b> kr.
+
+                Dit udbytte var
+                {% if trades.last.profit < 0 %}
+                    <b class="text-danger">
+                {% else %}
+                    <b class="text-success">
+                {% endif %}
+                    {{ trades.last.profit }}</b> kr.
+            {% endif %}
+        {% endif %}
+
+    {% else %} <!-- wait is true -->
+
+        <br><br>Du valgte at producere <b>{{ trades.last.unit_amount }}</b>
+        {{ market.product_name_plural }} og at sælge dem for <b>{{  trades.last.unit_price }}</b> kr. pr. stk.
+        <br><br>
+        <!-- Info about current status -->
+
+        <p id="wait_status">
+        </p>
+    {% endif %}
+
+</div>
+{% endif %}
+
+{% addtoblock 'js' %}
+
+{% if wait %}
+<script>
+ function update_status_message(num_ready_traders, num_active_traders, round_num){
+     wait_message = `${ num_ready_traders } ud af ${ num_active_traders } spillere har handlet i runde {{ market.round|add:1 }}.`     
+     document.getElementById('wait_status').innerHTML = wait_message;
+ }
+ update_status_message(
+     parseInt("{{ market.num_ready_traders }}"),
+     parseInt("{{ market.num_active_traders }}"),
+     parseInt("{{ market.round }}"));
+</script>
+{% endif %}
+
+{% if not market.game_over %}
+<!-- Script that updates wait status and checks for next round -->
+<script>
+ round_num = parseInt("{{ market.round }}");
+ market_id = "{{ market.market_id }}";
+ wait = "{{ wait }}";
+ function check_for_next_round() {
+     $.ajax({
+         type: 'GET',
+         url: "{% url 'market:current_round' market.market_id %}",
+         dataType: 'json',
+         success: function (data) {
+             if (data.round > round_num || data.game_over) {
+                 window.location.href = "{% url 'market:play' market.market_id %}"
+             }else if (wait == 'True'){
+                 update_status_message(data.num_ready_traders, data.num_active_traders, data.round)
+             }
+         }
+     });
+ }
+ window.setInterval(check_for_next_round, 1000);
+</script>
+{% endif %}
+
+{% endaddtoblock %}

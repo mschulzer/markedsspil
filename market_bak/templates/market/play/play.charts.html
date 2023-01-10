@@ -1,0 +1,225 @@
+{% load crispy_forms_tags %}
+{% load custom_tags %}
+{% load static%}
+{% load sekizai_tags %}
+
+<!-- Price chart-->
+<canvas class="mt-2 mb-0 mb-lg-4" id="priceCanvas">
+</canvas>
+        
+<!-- Units chart-->
+<canvas class="mt-2 mb-4" id="unitsCanvas"></canvas>
+        
+<!-- Balance chart-->
+<canvas class="mt-2 mb-4" id="balanceCanvas"></canvas>
+
+
+{% addtoblock 'js' %}
+<!-- import Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Chart settings -->
+<script>
+
+    // Global settings for charts on this page
+    Chart.defaults.plugins.title.display = false;
+    Chart.defaults.plugins.title.padding = {top:5, bottom:10};
+    Chart.defaults.scales.linear.beginAtZero = true; // y axes is forced to include 0    
+    Chart.defaults.animation.duration = 0; // don't show graph animations
+
+    // Colors to be used in charts
+    const traderColor = 'rgb(75, 192, 192, 0.6)' 
+    const secondColor = 'rgb(0, 153, 255, 0.6)'
+    const thirdColor = 'rgb(255, 153, 0, 0.6)'
+
+    function responsive_aspectRatio(){
+        // Set x-axis height relative to y-axis
+        if (window.innerWidth < 600) {
+            return 1.4    
+        }
+        else{
+            return 2
+        }
+    }
+    function reponsive_display_y_axis_title(){
+        // Only show y-axis legend on big enough screens
+        if (window.innerWidth < 1000) {
+            return true
+        }
+        else{
+            return true
+        }
+    }
+
+    function format_amount_labels(value, index, values){
+        // Default format of 5000 on axis is 5,000. 
+        // Here we change this to 5000.00
+        return prettify(value);
+    }
+
+    // Balance chart 
+    var traderBalanceDataSet = {
+        label: "Din saldo",
+        data: JSON.parse("{{ trader_balance_json }}"),
+        lineTension: 0,
+        borderColor: traderColor,
+    };
+
+    var averageBalanceDataSet = {
+        label: 'Gennemsnitlig saldo',
+        data: JSON.parse("{{ avg_balance_json }}"),
+        lineTension: 0,
+        borderColor: thirdColor,
+    };
+    
+    balance_labels = JSON.parse("{{ round_labels_json }}") // labels on x-axis
+    {% if not market.endless %}
+        balance_labels.unshift("0")
+    {% endif %}
+    
+    var lineChart = new Chart(document.getElementById('balanceCanvas'), {
+            type: 'line',
+            data: {
+                labels: balance_labels,
+                datasets: [traderBalanceDataSet, averageBalanceDataSet]
+            },
+            options:{
+                aspectRatio: responsive_aspectRatio(),
+                scales: {
+                    y: {
+                        title:{ 
+                            text: 'Saldo (kr.)',
+                            display: reponsive_display_y_axis_title()
+                        },
+                        ticks: {
+                            callback: format_amount_labels
+                        },
+                        suggestedMax: parseInt("{{ market.initial_balance }}"),
+                    },
+                    x: {
+                        title:{ 
+                            text: 'Runde',
+                            display: 'true'
+                        }
+                    },            
+                },  
+                plugins: {
+                    title: {
+                        display: true,
+                        text: "Saldo",
+                    }
+                },
+            }
+        }
+    ); 
+
+
+    // Price chart
+    var dataYourPrice = {
+        label: "Din pris",
+        data: JSON.parse("{{ data_price_json }}"),
+        lineTension: 0,
+        borderColor: traderColor,
+    };
+
+    var dataMarketAvgPrice = {
+        label: "Gennemsnitspris",
+        data: JSON.parse("{{ data_market_avg_price_json }}"),
+        borderColor: secondColor,
+    };
+
+    var dataProdCost = {
+        label: "Dine omkostninger",
+        data: JSON.parse("{{ data_prod_cost_json }}"),
+        borderColor: thirdColor,
+    };
+
+    var lineChart = new Chart(priceCanvas = document.getElementById('priceCanvas'),{
+        type: 'line',
+        data: {
+            labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+            datasets: [dataYourPrice, dataMarketAvgPrice, dataProdCost]
+        },
+        options: {
+            aspectRatio: responsive_aspectRatio(),
+            scales: {
+                y: {
+                    title:{ 
+                        text: 'Pr. enhed (kr.)',
+                        display: reponsive_display_y_axis_title()
+                    },
+                    ticks: {
+                        callback: format_amount_labels
+                    },
+                    suggestedMax: 2*parseInt("{{ market.max_cost }}"),
+                },
+                x: {
+                    title:{ 
+                        text: 'Runde',
+                        display: 'true'
+                    }
+                },         
+            },  
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Prishistorik",
+                },
+            }
+        }
+    });
+
+    // Units chart 
+    var dataDemand = {
+        label: "Efterspørgsel",
+        data: JSON.parse("{{ data_demand_json }}"),
+        lineTension: 0,
+        borderColor: traderColor,
+    };
+
+    var dataSold = {
+        label: "Solgt",
+        data: JSON.parse("{{ data_sold_json }}"),
+        borderColor: secondColor,
+    };
+
+    var dataProduced = {
+        label: "Produceret",
+        data: JSON.parse("{{ data_produced_json }}"),
+        borderColor: thirdColor,
+    };
+
+    var lineChart = new Chart(document.getElementById('unitsCanvas'), {
+        type: 'line',
+        data: {
+            labels: JSON.parse("{{ round_labels_json }}"), // labels on x-axis
+            datasets: [dataDemand, dataSold, dataProduced] 
+        },
+        options: {
+            aspectRatio: responsive_aspectRatio(),
+            scales: {
+                y: {
+                    title:{ 
+                        text: 'Antal enheder',
+                        display: reponsive_display_y_axis_title()
+                    },    
+                    suggestedMax: 100,
+                },
+                x: {
+                    title:{
+                        text: 'Runde',
+                        display: 'true'
+                    }
+                },         
+            },  
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Produktionshistorik",
+                },
+            },
+        }
+    });
+                
+</script>
+{% endaddtoblock %}

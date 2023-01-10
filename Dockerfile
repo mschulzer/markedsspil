@@ -14,7 +14,10 @@ COPY Pipfile Pipfile.lock /code/
 
 # Install pip, pipenv, and requirements
 RUN pip install --upgrade pip
+RUN pip install django-allauth
+RUN pip install django-dbbackup
+RUN pip install django-sekizai
+RUN pip install factory-boy
+
 RUN pip install pipenv && pipenv install --system --dev --deploy
 
-# Update package list and install telnet
-RUN apt update && apt install telnet
