@@ -181,6 +181,7 @@ def create_market_details(request):
             new_market = form.save(commit=False)
             new_market.created_by = request.user
             new_market.save()
+
             # if traders should be assigned different equal production cost
             if new_market.min_cost < new_market.max_cost:
                 # add min_cost og max_cost to the list of unused costs
@@ -298,8 +299,7 @@ def finish_round(request, market_id):
         [trade.unit_amount for trade in valid_trades]) / len(valid_trades)
 
     round_stat.save()
-
-    # Update trader production cost
+    
     # SHOULD only be per round ...
     for trader in market.all_traders():
         new_cost = trader.prod_cost + market.cost_slope
@@ -317,7 +317,12 @@ def finish_round(request, market_id):
     if market.check_game_over():
         market.game_over = True
 
+    # we should probably reset cost_slope to prevent it from accumulating, no?
+    market.cost_slope = 0
+
     market.save()
+
+    
 
     return redirect(reverse('market:monitor', args=(market.market_id,)))
 
