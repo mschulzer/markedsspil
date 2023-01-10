@@ -21,6 +21,7 @@ spillet, men den kan afprøves i denne Python notebook:
 
 Forfattere
 ----------
+ - Morten Schultz (mosh@di.ku.dk)
  - Kristian Møller Schmidt (krsc@di.ku.dk)
  - Jens Kanstrup Larsen (jkl@di.ku.dk)
  - Maja Hvidtfelt Håkansson (mhv@di.ku.dk)
